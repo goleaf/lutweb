@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\ProductMediaKind;
 use App\Enums\ProductStatus;
 use App\Enums\ProductType;
+use App\Services\LutTester\DeleteLutTestUpload;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property int $price_cents
  * @property string $currency
  * @property bool $is_featured
+ * @property bool $is_testable
  * @property Carbon|null $published_at
  * @property string|null $meta_title
  * @property string|null $meta_description
@@ -47,6 +49,7 @@ use Illuminate\Support\Carbon;
     'price_cents',
     'currency',
     'is_featured',
+    'is_testable',
     'published_at',
     'meta_title',
     'meta_description',
@@ -65,7 +68,27 @@ class Product extends Model
         'price_cents' => 0,
         'currency' => 'EUR',
         'is_featured' => false,
+        'is_testable' => false,
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (Product $product): void {
+            if ($product->type === ProductType::Bundle) {
+                $product->is_testable = false;
+            }
+        });
+
+        static::deleting(function (Product $product): void {
+            if (! $product->isForceDeleting()) {
+                return;
+            }
+
+            $product->lutTestUploads()
+                ->get()
+                ->each(fn (LutTestUpload $upload): bool => app(DeleteLutTestUpload::class)->delete($upload));
+        });
+    }
 
     /**
      * @return BelongsToMany<Category, $this>
@@ -181,6 +204,14 @@ class Product extends Model
     }
 
     /**
+     * @return HasMany<LutTestUpload, $this>
+     */
+    public function lutTestUploads(): HasMany
+    {
+        return $this->hasMany(LutTestUpload::class);
+    }
+
+    /**
      * @param  Builder<Product>  $query
      * @return Builder<Product>
      */
@@ -219,6 +250,7 @@ class Product extends Model
             'status' => ProductStatus::class,
             'price_cents' => 'integer',
             'is_featured' => 'boolean',
+            'is_testable' => 'boolean',
             'published_at' => 'datetime',
         ];
     }

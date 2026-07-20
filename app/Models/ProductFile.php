@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -58,6 +59,14 @@ class ProductFile extends Model
     public function productVersion(): BelongsTo
     {
         return $this->belongsTo(ProductVersion::class);
+    }
+
+    /**
+     * @return HasMany<LutTestUpload, $this>
+     */
+    public function lutTestUploads(): HasMany
+    {
+        return $this->hasMany(LutTestUpload::class);
     }
 
     protected static function booted(): void

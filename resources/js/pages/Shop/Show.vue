@@ -259,8 +259,10 @@ const purchaseLabel = computed(() =>
                                 <p
                                     class="mt-2 text-sm leading-6 text-stone-600"
                                 >
-                                    Photo upload and online LUT testing are out
-                                    of scope for this milestone.
+                                    Some published LUTs can be tested on one
+                                    uploaded photo. Test previews are
+                                    watermarked and automatically deleted after
+                                    one hour.
                                 </p>
                             </details>
                         </div>
@@ -304,16 +306,28 @@ const purchaseLabel = computed(() =>
                                     Coming soon
                                 </span>
                             </button>
-                            <button
-                                type="button"
-                                disabled
-                                class="rounded-md border border-stone-300 bg-stone-100 px-4 py-2.5 text-sm font-semibold text-stone-500"
+                            <Link
+                                v-if="
+                                    product.can_test_on_photo &&
+                                    product.test_url
+                                "
+                                :href="product.test_url"
+                                class="rounded-md border border-teal-700 bg-white px-4 py-2.5 text-center text-sm font-semibold text-teal-900 hover:bg-teal-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                             >
                                 Try on Your Photo
-                                <span class="ml-2 text-xs text-amber-800">
-                                    Coming soon
-                                </span>
-                            </button>
+                            </Link>
+                            <p
+                                v-if="product.can_test_on_photo"
+                                class="text-xs leading-5 text-stone-600"
+                            >
+                                A free account is required to upload a photo.
+                            </p>
+                            <p
+                                v-else
+                                class="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-600"
+                            >
+                                Photo testing is not available for this LUT.
+                            </p>
                         </div>
                     </section>
 

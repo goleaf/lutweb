@@ -71,6 +71,8 @@ export type PublicBundleItem = {
 
 export type PublicProductDetail = PublicProductCard & {
     description: string | null;
+    can_test_on_photo: boolean;
+    test_url: string | null;
     published_at: string | null;
     media: PublicMedia[];
     examples: PublicProductExample[];
@@ -80,6 +82,37 @@ export type PublicProductDetail = PublicProductCard & {
     compatible_software: PublicCompatibleSoftware[];
     bundle_items: PublicBundleItem[];
     seo: StorefrontSeo;
+};
+
+export type PublicTesterProduct = {
+    name: string;
+    slug: string;
+    url: string;
+    try_url: string;
+    short_description: string;
+    formatted_price: string;
+    is_free: boolean;
+    cover: {
+        url: string;
+        alt_text: string;
+        width: number | null;
+        height: number | null;
+    } | null;
+};
+
+export type PublicLutTestUpload = {
+    id: string;
+    status: 'queued' | 'processing' | 'ready' | 'failed' | 'expired';
+    original_name: string;
+    preview_width: number | null;
+    preview_height: number | null;
+    created_at: string | null;
+    expires_at: string;
+    failure_message: string | null;
+    before_url: string | null;
+    after_url: string | null;
+    delete_url: string;
+    can_delete: boolean;
 };
 
 export type PaginationLink = {

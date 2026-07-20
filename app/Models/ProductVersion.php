@@ -53,6 +53,14 @@ class ProductVersion extends Model
     }
 
     /**
+     * @return HasMany<LutTestUpload, $this>
+     */
+    public function lutTestUploads(): HasMany
+    {
+        return $this->hasMany(LutTestUpload::class);
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array

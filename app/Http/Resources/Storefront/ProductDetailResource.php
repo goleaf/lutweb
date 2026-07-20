@@ -14,6 +14,7 @@ use App\Models\ProductFile;
 use App\Models\ProductMedia;
 use App\Models\ProductVersion;
 use App\Models\Tag;
+use App\Services\LutTester\ProductLutTestEligibility;
 use App\Support\Catalog\EurMoney;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -41,6 +42,8 @@ class ProductDetailResource extends JsonResource
             ->values()
             ->all();
 
+        $canTestOnPhoto = app(ProductLutTestEligibility::class)->canTest($product);
+
         return [
             'id' => $product->id,
             'type' => $product->type->value,
@@ -54,6 +57,8 @@ class ProductDetailResource extends JsonResource
             'is_free' => $product->isFree(),
             'currency' => $product->currency,
             'is_featured' => $product->is_featured,
+            'can_test_on_photo' => $canTestOnPhoto,
+            'test_url' => $canTestOnPhoto ? route('shop.tester.create', $product->slug) : null,
             'published_at' => $product->published_at?->toISOString(),
             'cover' => $product->coverMedia ? (new ProductMediaResource($product->coverMedia))->toArray($request) : null,
             'media' => $media,

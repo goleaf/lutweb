@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Storefront\CategoryController;
 use App\Http\Controllers\Storefront\HomeController;
+use App\Http\Controllers\Storefront\LutTesterController;
+use App\Http\Controllers\Storefront\LutTestImageController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\ShopController;
 use Illuminate\Support\Facades\Route;
@@ -20,10 +22,23 @@ $verificationLimiter = (string) config('fortify.limiters.verification', '6,1');
 
 Route::get('/', HomeController::class)->name('home');
 
-Route::prefix('shop')->name('shop.')->group(function (): void {
+Route::prefix('shop')->name('shop.')->group(function () use ($authMiddleware): void {
     Route::get('/', [ShopController::class, 'index'])->name('index');
+    Route::middleware([$authMiddleware, 'verified'])->group(function (): void {
+        Route::get('/{slug}/try', [LutTesterController::class, 'create'])->name('tester.create');
+        Route::post('/{slug}/try', [LutTesterController::class, 'store'])
+            ->middleware('throttle:lut-tester-upload')
+            ->name('tester.store');
+        Route::get('/{slug}/try/{lutTestUpload}', [LutTesterController::class, 'show'])->name('tester.show');
+        Route::delete('/{slug}/try/{lutTestUpload}', [LutTesterController::class, 'destroy'])->name('tester.destroy');
+    });
     Route::get('/{slug}', [ProductController::class, 'show'])->name('show');
 });
+
+Route::get('/lut-tests/{lutTestUpload}/images/{variant}', LutTestImageController::class)
+    ->middleware([$authMiddleware, 'verified', 'signed'])
+    ->whereIn('variant', ['before', 'after'])
+    ->name('lut-tests.images.show');
 
 Route::prefix('luts')->name('categories.')->group(function (): void {
     Route::get('/{categorySlug}', [CategoryController::class, 'show'])->name('show');

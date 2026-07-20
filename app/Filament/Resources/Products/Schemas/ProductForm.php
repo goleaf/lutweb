@@ -15,6 +15,7 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
@@ -34,7 +35,13 @@ class ProductForm
                                         Select::make('type')
                                             ->options(self::productTypeOptions())
                                             ->required()
-                                            ->default(ProductType::SingleLut->value),
+                                            ->live()
+                                            ->default(ProductType::SingleLut->value)
+                                            ->afterStateUpdated(function (Set $set, ?string $state): void {
+                                                if ($state === ProductType::Bundle->value) {
+                                                    $set('is_testable', false);
+                                                }
+                                            }),
                                         TextInput::make('name')
                                             ->required()
                                             ->maxLength(255)
@@ -112,6 +119,11 @@ class ProductForm
                                             ->saved(false),
                                         Toggle::make('is_featured')
                                             ->label('Featured'),
+                                        Toggle::make('is_testable')
+                                            ->label('Allow photo testing')
+                                            ->helperText('Testing requires a published single or free LUT with a ready current version and a valid private 3D CUBE file.')
+                                            ->visible(fn (Get $get): bool => $get('type') !== ProductType::Bundle->value)
+                                            ->dehydrateStateUsing(fn (bool $state, Get $get): bool => $get('type') === ProductType::Bundle->value ? false : $state),
                                         DateTimePicker::make('published_at')
                                             ->seconds(false),
                                         TextInput::make('meta_title')

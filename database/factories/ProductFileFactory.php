@@ -41,4 +41,35 @@ class ProductFileFactory extends Factory
             'mime_type' => 'application/zip',
         ]);
     }
+
+    public function cube33(): static
+    {
+        return $this->cube(ProductFileKind::Cube33, 'cube-33.cube');
+    }
+
+    public function cube65(): static
+    {
+        return $this->cube(ProductFileKind::Cube65, 'cube-65.cube');
+    }
+
+    public function cube17(): static
+    {
+        return $this->cube(ProductFileKind::Cube17, 'cube-17.cube');
+    }
+
+    public function sourceCube(): static
+    {
+        return $this->cube(ProductFileKind::SourceCube, 'source.cube');
+    }
+
+    private function cube(ProductFileKind $kind, string $originalName): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'kind' => $kind,
+            'disk' => 'private',
+            'path' => 'products/luts/'.fake()->uuid().'.cube',
+            'original_name' => $originalName,
+            'mime_type' => 'text/plain',
+        ]);
+    }
 }

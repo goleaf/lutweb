@@ -33,6 +33,7 @@ class ProductFactory extends Factory
             'price_cents' => fake()->numberBetween(900, 9900),
             'currency' => 'EUR',
             'is_featured' => false,
+            'is_testable' => false,
             'published_at' => null,
             'meta_title' => fake()->optional()->sentence(4),
             'meta_description' => fake()->optional()->sentence(10),
@@ -60,6 +61,7 @@ class ProductFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'type' => ProductType::Bundle,
             'price_cents' => $attributes['price_cents'] ?? 4999,
+            'is_testable' => false,
         ]);
     }
 
@@ -76,6 +78,13 @@ class ProductFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'status' => ProductStatus::Published,
             'published_at' => now()->subDay(),
+        ]);
+    }
+
+    public function testable(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_testable' => true,
         ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\LutTester\DeleteLutTestUpload;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -9,6 +10,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -46,11 +48,28 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    protected static function booted(): void
+    {
+        static::deleting(function (User $user): void {
+            $user->lutTestUploads()
+                ->get()
+                ->each(fn (LutTestUpload $upload): bool => app(DeleteLutTestUpload::class)->delete($upload));
+        });
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return $panel->getId() === 'admin'
             && $this->is_admin
             && $this->hasVerifiedEmail();
+    }
+
+    /**
+     * @return HasMany<LutTestUpload, $this>
+     */
+    public function lutTestUploads(): HasMany
+    {
+        return $this->hasMany(LutTestUpload::class);
     }
 
     /**

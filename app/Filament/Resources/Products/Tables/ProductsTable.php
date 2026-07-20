@@ -48,6 +48,10 @@ class ProductsTable
                     ->label('Featured')
                     ->boolean()
                     ->sortable(),
+                IconColumn::make('is_testable')
+                    ->label('Testable')
+                    ->boolean()
+                    ->sortable(),
                 TextColumn::make('categories_count')
                     ->label('Categories')
                     ->sortable(),

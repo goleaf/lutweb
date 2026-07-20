@@ -161,7 +161,7 @@ class ProductCatalogQuery
                     ->orderBy('sort_order')
                     ->orderBy('name'),
                 'currentVersion:id,product_id,version,status,is_current,released_at',
-                'currentVersion.files:id,product_version_id,kind',
+                'currentVersion.files:id,product_version_id,kind,disk,path',
                 'bundleItems:id,bundle_id,product_id,sort_order',
                 'bundleItems.product:id,type,status,name,slug,short_description,price_cents,currency,is_featured,published_at,deleted_at',
                 'bundleItems.product.coverMedia:id,product_id,kind,path,alt_text,width,height,sort_order',

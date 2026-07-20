@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ProductMediaKind;
 use App\Enums\ProductStatus;
 use App\Enums\ProductType;
 use Database\Factories\ProductFactory;
@@ -139,11 +140,44 @@ class Product extends Model
     }
 
     /**
+     * @return HasOne<ProductMedia, $this>
+     */
+    public function coverMedia(): HasOne
+    {
+        return $this->hasOne(ProductMedia::class)
+            ->where('kind', ProductMediaKind::Cover)
+            ->orderBy('sort_order')
+            ->oldest('id');
+    }
+
+    /**
+     * @return HasMany<ProductMedia, $this>
+     */
+    public function galleryMedia(): HasMany
+    {
+        return $this->hasMany(ProductMedia::class)
+            ->where('kind', ProductMediaKind::Gallery)
+            ->orderBy('sort_order')
+            ->oldest('id');
+    }
+
+    /**
      * @return HasMany<ProductExample, $this>
      */
     public function examples(): HasMany
     {
         return $this->hasMany(ProductExample::class)->orderBy('sort_order');
+    }
+
+    /**
+     * @return HasMany<ProductExample, $this>
+     */
+    public function activeExamples(): HasMany
+    {
+        return $this->hasMany(ProductExample::class)
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->oldest('id');
     }
 
     /**

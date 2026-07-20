@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\Storefront\CategoryController;
+use App\Http\Controllers\Storefront\HomeController;
+use App\Http\Controllers\Storefront\ProductController;
+use App\Http\Controllers\Storefront\ShopController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
@@ -14,7 +18,16 @@ $guard = (string) config('fortify.guard');
 $authMiddleware = (string) config('fortify.auth_middleware', 'auth').':'.$guard;
 $verificationLimiter = (string) config('fortify.limiters.verification', '6,1');
 
-Route::inertia('/', 'Welcome')->name('home');
+Route::get('/', HomeController::class)->name('home');
+
+Route::prefix('shop')->name('shop.')->group(function (): void {
+    Route::get('/', [ShopController::class, 'index'])->name('index');
+    Route::get('/{slug}', [ProductController::class, 'show'])->name('show');
+});
+
+Route::prefix('luts')->name('categories.')->group(function (): void {
+    Route::get('/{categorySlug}', [CategoryController::class, 'show'])->name('show');
+});
 
 Route::inertia('/terms', 'Legal/Terms')->name('terms');
 Route::inertia('/privacy', 'Legal/Privacy')->name('privacy');

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAccountIsNotSuspended;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,6 +18,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+        ]);
+
+        $middleware->alias([
+            'account.active' => EnsureAccountIsNotSuspended::class,
+            'not_suspended' => EnsureAccountIsNotSuspended::class,
+        ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/paypal',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

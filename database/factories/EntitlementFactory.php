@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\DigitalAssetKind;
 use App\Enums\EntitlementStatus;
 use App\Models\Entitlement;
 use App\Models\Order;
@@ -26,11 +27,15 @@ class EntitlementFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
+            'digital_asset_kind' => DigitalAssetKind::CatalogProduct,
             'order_id' => Order::factory(),
             'order_item_id' => OrderItem::factory(),
             'product_id' => Product::factory(),
             'product_version_id' => ProductVersion::factory(),
             'product_file_id' => ProductFile::factory()->packageZip(),
+            'wizard_project_id' => null,
+            'custom_lut_build_id' => null,
+            'custom_lut_build_file_id' => null,
             'status' => EntitlementStatus::Active,
             'granted_at' => now(),
             'revoked_at' => null,

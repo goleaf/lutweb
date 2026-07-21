@@ -15,14 +15,14 @@ export type PublicCategory = {
     slug: string;
     description: string | null;
     url: string;
-    products_count: number;
+    products_count: number | null;
 };
 
 export type PublicTag = {
     id: number;
     name: string;
     slug: string;
-    products_count: number;
+    products_count: number | null;
 };
 
 export type PublicCompatibleSoftware = {
@@ -30,7 +30,7 @@ export type PublicCompatibleSoftware = {
     name: string;
     slug: string;
     website_url: string | null;
-    products_count: number;
+    products_count: number | null;
 };
 
 export type PublicProductExample = {
@@ -71,8 +71,6 @@ export type PublicBundleItem = {
 
 export type PublicProductDetail = PublicProductCard & {
     description: string | null;
-    can_test_on_photo: boolean;
-    test_url: string | null;
     published_at: string | null;
     media: PublicMedia[];
     examples: PublicProductExample[];

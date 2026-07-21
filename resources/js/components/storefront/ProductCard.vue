@@ -4,9 +4,15 @@ import { Link } from '@inertiajs/vue3';
 import { show as productShow } from '@/routes/shop';
 import type { PublicProductCard } from '@/types/storefront';
 
-defineProps<{
-    product: PublicProductCard;
-}>();
+withDefaults(
+    defineProps<{
+        product: PublicProductCard;
+        loading?: 'eager' | 'lazy';
+    }>(),
+    {
+        loading: 'lazy',
+    },
+);
 </script>
 
 <template>
@@ -18,8 +24,10 @@ defineProps<{
                 v-if="product.cover"
                 :src="product.cover.url"
                 :alt="product.cover.alt_text"
+                :width="product.cover.width ?? undefined"
+                :height="product.cover.height ?? undefined"
                 class="aspect-[4/3] w-full object-cover"
-                loading="lazy"
+                :loading="loading"
             />
             <div
                 v-else
@@ -57,6 +65,20 @@ defineProps<{
                 <p class="line-clamp-2 text-sm leading-6 text-stone-600">
                     {{ product.short_description }}
                 </p>
+
+                <div
+                    v-if="product.categories.length > 0"
+                    class="flex flex-wrap gap-2"
+                    aria-label="Product categories"
+                >
+                    <span
+                        v-for="category in product.categories.slice(0, 2)"
+                        :key="category.id"
+                        class="rounded-full border border-stone-200 px-2 py-0.5 text-xs font-medium text-stone-600"
+                    >
+                        {{ category.name }}
+                    </span>
+                </div>
             </div>
 
             <div class="flex items-center justify-between gap-3">
@@ -67,7 +89,7 @@ defineProps<{
                     :href="productShow(product.slug)"
                     class="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-semibold text-stone-800 hover:border-stone-400 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                 >
-                    View
+                    View LUT
                 </Link>
             </div>
         </div>

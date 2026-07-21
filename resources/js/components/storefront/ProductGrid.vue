@@ -5,7 +5,7 @@ import type { PublicProductCard } from '@/types/storefront';
 defineProps<{
     products: PublicProductCard[];
     emptyTitle?: string;
-    emptyDescription?: string;
+    emptyMessage?: string;
 }>();
 </script>
 
@@ -31,7 +31,7 @@ defineProps<{
         </h3>
         <p class="mt-2 text-sm leading-6 text-stone-600">
             {{
-                emptyDescription ??
+                emptyMessage ??
                 'The catalog does not have matching published LUTs yet.'
             }}
         </p>

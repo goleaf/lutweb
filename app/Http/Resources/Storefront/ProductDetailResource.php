@@ -14,7 +14,6 @@ use App\Models\ProductFile;
 use App\Models\ProductMedia;
 use App\Models\ProductVersion;
 use App\Models\Tag;
-use App\Services\LutTester\ProductLutTestEligibility;
 use App\Support\Catalog\EurMoney;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -35,14 +34,13 @@ class ProductDetailResource extends JsonResource
             return [];
         }
 
-        $media = collect([$product->coverMedia])
+        $media = collect([$this->publicMedia($product->coverMedia)])
             ->filter(fn (?ProductMedia $media): bool => $media !== null)
             ->merge($product->galleryMedia)
+            ->filter(fn (ProductMedia $media): bool => $media->disk === 'public')
             ->map(fn (ProductMedia $media): array => (new ProductMediaResource($media))->toArray($request))
             ->values()
             ->all();
-
-        $canTestOnPhoto = app(ProductLutTestEligibility::class)->canTest($product);
 
         return [
             'id' => $product->id,
@@ -57,10 +55,10 @@ class ProductDetailResource extends JsonResource
             'is_free' => $product->isFree(),
             'currency' => $product->currency,
             'is_featured' => $product->is_featured,
-            'can_test_on_photo' => $canTestOnPhoto,
-            'test_url' => $canTestOnPhoto ? route('shop.tester.create', $product->slug) : null,
             'published_at' => $product->published_at?->toISOString(),
-            'cover' => $product->coverMedia ? (new ProductMediaResource($product->coverMedia))->toArray($request) : null,
+            'cover' => $this->publicMedia($product->coverMedia)
+                ? (new ProductMediaResource($product->coverMedia))->toArray($request)
+                : null,
             'media' => $media,
             'examples' => $this->examples($product),
             'package_contents' => $this->packageContents($product->currentVersion),
@@ -73,7 +71,9 @@ class ProductDetailResource extends JsonResource
                 'title' => $product->meta_title ?: $product->name,
                 'description' => $product->meta_description ?: $product->short_description,
                 'canonical_url' => route('shop.show', $product->slug),
-                'image' => $product->coverMedia ? Storage::disk('public')->url($product->coverMedia->path) : null,
+                'image' => $this->publicMedia($product->coverMedia)
+                    ? Storage::disk('public')->url($product->coverMedia->path)
+                    : null,
             ],
         ];
     }
@@ -84,6 +84,7 @@ class ProductDetailResource extends JsonResource
     private function examples(Product $product): array
     {
         return $product->activeExamples
+            ->filter(fn (ProductExample $example): bool => $example->before_disk === 'public' && $example->after_disk === 'public')
             ->map(fn (ProductExample $example): array => [
                 'id' => $example->id,
                 'title' => $example->title,
@@ -140,23 +141,26 @@ class ProductDetailResource extends JsonResource
     }
 
     /**
-     * @return array<int, array{id: int, name: string, slug: string, url: string}>
+     * @return array<int, array{id: int, name: string, slug: string, description: string|null, url: string, products_count: int|null}>
      */
     private function categories(Product $product): array
     {
         return $product->categories
+            ->filter(fn (Category $category): bool => $category->is_active)
             ->map(fn (Category $category): array => [
                 'id' => $category->id,
                 'name' => $category->name,
                 'slug' => $category->slug,
+                'description' => $category->description,
                 'url' => route('categories.show', $category->slug),
+                'products_count' => null,
             ])
             ->values()
             ->all();
     }
 
     /**
-     * @return array<int, array{id: int, name: string, slug: string}>
+     * @return array<int, array{id: int, name: string, slug: string, products_count: int|null}>
      */
     private function tags(Product $product): array
     {
@@ -165,13 +169,14 @@ class ProductDetailResource extends JsonResource
                 'id' => $tag->id,
                 'name' => $tag->name,
                 'slug' => $tag->slug,
+                'products_count' => null,
             ])
             ->values()
             ->all();
     }
 
     /**
-     * @return array<int, array{id: int, name: string, slug: string, website_url: string|null}>
+     * @return array<int, array{id: int, name: string, slug: string, website_url: string|null, products_count: int|null}>
      */
     private function compatibleSoftware(Product $product): array
     {
@@ -181,6 +186,7 @@ class ProductDetailResource extends JsonResource
                 'name' => $software->name,
                 'slug' => $software->slug,
                 'website_url' => $software->website_url,
+                'products_count' => null,
             ])
             ->values()
             ->all();
@@ -201,11 +207,20 @@ class ProductDetailResource extends JsonResource
                 'id' => $item->product->id,
                 'name' => $item->product->name,
                 'url' => $item->product->isPublished() ? route('shop.show', $item->product->slug) : null,
-                'cover' => $item->product->coverMedia
+                'cover' => $this->publicMedia($item->product->coverMedia)
                     ? (new ProductMediaResource($item->product->coverMedia))->toArray($request)
                     : null,
             ])
             ->values()
             ->all();
+    }
+
+    private function publicMedia(?ProductMedia $media): ?ProductMedia
+    {
+        if ($media === null || $media->disk !== 'public') {
+            return null;
+        }
+
+        return $media;
     }
 }

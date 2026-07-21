@@ -18,7 +18,7 @@ class ProductMediaResource extends JsonResource
     {
         $media = $this->resource;
 
-        if (! $media instanceof ProductMedia) {
+        if (! $media instanceof ProductMedia || $media->disk !== 'public') {
             return [];
         }
 

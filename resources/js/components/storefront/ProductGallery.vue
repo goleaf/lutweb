@@ -81,6 +81,7 @@ function markFailed(id: number): void {
                 @click="selectImage(index)"
             >
                 <img
+                    v-if="!failedIds.includes(image.id)"
                     :src="image.url"
                     :alt="image.alt_text"
                     :width="image.width ?? undefined"
@@ -89,6 +90,12 @@ function markFailed(id: number): void {
                     loading="lazy"
                     @error="markFailed(image.id)"
                 />
+                <span
+                    v-else
+                    class="flex h-full items-center justify-center px-2 text-center text-xs font-semibold text-stone-500"
+                >
+                    Preview unavailable
+                </span>
             </button>
         </div>
     </section>

@@ -2,8 +2,20 @@
 
 namespace App\Providers;
 
+use App\Models\DownloadEvent;
+use App\Models\Entitlement;
 use App\Models\LutTestUpload;
+use App\Models\Order;
+use App\Models\WizardProject;
+use App\Models\WizardProjectPhoto;
+use App\Models\WizardProjectVariant;
+use App\Policies\DownloadEventPolicy;
+use App\Policies\EntitlementPolicy;
 use App\Policies\LutTestUploadPolicy;
+use App\Policies\OrderPolicy;
+use App\Policies\WizardProjectPhotoPolicy;
+use App\Policies\WizardProjectPolicy;
+use App\Policies\WizardProjectVariantPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -60,6 +72,12 @@ class AppServiceProvider extends ServiceProvider
     protected function configureAuthorization(): void
     {
         Gate::policy(LutTestUpload::class, LutTestUploadPolicy::class);
+        Gate::policy(Order::class, OrderPolicy::class);
+        Gate::policy(Entitlement::class, EntitlementPolicy::class);
+        Gate::policy(DownloadEvent::class, DownloadEventPolicy::class);
+        Gate::policy(WizardProject::class, WizardProjectPolicy::class);
+        Gate::policy(WizardProjectPhoto::class, WizardProjectPhotoPolicy::class);
+        Gate::policy(WizardProjectVariant::class, WizardProjectVariantPolicy::class);
     }
 
     protected function configureRateLimiters(): void
@@ -73,6 +91,65 @@ class AppServiceProvider extends ServiceProvider
                     ->by($userKey.'|'.$ipKey),
                 Limit::perDay((int) config('lut-tester.upload_rate_limits.per_day', 30))
                     ->by((string) $userKey),
+            ];
+        });
+
+        RateLimiter::for('lut-wizard-create', fn (Request $request): Limit => Limit::perMinute((int) config('lut-wizard.project_creation_rate_limit', 5))
+            ->by((string) ($request->user()?->getAuthIdentifier() ?: $request->ip())));
+
+        RateLimiter::for('lut-wizard-mutation', fn (Request $request): Limit => Limit::perMinute((int) config('lut-wizard.project_mutation_rate_limit', 120))
+            ->by((string) ($request->user()?->getAuthIdentifier() ?: $request->ip())));
+
+        RateLimiter::for('lut-wizard-photo-upload', fn (Request $request): Limit => Limit::perMinute((int) config('lut-wizard.photo_upload_rate_limit', 5))
+            ->by((string) ($request->user()?->getAuthIdentifier() ?: $request->ip())));
+
+        RateLimiter::for('lut-wizard-variation', function (Request $request): array {
+            $userKey = (string) ($request->user()?->getAuthIdentifier() ?: $request->ip());
+
+            return [
+                Limit::perMinute((int) config('lut-wizard.variation_per_minute_limit', 5))->by($userKey),
+                Limit::perDay((int) config('lut-wizard.variation_daily_limit', 20))->by($userKey),
+            ];
+        });
+
+        RateLimiter::for('lut-wizard-duplicate', fn (Request $request): Limit => Limit::perMinute((int) config('lut-wizard.duplicate_rate_limit', 10))
+            ->by((string) ($request->user()?->getAuthIdentifier() ?: $request->ip())));
+
+        RateLimiter::for('lut-wizard-preview', fn (Request $request): Limit => Limit::perMinute((int) config('lut-wizard.private_preview_rate_limit', 180))
+            ->by((string) ($request->user()?->getAuthIdentifier() ?: $request->ip())));
+
+        RateLimiter::for('checkout-create', function (Request $request): array {
+            $userKey = (string) ($request->user()?->getAuthIdentifier() ?: 'guest');
+
+            return [
+                Limit::perMinute((int) config('checkout.throttles.checkout_per_minute', 10))->by($userKey),
+                Limit::perHour((int) config('checkout.throttles.checkout_per_hour', 60))->by($userKey),
+            ];
+        });
+
+        RateLimiter::for('checkout-capture', function (Request $request): array {
+            $userKey = (string) ($request->user()?->getAuthIdentifier() ?: 'guest');
+            $order = $request->route('order');
+            $orderKey = is_object($order) && method_exists($order, 'getKey') ? (string) $order->getKey() : 'unknown';
+
+            return [
+                Limit::perMinute((int) config('checkout.throttles.capture_per_minute', 10))->by($userKey.'|'.$orderKey),
+            ];
+        });
+
+        RateLimiter::for('checkout-free-claim', function (Request $request): array {
+            $userKey = (string) ($request->user()?->getAuthIdentifier() ?: 'guest');
+
+            return [
+                Limit::perMinute((int) config('checkout.throttles.free_claims_per_minute', 5))->by($userKey),
+            ];
+        });
+
+        RateLimiter::for('account-downloads', function (Request $request): array {
+            $userKey = (string) ($request->user()?->getAuthIdentifier() ?: 'guest');
+
+            return [
+                Limit::perMinutes(10, (int) config('checkout.throttles.downloads_per_ten_minutes', 10))->by($userKey),
             ];
         });
     }

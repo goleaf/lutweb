@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DigitalAssetKind;
 use App\Enums\DownloadStatus;
 use Database\Factories\DownloadEventFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -13,12 +14,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
     'id',
+    'digital_asset_kind',
     'entitlement_id',
     'user_id',
     'order_id',
     'product_id',
     'product_version_id',
     'product_file_id',
+    'wizard_project_id',
+    'custom_lut_build_id',
+    'custom_lut_build_file_id',
+    'item_display_name_snapshot',
+    'item_version_snapshot',
     'status',
     'ip_address',
     'user_agent',
@@ -39,6 +46,13 @@ class DownloadEvent extends Model
     public $incrementing = false;
 
     protected $keyType = 'string';
+
+    /**
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'digital_asset_kind' => 'catalog_product',
+    ];
 
     /**
      * @return BelongsTo<Entitlement, $this>
@@ -89,11 +103,36 @@ class DownloadEvent extends Model
     }
 
     /**
+     * @return BelongsTo<WizardProject, $this>
+     */
+    public function wizardProject(): BelongsTo
+    {
+        return $this->belongsTo(WizardProject::class);
+    }
+
+    /**
+     * @return BelongsTo<CustomLutBuild, $this>
+     */
+    public function customLutBuild(): BelongsTo
+    {
+        return $this->belongsTo(CustomLutBuild::class);
+    }
+
+    /**
+     * @return BelongsTo<CustomLutBuildFile, $this>
+     */
+    public function customLutBuildFile(): BelongsTo
+    {
+        return $this->belongsTo(CustomLutBuildFile::class);
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
+            'digital_asset_kind' => DigitalAssetKind::class,
             'status' => DownloadStatus::class,
             'ip_address' => 'encrypted',
             'started_at' => 'datetime',

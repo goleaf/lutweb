@@ -11,3 +11,7 @@ Artisan::command('inspire', function () {
 Schedule::command('lut-tests:prune')
     ->everyFifteenMinutes()
     ->withoutOverlapping(20);
+
+Schedule::command('paypal:webhooks:purge-payloads')
+    ->daily()
+    ->withoutOverlapping();

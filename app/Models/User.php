@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\LutTester\DeleteLutTestUpload;
+use App\Services\LutWizard\DeleteWizardProject;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -56,6 +57,10 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             $user->lutTestUploads()
                 ->get()
                 ->each(fn (LutTestUpload $upload): bool => app(DeleteLutTestUpload::class)->delete($upload));
+
+            $user->wizardProjects()
+                ->get()
+                ->each(fn (WizardProject $project): bool => app(DeleteWizardProject::class)->delete($project));
         });
     }
 
@@ -96,6 +101,22 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function downloadEvents(): HasMany
     {
         return $this->hasMany(DownloadEvent::class);
+    }
+
+    /**
+     * @return HasMany<WizardProject, $this>
+     */
+    public function wizardProjects(): HasMany
+    {
+        return $this->hasMany(WizardProject::class);
+    }
+
+    /**
+     * @return HasMany<CustomLutBuild, $this>
+     */
+    public function customLutBuilds(): HasMany
+    {
+        return $this->hasMany(CustomLutBuild::class);
     }
 
     /**

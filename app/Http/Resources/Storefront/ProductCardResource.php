@@ -44,7 +44,9 @@ class ProductCardResource extends JsonResource
                     'id' => $category->id,
                     'name' => $category->name,
                     'slug' => $category->slug,
+                    'description' => $category->description,
                     'url' => route('categories.show', $category->slug),
+                    'products_count' => null,
                 ])
                 ->values()
                 ->all(),
@@ -56,7 +58,7 @@ class ProductCardResource extends JsonResource
      */
     private function media(?ProductMedia $media): ?array
     {
-        if ($media === null) {
+        if ($media === null || $media->disk !== 'public') {
             return null;
         }
 

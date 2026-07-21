@@ -94,11 +94,15 @@ function resetFilters(): void {
                 >
                     {{ category.description }}
                 </p>
-                <p class="mt-3 text-sm text-stone-600" aria-live="polite">
-                    {{ resultCount }} published product{{
-                        resultCount === 1 ? '' : 's'
+                <p class="mt-3 text-sm text-stone-600">
+                    {{ category.products_count ?? 0 }} published product{{
+                        category.products_count === 1 ? '' : 's'
                     }}
                     in this category.
+                </p>
+                <p class="mt-2 text-sm text-stone-600" aria-live="polite">
+                    {{ resultCount }} result{{ resultCount === 1 ? '' : 's' }}
+                    shown with the current filters.
                 </p>
             </div>
         </section>

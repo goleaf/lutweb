@@ -14,7 +14,6 @@ use App\Models\ProductVersion;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Sequence;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 function storefrontProduct(array $overrides = []): Product
@@ -397,6 +396,18 @@ test('product detail props do not expose ProductFile disk path private filename 
         ->not->toContain('/storage/products/releases');
 });
 
+test('product detail props do not expose tester routes during the read-only storefront milestone', function () {
+    $product = storefrontProductWithFullDetail([
+        'is_testable' => true,
+    ]);
+
+    $props = $this->get(route('shop.show', $product->slug))->inertiaProps('product');
+
+    expect($props)
+        ->not->toHaveKey('can_test_on_photo')
+        ->not->toHaveKey('test_url');
+});
+
 test('SourceCube is not included in public package contents', function () {
     $product = storefrontProductWithFullDetail();
 
@@ -527,7 +538,49 @@ test('public image URLs are generated only from the public disk', function () {
 
     $cover = $this->get(route('shop.show', $product->slug))->inertiaProps('product.cover');
 
-    expect($cover['url'])->toBe(Storage::disk('public')->url('products/media/public-only.jpg'));
+    expect($cover)->toBeNull();
+});
+
+test('public examples are emitted only when both images are stored on the public disk', function () {
+    $product = storefrontProduct();
+    ProductExample::factory()->active()->for($product)->create([
+        'title' => 'Private before image',
+        'before_disk' => 'private',
+        'before_path' => 'products/examples/private-before.jpg',
+        'after_path' => 'products/examples/public-after.jpg',
+    ])->forceFill(['before_disk' => 'private'])->saveQuietly();
+
+    ProductExample::factory()->active()->for($product)->create([
+        'title' => 'Public image pair',
+        'before_path' => 'products/examples/public-before.jpg',
+        'after_path' => 'products/examples/public-after.jpg',
+        'sort_order' => 2,
+    ]);
+
+    $examples = $this->get(route('shop.show', $product->slug))->inertiaProps('product.examples');
+
+    expect(collect($examples)->pluck('title')->all())->toBe(['Public image pair']);
+});
+
+test('public product props omit inactive categories and compatible software', function () {
+    $inactiveCategory = Category::factory()->create([
+        'name' => 'Hidden Style',
+        'slug' => 'hidden-style',
+        'is_active' => false,
+    ]);
+    $inactiveSoftware = CompatibleSoftware::factory()->create([
+        'name' => 'Hidden App',
+        'slug' => 'hidden-app',
+        'is_active' => false,
+    ]);
+    $product = storefrontProductWithFullDetail();
+    $product->categories()->attach($inactiveCategory);
+    $product->compatibleSoftware()->attach($inactiveSoftware);
+
+    $props = $this->get(route('shop.show', $product->slug))->inertiaProps('product');
+
+    expect(collect($props['categories'])->pluck('slug'))->not->toContain('hidden-style')
+        ->and(collect($props['compatible_software'])->pluck('slug'))->not->toContain('hidden-app');
 });
 
 test('public responses never contain a private ProductFile URL', function () {

@@ -219,7 +219,7 @@ test('tester page props contain no private paths or ProductFile metadata', funct
         ->not->toContain('products/luts');
 });
 
-test('product detail enables Try on Your Photo only for eligible products and hides CUBE paths', function () {
+test('product detail keeps tester actions coming soon and hides CUBE paths', function () {
     $user = User::factory()->verified()->create();
     $product = lutTesterSecurityEligibleProduct();
 
@@ -228,8 +228,8 @@ test('product detail enables Try on Your Photo only for eligible products and hi
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Shop/Show')
-            ->where('product.can_test_on_photo', true)
-            ->where('product.test_url', route('shop.tester.create', $product->slug)));
+            ->missing('product.can_test_on_photo')
+            ->missing('product.test_url'));
 
     expect(json_encode($response->inertiaProps(), JSON_THROW_ON_ERROR))->not->toContain('.cube');
 });

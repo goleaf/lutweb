@@ -137,8 +137,14 @@ class ProductCatalogQuery
             ])
             ->published()
             ->with([
-                'coverMedia:id,product_id,kind,path,alt_text,width,height,sort_order',
-                'categories:id,name,slug,description,is_active,sort_order',
+                'coverMedia' => fn ($query) => $query
+                    ->select(['id', 'product_id', 'kind', 'disk', 'path', 'alt_text', 'width', 'height', 'sort_order'])
+                    ->where('disk', 'public'),
+                'categories' => fn ($query) => $query
+                    ->select(['categories.id', 'name', 'slug', 'description', 'is_active', 'sort_order'])
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->orderBy('name'),
             ]);
     }
 
@@ -148,12 +154,39 @@ class ProductCatalogQuery
     private function detailQuery(): Builder
     {
         return Product::query()
+            ->select([
+                'id',
+                'type',
+                'status',
+                'name',
+                'slug',
+                'short_description',
+                'description',
+                'price_cents',
+                'currency',
+                'is_featured',
+                'published_at',
+                'meta_title',
+                'meta_description',
+                'deleted_at',
+            ])
             ->published()
             ->with([
-                'coverMedia:id,product_id,kind,path,alt_text,width,height,sort_order',
-                'galleryMedia:id,product_id,kind,path,alt_text,width,height,sort_order',
-                'activeExamples:id,product_id,title,before_path,before_alt_text,after_path,after_alt_text,sort_order,is_active',
-                'categories:id,name,slug,description,is_active,sort_order',
+                'coverMedia' => fn ($query) => $query
+                    ->select(['id', 'product_id', 'kind', 'disk', 'path', 'alt_text', 'width', 'height', 'sort_order'])
+                    ->where('disk', 'public'),
+                'galleryMedia' => fn ($query) => $query
+                    ->select(['id', 'product_id', 'kind', 'disk', 'path', 'alt_text', 'width', 'height', 'sort_order'])
+                    ->where('disk', 'public'),
+                'activeExamples' => fn ($query) => $query
+                    ->select(['id', 'product_id', 'title', 'before_disk', 'before_path', 'before_alt_text', 'after_disk', 'after_path', 'after_alt_text', 'sort_order', 'is_active'])
+                    ->where('before_disk', 'public')
+                    ->where('after_disk', 'public'),
+                'categories' => fn ($query) => $query
+                    ->select(['categories.id', 'name', 'slug', 'description', 'is_active', 'sort_order'])
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->orderBy('name'),
                 'tags:id,name,slug',
                 'compatibleSoftware' => fn ($query) => $query
                     ->select(['compatible_software.id', 'name', 'slug', 'website_url', 'is_active', 'sort_order'])
@@ -161,10 +194,12 @@ class ProductCatalogQuery
                     ->orderBy('sort_order')
                     ->orderBy('name'),
                 'currentVersion:id,product_id,version,status,is_current,released_at',
-                'currentVersion.files:id,product_version_id,kind,disk,path',
+                'currentVersion.files:id,product_version_id,kind,disk,path,sort_order',
                 'bundleItems:id,bundle_id,product_id,sort_order',
                 'bundleItems.product:id,type,status,name,slug,short_description,price_cents,currency,is_featured,published_at,deleted_at',
-                'bundleItems.product.coverMedia:id,product_id,kind,path,alt_text,width,height,sort_order',
+                'bundleItems.product.coverMedia' => fn ($query) => $query
+                    ->select(['id', 'product_id', 'kind', 'disk', 'path', 'alt_text', 'width', 'height', 'sort_order'])
+                    ->where('disk', 'public'),
             ]);
     }
 

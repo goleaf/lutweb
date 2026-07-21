@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @property int $id
@@ -36,6 +37,17 @@ class ProductVersion extends Model
         'is_current' => false,
     ];
 
+    protected static function booted(): void
+    {
+        static::deleting(function (ProductVersion $version): void {
+            if ($version->orderItems()->exists() || $version->entitlements()->exists()) {
+                throw ValidationException::withMessages([
+                    'version' => 'A purchased product version cannot be deleted. Create a new version for updates.',
+                ]);
+            }
+        });
+    }
+
     /**
      * @return BelongsTo<Product, $this>
      */
@@ -58,6 +70,30 @@ class ProductVersion extends Model
     public function lutTestUploads(): HasMany
     {
         return $this->hasMany(LutTestUpload::class);
+    }
+
+    /**
+     * @return HasMany<OrderItem, $this>
+     */
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * @return HasMany<Entitlement, $this>
+     */
+    public function entitlements(): HasMany
+    {
+        return $this->hasMany(Entitlement::class);
+    }
+
+    /**
+     * @return HasMany<DownloadEvent, $this>
+     */
+    public function downloadEvents(): HasMany
+    {
+        return $this->hasMany(DownloadEvent::class);
     }
 
     /**

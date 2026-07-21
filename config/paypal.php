@@ -1,0 +1,40 @@
+<?php
+
+return [
+    'enabled' => (bool) env('PAYPAL_ENABLED', false),
+    'mode' => env('PAYPAL_MODE', 'sandbox') === 'live' ? 'live' : 'sandbox',
+    'currency' => 'EUR',
+    'brand_name' => env('PAYPAL_BRAND_NAME', 'LUT Web'),
+    'client_id' => env('PAYPAL_CLIENT_ID'),
+    'client_secret' => env('PAYPAL_CLIENT_SECRET'),
+    'webhook_id' => env('PAYPAL_WEBHOOK_ID'),
+    'merchant_id' => env('PAYPAL_MERCHANT_ID'),
+    'connect_timeout' => (int) env('PAYPAL_CONNECT_TIMEOUT', 5),
+    'timeout' => (int) env('PAYPAL_TIMEOUT', 20),
+    'oauth_cache_safety_margin' => 60,
+    'webhook_body_max_bytes' => 1024 * 1024,
+    'webhook_queue' => env('PAYPAL_WEBHOOK_QUEUE', 'payments'),
+    'payment_queue' => env('PAYPAL_PAYMENT_QUEUE', 'payments'),
+    'payload_retention_days' => (int) env('PAYPAL_WEBHOOK_PAYLOAD_RETENTION_DAYS', 7),
+    'api_urls' => [
+        'sandbox' => 'https://api-m.sandbox.paypal.com',
+        'live' => 'https://api-m.paypal.com',
+    ],
+    'sdk_urls' => [
+        'sandbox' => 'https://www.sandbox.paypal.com/web-sdk/v6/core',
+        'live' => 'https://www.paypal.com/web-sdk/v6/core',
+    ],
+    'recommended_webhook_events' => [
+        'CHECKOUT.ORDER.APPROVED',
+        'CHECKOUT.PAYMENT-APPROVAL.REVERSED',
+        'PAYMENT.CAPTURE.PENDING',
+        'PAYMENT.CAPTURE.COMPLETED',
+        'PAYMENT.CAPTURE.DECLINED',
+        'PAYMENT.CAPTURE.DENIED',
+        'PAYMENT.CAPTURE.REVERSED',
+        'PAYMENT.CAPTURE.REFUNDED',
+        'CUSTOMER.DISPUTE.CREATED',
+        'CUSTOMER.DISPUTE.UPDATED',
+        'CUSTOMER.DISPUTE.RESOLVED',
+    ],
+];

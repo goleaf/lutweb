@@ -212,6 +212,30 @@ class Product extends Model
     }
 
     /**
+     * @return HasMany<OrderItem, $this>
+     */
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * @return HasMany<Entitlement, $this>
+     */
+    public function entitlements(): HasMany
+    {
+        return $this->hasMany(Entitlement::class);
+    }
+
+    /**
+     * @return HasMany<DownloadEvent, $this>
+     */
+    public function downloadEvents(): HasMany
+    {
+        return $this->hasMany(DownloadEvent::class);
+    }
+
+    /**
      * @param  Builder<Product>  $query
      * @return Builder<Product>
      */

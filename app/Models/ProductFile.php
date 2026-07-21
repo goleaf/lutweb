@@ -69,20 +69,71 @@ class ProductFile extends Model
         return $this->hasMany(LutTestUpload::class);
     }
 
+    /**
+     * @return HasMany<OrderItem, $this>
+     */
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * @return HasMany<Entitlement, $this>
+     */
+    public function entitlements(): HasMany
+    {
+        return $this->hasMany(Entitlement::class);
+    }
+
+    /**
+     * @return HasMany<DownloadEvent, $this>
+     */
+    public function downloadEvents(): HasMany
+    {
+        return $this->hasMany(DownloadEvent::class);
+    }
+
+    public function isSoldPackage(): bool
+    {
+        if ($this->kind !== ProductFileKind::PackageZip) {
+            return false;
+        }
+
+        return $this->orderItems()->exists() || $this->entitlements()->exists();
+    }
+
     protected static function booted(): void
     {
         static::saving(function (ProductFile $file): void {
+            if ($file->exists && $file->isSoldPackage() && ($file->isDirty('path') || $file->isDirty('disk') || $file->isDirty('kind'))) {
+                throw ValidationException::withMessages([
+                    'path' => 'A sold package ZIP cannot be replaced. Upload a new product version instead.',
+                ]);
+            }
+
             $file->disk = 'private';
             $file->validateFileKind();
             $file->populateStorageMetadata();
         });
 
         static::updating(function (ProductFile $file): void {
+            if ($file->isSoldPackage() && ($file->isDirty('path') || $file->isDirty('disk'))) {
+                return;
+            }
+
             if ($file->isDirty('path') || $file->isDirty('disk')) {
                 self::deleteStoredFileAfterCommit(
                     (string) $file->getOriginal('disk'),
                     (string) $file->getOriginal('path'),
                 );
+            }
+        });
+
+        static::deleting(function (ProductFile $file): void {
+            if ($file->isSoldPackage()) {
+                throw ValidationException::withMessages([
+                    'path' => 'A sold package ZIP cannot be deleted because customers may still download it.',
+                ]);
             }
         });
 

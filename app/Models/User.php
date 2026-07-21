@@ -28,6 +28,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $terms_version
  * @property string|null $privacy_version
  * @property bool $is_admin
+ * @property bool $is_suspended
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -41,6 +42,7 @@ use Illuminate\Support\Carbon;
     'terms_version',
     'privacy_version',
     'is_admin',
+    'is_suspended',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
@@ -73,6 +75,30 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     }
 
     /**
+     * @return HasMany<Order, $this>
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
+     * @return HasMany<Entitlement, $this>
+     */
+    public function entitlements(): HasMany
+    {
+        return $this->hasMany(Entitlement::class);
+    }
+
+    /**
+     * @return HasMany<DownloadEvent, $this>
+     */
+    public function downloadEvents(): HasMany
+    {
+        return $this->hasMany(DownloadEvent::class);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -84,6 +110,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'terms_accepted_at' => 'datetime',
             'privacy_accepted_at' => 'datetime',
             'is_admin' => 'boolean',
+            'is_suspended' => 'boolean',
             'password' => 'hashed',
         ];
     }

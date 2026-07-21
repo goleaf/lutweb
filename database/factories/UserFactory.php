@@ -36,6 +36,7 @@ class UserFactory extends Factory
             'terms_version' => config('legal.terms_version'),
             'privacy_version' => config('legal.privacy_version'),
             'is_admin' => false,
+            'is_suspended' => false,
         ];
     }
 
@@ -67,6 +68,13 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'is_admin' => true,
             'email_verified_at' => now(),
+        ]);
+    }
+
+    public function suspended(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_suspended' => true,
         ]);
     }
 }

@@ -5,6 +5,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import { loadPayPalV6Core } from '@/lib/paypal-v6';
 import type {
+    PayPalCreateOrderResult,
     PayPalPaymentCancellation,
     PayPalPaymentError,
     PayPalPaymentSession,
@@ -228,7 +229,7 @@ async function startPayPal(): Promise<void> {
     }
 }
 
-async function createLocalPayPalOrder(): Promise<string> {
+async function createLocalPayPalOrder(): Promise<PayPalCreateOrderResult> {
     if (!props.purchase.create_order_url) {
         throw new Error('checkout_unavailable');
     }
@@ -247,7 +248,7 @@ async function createLocalPayPalOrder(): Promise<string> {
     const payload = toCreateOrderResponse(await response.json());
     localOrderId.value = payload.local_order_id;
 
-    return payload.paypal_order_id;
+    return { orderId: payload.paypal_order_id };
 }
 
 async function captureApprovedOrder(paypalOrderId: string): Promise<void> {

@@ -17,10 +17,14 @@ export type PayPalPaymentError = {
 export type PayPalPaymentSession = {
     start: (
         options: { presentationMode: 'auto' | 'popup' | 'modal' },
-        orderPromise: Promise<string>,
+        orderPromise: Promise<PayPalCreateOrderResult>,
     ) => Promise<void>;
     hasReturned: () => boolean;
     resume: () => Promise<void>;
+};
+
+export type PayPalCreateOrderResult = {
+    orderId: string;
 };
 
 export type PayPalSdkInstance = {

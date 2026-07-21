@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Account\CaptureOrderPayPalController;
 use App\Http\Controllers\Account\CustomLutController as AccountCustomLutController;
+use App\Http\Controllers\Account\DashboardController;
 use App\Http\Controllers\Account\DownloadHistoryController;
 use App\Http\Controllers\Account\LutLibraryController;
 use App\Http\Controllers\Account\OrderController;
@@ -10,7 +11,10 @@ use App\Http\Controllers\Checkout\ShowCheckoutController;
 use App\Http\Controllers\Checkout\StorePayPalOrderController;
 use App\Http\Controllers\CustomLut\ProjectController as CustomLutProjectController;
 use App\Http\Controllers\CustomLut\ProjectMutationController;
+use App\Http\Controllers\CustomLut\ProjectPhotoController;
+use App\Http\Controllers\CustomLut\ProjectPhotoPreviewController;
 use App\Http\Controllers\CustomLut\ProjectStyleController;
+use App\Http\Controllers\CustomLut\ProjectVariationController;
 use App\Http\Controllers\Storefront\CategoryController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\LutTesterController;
@@ -19,7 +23,6 @@ use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\ShopController;
 use App\Http\Controllers\Webhooks\PayPalWebhookController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 use Laravel\Fortify\Http\Controllers\EmailVerificationNotificationController;
 use Laravel\Fortify\Http\Controllers\EmailVerificationPromptController;
@@ -73,6 +76,20 @@ Route::middleware([$authMiddleware, 'verified', 'not_suspended'])->group(functio
         Route::post('/{wizardProject}/style', [ProjectStyleController::class, 'store'])
             ->middleware('throttle:lut-wizard-mutation')
             ->name('style.store');
+        Route::post('/{wizardProject}/photos', [ProjectPhotoController::class, 'store'])
+            ->middleware('throttle:lut-wizard-photo-upload')
+            ->name('photos.store');
+        Route::delete('/{wizardProject}/photos/{wizardProjectPhoto}', [ProjectPhotoController::class, 'destroy'])
+            ->name('photos.destroy');
+        Route::get('/{wizardProject}/photos/{wizardProjectPhoto}/preview', ProjectPhotoPreviewController::class)
+            ->middleware(['signed', 'throttle:lut-wizard-preview'])
+            ->name('photos.preview');
+        Route::post('/{wizardProject}/variations', [ProjectVariationController::class, 'store'])
+            ->middleware('throttle:lut-wizard-variation')
+            ->name('variations.store');
+        Route::post('/{wizardProject}/variations/{wizardProjectVariant}/select', [ProjectVariationController::class, 'select'])
+            ->middleware('throttle:lut-wizard-mutation')
+            ->name('variations.select');
     });
 
     Route::prefix('account')->name('account.')->group(function (): void {
@@ -122,7 +139,7 @@ Route::middleware($authMiddleware)->group(function () use ($verificationLimiter)
 });
 
 Route::middleware([$authMiddleware, 'verified'])->group(function (): void {
-    Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
 });
 
 Route::middleware([$authMiddleware, 'verified', 'account.active'])->group(function (): void {

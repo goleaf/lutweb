@@ -64,17 +64,15 @@ function isCurrent(path: string): boolean {
                     >
                         Shop
                     </Link>
-                    <span
-                        class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-stone-500"
-                        aria-disabled="true"
+                    <Link
+                        href="/custom-lut"
+                        :aria-current="
+                            isCurrent('/custom-lut') ? 'page' : undefined
+                        "
+                        class="rounded-md px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 aria-[current=page]:bg-stone-100 aria-[current=page]:text-stone-950"
                     >
                         Create Your LUT
-                        <span
-                            class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800"
-                        >
-                            Coming soon
-                        </span>
-                    </span>
+                    </Link>
                 </div>
 
                 <div class="hidden items-center gap-2 md:flex">
@@ -160,15 +158,13 @@ function isCurrent(path: string): boolean {
                     >
                         Shop
                     </Link>
-                    <span
-                        class="flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium text-stone-500"
-                        aria-disabled="true"
+                    <Link
+                        href="/custom-lut"
+                        class="rounded-md px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        @click="mobileMenuOpen = false"
                     >
                         Create Your LUT
-                        <span class="text-xs font-semibold text-amber-800">
-                            Coming soon
-                        </span>
-                    </span>
+                    </Link>
                     <Link
                         v-if="user"
                         :href="dashboard()"

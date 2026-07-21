@@ -5,6 +5,7 @@ namespace App\Http\Controllers\CustomLut;
 use App\Actions\LutWizard\UpdateWizardProject;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CustomLut\UpdateWizardProjectRequest;
+use App\Models\User;
 use App\Models\WizardProject;
 use App\Services\LutWizard\WizardProjectPresenter;
 use Illuminate\Http\JsonResponse;
@@ -19,8 +20,10 @@ class ProjectMutationController extends Controller
         WizardProjectPresenter $presenter,
     ): JsonResponse {
         Gate::authorize('update', $wizardProject);
+        $user = $request->user();
+        abort_unless($user instanceof User, 403);
 
-        $project = $updateProject->handle($wizardProject, $request->user(), $request->validated());
+        $project = $updateProject->handle($wizardProject, $user, $request->validated());
 
         return response()->json([
             'project' => $presenter->project($project),

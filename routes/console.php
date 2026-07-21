@@ -12,6 +12,10 @@ Schedule::command('lut-tests:prune')
     ->everyFifteenMinutes()
     ->withoutOverlapping(20);
 
+Schedule::command('lut-wizard:prune')
+    ->everyFifteenMinutes()
+    ->withoutOverlapping(20);
+
 Schedule::command('paypal:webhooks:purge-payloads')
     ->daily()
     ->withoutOverlapping();

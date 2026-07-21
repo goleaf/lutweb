@@ -5,6 +5,7 @@ namespace App\Http\Controllers\CustomLut;
 use App\Actions\LutWizard\SelectWizardStyle;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CustomLut\SelectWizardStyleRequest;
+use App\Models\User;
 use App\Models\WizardProject;
 use App\Services\LutWizard\WizardProjectPresenter;
 use Illuminate\Http\JsonResponse;
@@ -19,10 +20,12 @@ class ProjectStyleController extends Controller
         WizardProjectPresenter $presenter,
     ): JsonResponse {
         Gate::authorize('update', $wizardProject);
+        $user = $request->user();
+        abort_unless($user instanceof User, 403);
 
         $project = $selectStyle->handle(
             $wizardProject,
-            $request->user(),
+            $user,
             (int) $request->validated('expected_revision'),
             (string) $request->validated('mutation_id'),
             $request->validated('style_id'),

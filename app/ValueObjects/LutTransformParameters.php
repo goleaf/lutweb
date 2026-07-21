@@ -278,6 +278,28 @@ final readonly class LutTransformParameters
         );
     }
 
+    /**
+     * @return array<string, int>
+     */
+    public static function minimums(): array
+    {
+        return array_map(
+            fn (array $definition): int => $definition['minimum'],
+            self::DEFINITIONS,
+        );
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    public static function maximums(): array
+    {
+        return array_map(
+            fn (array $definition): int => $definition['maximum'],
+            self::DEFINITIONS,
+        );
+    }
+
     public static function minimum(string $key): int
     {
         return self::definition($key)['minimum'];

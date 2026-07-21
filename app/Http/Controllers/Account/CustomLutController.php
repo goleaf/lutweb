@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Models\WizardProject;
 use App\Services\LutWizard\WizardProjectPresenter;
 use Inertia\Inertia;
@@ -12,6 +13,9 @@ class CustomLutController extends Controller
 {
     public function index(WizardProjectPresenter $presenter): Response
     {
+        $user = request()->user();
+        abort_unless($user instanceof User, 403);
+
         $projects = WizardProject::query()
             ->select([
                 'id',
@@ -24,7 +28,7 @@ class CustomLutController extends Controller
                 'created_at',
                 'updated_at',
             ])
-            ->whereBelongsTo(request()->user())
+            ->whereBelongsTo($user)
             ->nonExpired()
             ->withCount([
                 'photos' => fn ($query) => $query

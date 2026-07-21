@@ -5,6 +5,7 @@ namespace App\Http\Controllers\CustomLut;
 use App\Actions\LutWizard\CreateWizardProject;
 use App\Actions\LutWizard\DuplicateWizardProject;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Models\WizardProject;
 use App\Services\LutWizard\DeleteWizardProject;
 use App\Services\LutWizard\WizardProjectPresenter;
@@ -29,13 +30,18 @@ class ProjectController extends Controller
 
     public function store(CreateWizardProject $createProject): RedirectResponse
     {
-        $project = $createProject->handle(request()->user());
+        $user = request()->user();
+        abort_unless($user instanceof User, 403);
+
+        $project = $createProject->handle($user);
 
         return redirect()->route('custom-lut.show', $project);
     }
 
-    public function show(WizardProject $wizardProject, WizardProjectPresenter $presenter): Response
-    {
+    public function show(
+        WizardProject $wizardProject,
+        WizardProjectPresenter $presenter,
+    ): Response {
         Gate::authorize('view', $wizardProject);
 
         return Inertia::render('CustomLut/Show', $presenter->editor($wizardProject));
@@ -54,7 +60,10 @@ class ProjectController extends Controller
     {
         Gate::authorize('duplicate', $wizardProject);
 
-        $copy = $duplicateProject->handle($wizardProject, request()->user());
+        $user = request()->user();
+        abort_unless($user instanceof User, 403);
+
+        $copy = $duplicateProject->handle($wizardProject, $user);
 
         return redirect()->route('custom-lut.show', $copy);
     }

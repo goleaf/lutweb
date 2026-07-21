@@ -69,16 +69,12 @@ const categories = computed(() =>
                         >
                             Explore LUTs
                         </Link>
-                        <button
-                            type="button"
-                            disabled
-                            class="rounded-md border border-stone-300 bg-stone-100 px-4 py-2.5 text-sm font-semibold text-stone-500"
+                        <Link
+                            href="/custom-lut"
+                            class="rounded-md border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                         >
                             Create Your LUT
-                            <span class="ml-2 text-xs text-amber-800">
-                                Coming soon
-                            </span>
-                        </button>
+                        </Link>
                     </div>
                 </div>
 
@@ -114,9 +110,9 @@ const categories = computed(() =>
                         </div>
                     </div>
                     <p class="text-sm leading-6 text-stone-600">
-                        This milestone opens public browsing. Checkout,
-                        downloads, uploads, and the custom LUT wizard arrive in
-                        later milestones.
+                        Public browsing, checkout, downloads, photo testing, and
+                        custom LUT drafts are available. Custom LUT purchase and
+                        download are coming soon.
                     </p>
                 </div>
             </div>
@@ -240,18 +236,17 @@ const categories = computed(() =>
                         Custom LUT wizard
                     </h2>
                     <p class="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-                        A guided workflow for custom LUT creation is planned,
-                        but it is not available in this read-only storefront
-                        milestone.
+                        Create and preview a custom LUT draft with controlled
+                        variations. Purchase and downloadable custom LUT files
+                        are coming soon.
                     </p>
                 </div>
-                <button
-                    type="button"
-                    disabled
-                    class="h-fit rounded-md border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-stone-500"
+                <Link
+                    href="/custom-lut"
+                    class="h-fit rounded-md border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                 >
-                    Coming soon
-                </button>
+                    Create Your LUT
+                </Link>
             </div>
         </section>
 

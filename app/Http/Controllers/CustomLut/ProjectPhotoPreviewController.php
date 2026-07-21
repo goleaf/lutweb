@@ -21,7 +21,10 @@ class ProjectPhotoPreviewController extends Controller
             abort(404);
         }
 
-        $disk = Storage::disk($wizardProjectPhoto->disk);
+        $diskName = (string) config('lut-wizard.disk', 'private');
+        abort_unless($wizardProjectPhoto->disk === $diskName, 404);
+
+        $disk = Storage::disk($diskName);
 
         if (! $disk->exists($wizardProjectPhoto->preview_path)) {
             abort(404);

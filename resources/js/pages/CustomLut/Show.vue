@@ -47,6 +47,7 @@ const pendingHistoryStart = ref<CanonicalLutParameters | null>(null);
 const undoStack = ref<CanonicalLutParameters[]>([]);
 const redoStack = ref<CanonicalLutParameters[]>([]);
 const saving = ref(false);
+const pendingSaveAfterCurrent = ref(false);
 type WizardSection = 'photos' | 'style' | 'variations' | 'fine-tune' | 'review';
 const section = ref<WizardSection>('photos');
 const pollTimer = ref<number | null>(null);
@@ -222,6 +223,10 @@ async function jsonRequest<T>(
 
 async function saveNow(): Promise<void> {
     if (autosaveState.value !== 'unsaved' || saving.value) {
+        if (autosaveState.value === 'unsaved' && saving.value) {
+            pendingSaveAfterCurrent.value = true;
+        }
+
         return;
     }
 
@@ -232,6 +237,9 @@ async function saveNow(): Promise<void> {
 
     saving.value = true;
     autosaveState.value = 'saving';
+    pendingSaveAfterCurrent.value = false;
+    const requestedName = project.value.name;
+    const requestedParameters = cloneParameters(parameters.value);
 
     try {
         const payload = await jsonRequest<{ project: WizardProject }>(
@@ -245,10 +253,28 @@ async function saveNow(): Promise<void> {
             },
         );
 
+        const localName = project.value.name;
+        const localParameters = cloneParameters(parameters.value);
+        const changedDuringSave =
+            pendingSaveAfterCurrent.value ||
+            localName !== requestedName ||
+            !sameParameters(localParameters, requestedParameters);
+
         project.value = payload.project;
-        parameters.value = cloneParameters(payload.project.parameters);
         autosaveState.value = 'saved';
         savedAt.value = payload.project.updated_at;
+
+        if (changedDuringSave) {
+            project.value.name = localName;
+            parameters.value = localParameters;
+            autosaveState.value = 'unsaved';
+            pendingSaveAfterCurrent.value = false;
+            scheduleSave();
+
+            return;
+        }
+
+        parameters.value = cloneParameters(payload.project.parameters);
     } catch {
         if (!isConflictState(autosaveState.value)) {
             autosaveState.value = 'failed';

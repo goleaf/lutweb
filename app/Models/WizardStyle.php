@@ -95,7 +95,7 @@ class WizardStyle extends Model
 
     public function supportsTransformVersion(LutTransformVersion $version): bool
     {
-        return true;
+        return $this->getRawOriginal('transform_version') === $version->value;
     }
 
     /**

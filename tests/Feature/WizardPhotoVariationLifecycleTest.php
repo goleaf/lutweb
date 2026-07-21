@@ -133,6 +133,22 @@ test('signed private preview serves only ready owner photos with private headers
     $this->actingAs($other)->get($url)->assertNotFound();
 });
 
+test('signed private preview refuses records on an untrusted disk', function () {
+    Storage::fake('public');
+
+    $project = WizardProject::factory()->create();
+    $path = 'custom-lut-projects/'.$project->user_id.'/'.$project->id.'/photos/photo-1/preview.webp';
+    Storage::disk('public')->put($path, 'webp-preview');
+    $photo = WizardProjectPhoto::factory()->for($project)->ready()->create([
+        'disk' => 'public',
+        'preview_path' => $path,
+        'expires_at' => now()->addMinutes(20),
+    ]);
+    $url = URL::temporarySignedRoute('custom-lut.photos.preview', now()->addMinutes(10), [$project, $photo]);
+
+    $this->actingAs($project->user)->get($url)->assertNotFound();
+});
+
 test('editor props do not expose private photo paths or seeds', function () {
     $project = WizardProject::factory()->create();
     $photo = WizardProjectPhoto::factory()->for($project)->ready()->create([

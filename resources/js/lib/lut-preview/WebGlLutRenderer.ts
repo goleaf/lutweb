@@ -128,6 +128,10 @@ export class WebGlLutRenderer {
             return;
         }
 
+        if (this.lutTexture !== null) {
+            this.gl.deleteTexture(this.lutTexture);
+        }
+
         this.lutTexture = this.createLutTexture(this.lutData, size);
         this.render();
     }

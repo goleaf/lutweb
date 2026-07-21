@@ -3,6 +3,8 @@
 use App\Models\User;
 use Database\Seeders\LocalDemoUserSeeder;
 use Database\Seeders\UserSeeder;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 
 test('DatabaseSeeder creates no users or administrators', function () {
@@ -19,6 +21,12 @@ test('DatabaseSeeder creates no known default accounts', function () {
         ->and(User::query()->where('email', 'user@example.com')->exists())->toBeFalse();
 });
 
+test('DatabaseSeeder does not call user seeders', function () {
+    expect(File::get(database_path('seeders/DatabaseSeeder.php')))
+        ->not->toContain('UserSeeder::class')
+        ->not->toContain('LocalDemoUserSeeder::class');
+});
+
 test('UserSeeder is an intentional no-op', function () {
     $this->seed(UserSeeder::class);
     $this->seed(UserSeeder::class);
@@ -32,8 +40,16 @@ test('optional local demo seeder refuses production', function () {
     (new LocalDemoUserSeeder)->run();
 })->throws(RuntimeException::class, 'Local demo users may only be seeded in local or testing environments.');
 
-test('optional local demo seeder creates stable customer credentials that can log in', function () {
-    $this->seed(LocalDemoUserSeeder::class);
+test('optional local demo seeder prints temporary random credentials that can log in', function () {
+    Artisan::call('db:seed', ['--class' => LocalDemoUserSeeder::class]);
+    $output = Artisan::output();
+
+    preg_match('/Temporary password: (?P<password>.+)/', $output, $matches);
+
+    expect($matches['password'] ?? null)
+        ->toBeString()
+        ->not->toBe('')
+        ->not->toBe('password');
 
     $customer = User::query()
         ->where('email', 'demo-customer@example.test')
@@ -41,14 +57,23 @@ test('optional local demo seeder creates stable customer credentials that can lo
 
     expect($customer->is_admin)->toBeFalse()
         ->and($customer->hasVerifiedEmail())->toBeTrue()
-        ->and(Hash::check('local-demo-passphrase', $customer->password))->toBeTrue();
+        ->and(Hash::check($matches['password'], $customer->password))->toBeTrue()
+        ->and(Hash::check('password', $customer->password))->toBeFalse();
 
     $this->post(route('login.store'), [
         'email' => 'demo-customer@example.test',
-        'password' => 'local-demo-passphrase',
+        'password' => $matches['password'],
     ])->assertRedirect('/dashboard');
 
     $this->assertAuthenticatedAs($customer);
+});
+
+test('optional local demo seeder source has no fixed credential', function () {
+    expect(File::get(database_path('seeders/LocalDemoUserSeeder.php')))
+        ->not->toContain('public const Password')
+        ->not->toContain('Hash::make(self::Password)')
+        ->not->toContain("Hash::make('password')")
+        ->not->toContain('Hash::make("password")');
 });
 
 test('optional local demo seeder keeps stable accounts idempotent', function () {

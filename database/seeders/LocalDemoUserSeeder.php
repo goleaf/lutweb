@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class LocalDemoUserSeeder extends Seeder
@@ -16,8 +17,6 @@ class LocalDemoUserSeeder extends Seeder
 
     public const CustomerEmail = 'demo-customer@example.test';
 
-    public const Password = 'local-demo-passphrase';
-
     /**
      * Run the database seeds.
      */
@@ -27,14 +26,16 @@ class LocalDemoUserSeeder extends Seeder
             throw new RuntimeException('Local demo users may only be seeded in local or testing environments.');
         }
 
+        $temporaryPassword = Str::password(length: 32, spaces: false);
+
         foreach ($this->accounts() as $account) {
-            $this->upsertDemoUser($account);
+            $this->upsertDemoUser($account, $temporaryPassword);
         }
 
-        $this->command->warn('Stable local demo accounts are ready.');
+        $this->command->warn('Temporary local demo accounts are ready. Do not use them for production launch data.');
         $this->command->line('Customer email: '.self::CustomerEmail);
         $this->command->line('Admin email: '.self::AdminEmail);
-        $this->command->line('Password: '.self::Password);
+        $this->command->line('Temporary password: '.$temporaryPassword);
     }
 
     /**
@@ -59,7 +60,7 @@ class LocalDemoUserSeeder extends Seeder
     /**
      * @param  array{name: string, email: string, is_admin: bool}  $account
      */
-    private function upsertDemoUser(array $account): User
+    private function upsertDemoUser(array $account, string $temporaryPassword): User
     {
         $user = User::query()
             ->where('email', $account['email'])
@@ -69,7 +70,7 @@ class LocalDemoUserSeeder extends Seeder
             'name' => $account['name'],
             'email' => $account['email'],
             'country_code' => 'US',
-            'password' => Hash::make(self::Password),
+            'password' => Hash::make($temporaryPassword),
             'terms_accepted_at' => now(),
             'privacy_accepted_at' => now(),
             'terms_version' => config('legal.terms_version'),

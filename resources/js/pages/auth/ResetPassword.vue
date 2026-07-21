@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
 
+import AppIcon from '@/components/AppIcon.vue';
 import AuthShell from '@/components/AuthShell.vue';
 import InputError from '@/components/InputError.vue';
 import { update as passwordUpdate } from '@/routes/password';
@@ -93,8 +94,9 @@ function submit(): void {
             <button
                 type="submit"
                 :disabled="form.processing"
-                class="inline-flex w-full items-center justify-center rounded-md bg-stone-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:bg-stone-400"
+                class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-stone-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:bg-stone-400"
             >
+                <AppIcon name="key" class="size-4" />
                 {{ form.processing ? 'Resetting...' : 'Reset password' }}
             </button>
         </form>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 
+import AppIcon from '@/components/AppIcon.vue';
 import ResponsivePicture from '@/components/storefront/ResponsivePicture.vue';
 import { show as productShow } from '@/routes/shop';
 import type { PublicProductCard } from '@/types/storefront';
@@ -41,9 +42,12 @@ withDefaults(
             />
             <div
                 v-else
-                class="grid aspect-[4/3] content-center bg-stone-900 px-6 text-center text-sm font-medium text-stone-100"
+                class="grid aspect-[4/3] place-items-center bg-stone-900 px-6 text-center text-sm font-medium text-stone-100"
             >
-                LUT Web
+                <span class="grid justify-items-center gap-2">
+                    <AppIcon name="image" class="size-8 text-teal-300" />
+                    LUT Web
+                </span>
             </div>
         </Link>
 
@@ -51,14 +55,16 @@ withDefaults(
             <div class="space-y-2">
                 <div class="flex flex-wrap items-center gap-2">
                     <span
-                        class="rounded-md bg-teal-50 px-2 py-1 text-xs font-semibold text-teal-900"
+                        class="inline-flex items-center gap-1.5 rounded-md bg-teal-50 px-2 py-1 text-xs font-semibold text-teal-900"
                     >
+                        <AppIcon name="package" class="size-3.5" />
                         {{ product.type_label }}
                     </span>
                     <span
                         v-if="product.is_featured"
-                        class="rounded-md bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-900"
+                        class="inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-900"
                     >
+                        <AppIcon name="star" class="size-3.5" />
                         Featured
                     </span>
                 </div>
@@ -84,8 +90,9 @@ withDefaults(
                     <span
                         v-for="category in product.categories.slice(0, 2)"
                         :key="category.id"
-                        class="rounded-full border border-stone-200 px-2 py-0.5 text-xs font-medium text-stone-600"
+                        class="inline-flex items-center gap-1.5 rounded-full border border-stone-200 px-2 py-0.5 text-xs font-medium text-stone-600"
                     >
+                        <AppIcon name="tag" class="size-3" />
                         {{ category.name }}
                     </span>
                 </div>
@@ -97,9 +104,10 @@ withDefaults(
                 </span>
                 <Link
                     :href="productShow(product.slug)"
-                    class="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-semibold text-stone-800 hover:border-stone-400 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                    class="inline-flex items-center gap-2 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-semibold text-stone-800 hover:border-stone-400 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                 >
                     View LUT
+                    <AppIcon name="arrow-right" class="size-4" />
                 </Link>
             </div>
         </div>

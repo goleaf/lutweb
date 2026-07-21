@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 
+import AppIcon from '@/components/AppIcon.vue';
 import AccountLayout from '@/layouts/AccountLayout.vue';
 import type { Auth } from '@/types/auth';
 
@@ -24,7 +25,12 @@ const user = page.props.auth.user;
         <div
             class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm sm:p-6"
         >
-            <p class="text-sm font-medium text-teal-800">Dashboard</p>
+            <p
+                class="inline-flex items-center gap-2 text-sm font-medium text-teal-800"
+            >
+                <AppIcon name="dashboard" class="size-4" />
+                Dashboard
+            </p>
             <h1 class="mt-2 text-2xl font-semibold text-stone-950">
                 Hello, {{ user?.name }}.
             </h1>
@@ -38,7 +44,10 @@ const user = page.props.auth.user;
             <div
                 class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
             >
-                <h2 class="text-sm font-semibold text-stone-950">
+                <h2
+                    class="inline-flex items-center gap-2 text-sm font-semibold text-stone-950"
+                >
+                    <AppIcon name="wand" class="size-4 text-teal-800" />
                     Active Custom LUT Drafts
                 </h2>
                 <p class="mt-2 text-2xl font-semibold text-stone-950">
@@ -49,7 +58,10 @@ const user = page.props.auth.user;
             <div
                 class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
             >
-                <h2 class="text-sm font-semibold text-stone-950">
+                <h2
+                    class="inline-flex items-center gap-2 text-sm font-semibold text-stone-950"
+                >
+                    <AppIcon name="clock" class="size-4 text-teal-800" />
                     Recent Custom LUT
                 </h2>
                 <p class="mt-2 text-sm text-stone-600">
@@ -61,8 +73,9 @@ const user = page.props.auth.user;
                 <Link
                     v-if="props.recent_custom_lut_project"
                     :href="props.recent_custom_lut_project.continue_url"
-                    class="mt-4 inline-flex rounded-md border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                    class="mt-4 inline-flex items-center gap-2 rounded-md border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                 >
+                    <AppIcon name="edit" class="size-4" />
                     Continue Editing
                 </Link>
             </div>
@@ -72,7 +85,17 @@ const user = page.props.auth.user;
             <div
                 class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
             >
-                <h2 class="text-sm font-semibold text-stone-950">
+                <h2
+                    class="inline-flex items-center gap-2 text-sm font-semibold text-stone-950"
+                >
+                    <AppIcon
+                        :name="
+                            user?.email_verified_at
+                                ? 'check-circle'
+                                : 'alert-circle'
+                        "
+                        class="size-4 text-teal-800"
+                    />
                     Email verification
                 </h2>
                 <p class="mt-2 text-sm text-stone-600">
@@ -87,7 +110,10 @@ const user = page.props.auth.user;
             <div
                 class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
             >
-                <h2 class="text-sm font-semibold text-stone-950">
+                <h2
+                    class="inline-flex items-center gap-2 text-sm font-semibold text-stone-950"
+                >
+                    <AppIcon name="mail" class="size-4 text-teal-800" />
                     Account email
                 </h2>
                 <p class="mt-2 text-sm break-words text-stone-600">
@@ -98,7 +124,10 @@ const user = page.props.auth.user;
             <div
                 class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
             >
-                <h2 class="text-sm font-semibold text-stone-950">
+                <h2
+                    class="inline-flex items-center gap-2 text-sm font-semibold text-stone-950"
+                >
+                    <AppIcon name="wand" class="size-4 text-teal-800" />
                     Custom LUTs
                 </h2>
                 <p class="mt-2 text-sm text-stone-600">
@@ -106,8 +135,9 @@ const user = page.props.auth.user;
                 </p>
                 <Link
                     href="/account/custom-luts"
-                    class="mt-4 inline-flex rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                    class="mt-4 inline-flex items-center gap-2 rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                 >
+                    <AppIcon name="wand" class="size-4" />
                     View Custom LUTs
                 </Link>
             </div>

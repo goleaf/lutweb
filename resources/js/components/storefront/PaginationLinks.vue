@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 
+import AppIcon from '@/components/AppIcon.vue';
 import { paginationLabel } from '@/lib/storefront';
 import type { Pagination } from '@/types/storefront';
 
@@ -20,7 +21,7 @@ defineProps<{
                 v-if="link.url"
                 :href="link.url"
                 preserve-scroll
-                class="rounded-md border px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                class="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                 :class="
                     link.active
                         ? 'border-stone-950 bg-stone-950 text-white'
@@ -28,14 +29,34 @@ defineProps<{
                 "
                 :aria-current="link.active ? 'page' : undefined"
             >
-                {{ paginationLabel(link.label) }}
+                <AppIcon
+                    v-if="paginationLabel(link.label) === 'Previous'"
+                    name="arrow-left"
+                    class="size-4"
+                />
+                <span>{{ paginationLabel(link.label) }}</span>
+                <AppIcon
+                    v-if="paginationLabel(link.label) === 'Next'"
+                    name="arrow-right"
+                    class="size-4"
+                />
             </Link>
             <span
                 v-else
-                class="rounded-md border border-stone-200 bg-stone-100 px-3 py-2 text-sm font-medium text-stone-400"
+                class="inline-flex items-center gap-2 rounded-md border border-stone-200 bg-stone-100 px-3 py-2 text-sm font-medium text-stone-400"
                 aria-disabled="true"
             >
-                {{ paginationLabel(link.label) }}
+                <AppIcon
+                    v-if="paginationLabel(link.label) === 'Previous'"
+                    name="arrow-left"
+                    class="size-4"
+                />
+                <span>{{ paginationLabel(link.label) }}</span>
+                <AppIcon
+                    v-if="paginationLabel(link.label) === 'Next'"
+                    name="arrow-right"
+                    class="size-4"
+                />
             </span>
         </template>
     </nav>

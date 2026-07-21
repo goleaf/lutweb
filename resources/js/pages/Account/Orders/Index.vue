@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 
+import AccountPagination from '@/components/account/AccountPagination.vue';
+import AppIcon from '@/components/AppIcon.vue';
+import EmptyState from '@/components/ui/EmptyState.vue';
+import SectionHeading from '@/components/ui/SectionHeading.vue';
 import AccountLayout from '@/layouts/AccountLayout.vue';
 
 type OrderRow = {
@@ -34,20 +38,18 @@ defineProps<{
 <template>
     <AccountLayout title="Orders">
         <section class="space-y-5">
-            <div>
-                <p class="text-sm font-medium text-teal-800">Purchases</p>
-                <h1 class="mt-1 text-2xl font-semibold text-stone-950">
-                    Orders
-                </h1>
-            </div>
+            <SectionHeading
+                as="h1"
+                icon="receipt"
+                eyebrow="Purchases"
+                title="Orders"
+            />
 
             <div
+                v-if="orders.data.length > 0"
                 class="overflow-hidden rounded-lg border border-stone-200 bg-white"
             >
-                <table
-                    v-if="orders.data.length > 0"
-                    class="w-full text-left text-sm"
-                >
+                <table class="w-full text-left text-sm">
                     <thead
                         class="border-b border-stone-200 bg-stone-50 text-xs font-semibold text-stone-600 uppercase"
                     >
@@ -86,41 +88,32 @@ defineProps<{
                             <td class="px-4 py-3 text-right">
                                 <Link
                                     :href="order.url"
-                                    class="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                                    class="inline-flex items-center gap-2 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                                 >
                                     View
+                                    <AppIcon
+                                        name="arrow-right"
+                                        class="size-4"
+                                    />
                                 </Link>
                             </td>
                         </tr>
                     </tbody>
                 </table>
-
-                <div v-else class="p-6 text-sm text-stone-600">
-                    Orders will appear here after checkout.
-                </div>
             </div>
 
-            <nav
-                v-if="orders.meta.prev_page_url || orders.meta.next_page_url"
-                aria-label="Orders pagination"
-                class="flex justify-between gap-3"
-            >
-                <Link
-                    v-if="orders.meta.prev_page_url"
-                    :href="orders.meta.prev_page_url"
-                    class="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
-                >
-                    Previous
-                </Link>
-                <span v-else />
-                <Link
-                    v-if="orders.meta.next_page_url"
-                    :href="orders.meta.next_page_url"
-                    class="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
-                >
-                    Next
-                </Link>
-            </nav>
+            <EmptyState
+                v-else
+                icon="receipt"
+                title="No orders yet."
+                message="Orders will appear here after checkout."
+            />
+
+            <AccountPagination
+                :prev-page-url="orders.meta.prev_page_url"
+                :next-page-url="orders.meta.next_page_url"
+                label="Orders pagination"
+            />
         </section>
     </AccountLayout>
 </template>

@@ -2,6 +2,12 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
+import AppIcon from '@/components/AppIcon.vue';
+import CheckoutOrderSummary from '@/components/checkout/CheckoutOrderSummary.vue';
+import CheckoutPageHeader from '@/components/checkout/CheckoutPageHeader.vue';
+import CustomLutCheckoutPackageCard from '@/components/checkout/CustomLutCheckoutPackageCard.vue';
+import LegalConsentCard from '@/components/checkout/LegalConsentCard.vue';
+import StatusNotice from '@/components/ui/StatusNotice.vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import { loadPayPalV6Core } from '@/lib/paypal-v6';
 import type {
@@ -357,208 +363,72 @@ function toCaptureResponse(value: unknown): CaptureResponse {
             <meta name="robots" content="noindex,nofollow" />
         </Head>
 
-        <section class="border-b border-stone-200 bg-white">
-            <div class="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-                <Link
-                    :href="links.editor"
-                    class="rounded-sm text-sm text-stone-600 underline-offset-4 hover:text-teal-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
-                >
-                    Back to Custom LUT editor
-                </Link>
-                <h1 class="mt-3 text-3xl font-semibold text-stone-950">
-                    Custom LUT Checkout
-                </h1>
-                <p class="mt-3 max-w-3xl text-sm leading-6 text-stone-600">
-                    This purchase contains the exact immutable LUT package shown
-                    here. Future edits to your project create a separate build.
-                </p>
-            </div>
-        </section>
+        <CheckoutPageHeader
+            :back-href="links.editor"
+            back-label="Back to Custom LUT editor"
+            title="Custom LUT Checkout"
+            description="This purchase contains the exact immutable LUT package shown here. Future edits to your project create a separate build."
+        />
 
         <section
             class="mx-auto grid w-full max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:px-8"
         >
             <div class="space-y-5">
-                <section
-                    class="rounded-lg border border-stone-200 bg-white p-5"
-                >
-                    <p
-                        class="text-xs font-semibold tracking-wide text-teal-800 uppercase"
-                    >
-                        Custom LUT package
-                    </p>
-                    <h2 class="mt-2 text-xl font-semibold text-stone-950">
-                        {{ item.name }}
-                    </h2>
-                    <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-                        <div>
-                            <dt class="text-stone-500">Style</dt>
-                            <dd class="font-medium text-stone-900">
-                                {{ item.style_name || 'Neutral' }}
-                            </dd>
-                        </div>
-                        <div>
-                            <dt class="text-stone-500">Build</dt>
-                            <dd class="font-medium text-stone-900">
-                                {{ item.version_label }}
-                            </dd>
-                        </div>
-                        <div>
-                            <dt class="text-stone-500">Transform</dt>
-                            <dd class="font-medium text-stone-900">
-                                {{ item.transform_version }}
-                            </dd>
-                        </div>
-                        <div>
-                            <dt class="text-stone-500">Package</dt>
-                            <dd class="font-medium text-stone-900">
-                                {{ packageSize(item.package_size_bytes) }}
-                            </dd>
-                        </div>
-                    </dl>
-                </section>
+                <CustomLutCheckoutPackageCard
+                    :item="item"
+                    :package-size="packageSize(item.package_size_bytes)"
+                />
 
-                <section
-                    class="rounded-lg border border-stone-200 bg-white p-5"
-                >
-                    <h2 class="text-base font-semibold text-stone-950">
-                        Generated package contents
-                    </h2>
-                    <ul class="mt-4 grid gap-2 sm:grid-cols-2">
-                        <li
-                            v-for="content in item.contents"
-                            :key="content"
-                            class="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-700"
-                        >
-                            {{ content }}
-                        </li>
-                    </ul>
-                    <p class="mt-4 text-sm leading-6 text-stone-600">
-                        The package was prepared as an immutable build and will
-                        not change after purchase.
-                    </p>
-                </section>
-
-                <section
-                    class="rounded-lg border border-stone-200 bg-white p-5"
-                >
-                    <h2 class="text-base font-semibold text-stone-950">
-                        Legal consent
-                    </h2>
-                    <p class="mt-2 text-sm leading-6 text-stone-600">
-                        All sales of digital products are final except where a
-                        refund or another remedy is required by applicable law.
-                    </p>
-                    <p class="mt-2 text-xs leading-5 text-stone-500">
-                        Terms version {{ legal.terms_of_sale_version }}. License
-                        version {{ legal.license_version }}. Refund Policy
-                        version {{ legal.refund_policy_version }}. Digital
-                        delivery consent version
-                        {{ legal.digital_delivery_consent_version }}.
-                    </p>
-
-                    <label class="mt-4 flex gap-3 text-sm text-stone-700">
-                        <input
-                            v-model="termsAndLicenseAccepted"
-                            type="checkbox"
-                            class="mt-1 size-4 rounded border-stone-300 text-teal-700 focus:ring-teal-700"
-                        />
-                        <span>
-                            I agree to the
-                            <Link
-                                :href="legal.terms_url"
-                                class="font-medium text-teal-800 underline-offset-4 hover:underline"
-                                >Terms of Sale</Link
-                            >
-                            and
-                            <Link
-                                :href="legal.license_url"
-                                class="font-medium text-teal-800 underline-offset-4 hover:underline"
-                                >License Agreement</Link
-                            >.
-                        </span>
-                    </label>
-
-                    <label class="mt-4 flex gap-3 text-sm text-stone-700">
-                        <input
-                            v-model="digitalDeliveryAccepted"
-                            type="checkbox"
-                            class="mt-1 size-4 rounded border-stone-300 text-teal-700 focus:ring-teal-700"
-                        />
-                        <span>
-                            I request immediate access to this digital product
-                            and acknowledge that, where permitted by applicable
-                            law, I lose my withdrawal right once digital
-                            delivery begins.
-                        </span>
-                    </label>
-
-                    <p class="mt-4 text-xs leading-5 text-stone-500">
-                        Refund Policy:
-                        <Link
-                            :href="legal.refund_policy_url"
-                            class="font-medium text-teal-800 underline-offset-4 hover:underline"
-                            >review policy</Link
-                        >.
-                    </p>
-                </section>
+                <LegalConsentCard
+                    v-model:terms-accepted="termsAndLicenseAccepted"
+                    v-model:digital-delivery-accepted="digitalDeliveryAccepted"
+                    :terms-url="legal.terms_url"
+                    :license-url="legal.license_url"
+                    :refund-policy-url="legal.refund_policy_url"
+                    :terms-version="legal.terms_of_sale_version"
+                    :license-version="legal.license_version"
+                    :refund-policy-version="legal.refund_policy_version"
+                    :digital-delivery-consent-version="
+                        legal.digital_delivery_consent_version
+                    "
+                    show-versions
+                />
             </div>
 
-            <aside
-                class="h-fit rounded-lg border border-stone-200 bg-white p-5"
+            <CheckoutOrderSummary
+                :subtotal="`EUR ${pricing.subtotal ?? '0.00'}`"
+                :tax="`EUR ${pricing.tax}`"
+                :total="`EUR ${pricing.total ?? '0.00'}`"
+                note="One checkout contains one immutable Custom LUT build. Quantity is always 1."
+                :account-email="account.email"
             >
-                <h2 class="text-base font-semibold text-stone-950">Order</h2>
-                <dl class="mt-4 space-y-3 text-sm">
-                    <div class="flex justify-between gap-4">
-                        <dt class="text-stone-600">Subtotal</dt>
-                        <dd class="font-medium text-stone-950">
-                            EUR {{ pricing.subtotal ?? '0.00' }}
-                        </dd>
-                    </div>
-                    <div class="flex justify-between gap-4">
-                        <dt class="text-stone-600">Tax</dt>
-                        <dd class="font-medium text-stone-950">
-                            EUR {{ pricing.tax }}
-                        </dd>
-                    </div>
-                    <div
-                        class="flex justify-between gap-4 border-t border-stone-200 pt-3 text-base"
-                    >
-                        <dt class="font-semibold text-stone-950">Total</dt>
-                        <dd class="font-semibold text-stone-950">
-                            EUR {{ pricing.total ?? '0.00' }}
-                        </dd>
-                    </div>
-                </dl>
-
-                <p class="mt-4 text-xs leading-5 text-stone-500">
-                    One checkout contains one immutable Custom LUT build.
-                    Quantity is always 1.
-                </p>
-
-                <div class="mt-5">
+                <template #actions>
                     <Link
                         v-if="state === 'owned'"
                         :href="links.my_custom_luts"
-                        class="block rounded-md bg-stone-950 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        class="flex items-center justify-center gap-2 rounded-md bg-stone-950 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                     >
+                        <AppIcon name="wand" class="size-4" />
                         Go to My Custom LUTs
                     </Link>
 
                     <div v-else-if="canPay" class="space-y-3">
-                        <p
+                        <StatusNotice
                             v-if="state === 'resume'"
-                            class="rounded-md bg-stone-100 px-3 py-2 text-sm text-stone-700"
+                            icon="refresh"
+                            compact
                         >
                             Resuming your existing pending checkout for this
                             exact build.
-                        </p>
-                        <p
+                        </StatusNotice>
+                        <StatusNotice
                             v-if="!consentsReady"
-                            class="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900"
+                            icon="alert-circle"
+                            tone="warning"
+                            compact
                         >
                             Accept the required legal terms to enable PayPal.
-                        </p>
+                        </StatusNotice>
                         <paypal-button
                             ref="paypalButton"
                             type="pay"
@@ -567,38 +437,36 @@ function toCaptureResponse(value: unknown): CaptureResponse {
                         />
                         <p
                             v-if="paypalState === 'loading'"
-                            class="text-sm text-stone-600"
+                            class="inline-flex items-center gap-2 text-sm text-stone-600"
                             role="status"
                             aria-live="polite"
                         >
+                            <AppIcon name="refresh" class="size-4" />
                             Loading PayPal.
                         </p>
                     </div>
 
-                    <p
-                        v-else
-                        class="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-600"
-                    >
+                    <StatusNotice v-else icon="alert-circle" compact>
                         {{
                             message ??
                             'Custom LUT purchasing is currently unavailable.'
                         }}
-                    </p>
-                </div>
+                    </StatusNotice>
+                </template>
 
-                <p
-                    v-if="statusMessage"
-                    class="mt-4 rounded-md bg-stone-100 px-3 py-2 text-sm text-stone-700"
-                    role="status"
-                    aria-live="polite"
-                >
-                    {{ statusMessage }}
-                </p>
-
-                <p class="mt-4 text-xs leading-5 text-stone-500">
-                    Account: {{ account.email }}
-                </p>
-            </aside>
+                <template #status>
+                    <StatusNotice
+                        v-if="statusMessage"
+                        class="mt-4"
+                        icon="alert-circle"
+                        compact
+                        role="status"
+                        live
+                    >
+                        {{ statusMessage }}
+                    </StatusNotice>
+                </template>
+            </CheckoutOrderSummary>
         </section>
     </PublicLayout>
 </template>

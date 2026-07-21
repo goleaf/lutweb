@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
 
+import AppIcon from '@/components/AppIcon.vue';
+import EmptyState from '@/components/ui/EmptyState.vue';
+import SectionHeading from '@/components/ui/SectionHeading.vue';
 import AccountLayout from '@/layouts/AccountLayout.vue';
 
 interface AccountProject {
@@ -63,20 +66,18 @@ async function remove(project: AccountProject): Promise<void> {
     <AccountLayout title="Custom LUTs">
         <div class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
             <div class="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                    <p class="text-sm font-medium text-teal-800">Account</p>
-                    <h1 class="mt-2 text-2xl font-semibold text-stone-950">
-                        Custom LUTs
-                    </h1>
-                    <p class="mt-2 text-sm leading-6 text-stone-600">
-                        Continue editing saved drafts. Projects with expired
-                        photos remain editable.
-                    </p>
-                </div>
+                <SectionHeading
+                    as="h1"
+                    icon="user"
+                    eyebrow="Account"
+                    title="Custom LUTs"
+                    description="Continue editing saved drafts. Projects with expired photos remain editable."
+                />
                 <Link
                     href="/custom-lut"
-                    class="rounded-md bg-stone-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                    class="inline-flex items-center gap-2 rounded-md bg-stone-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                 >
+                    <AppIcon name="wand" class="size-4" />
                     Create Your First Custom LUT
                 </Link>
             </div>
@@ -90,7 +91,10 @@ async function remove(project: AccountProject): Promise<void> {
             >
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="font-semibold text-stone-950">
+                        <h2
+                            class="inline-flex items-center gap-2 font-semibold text-stone-950"
+                        >
+                            <AppIcon name="wand" class="size-4 text-teal-800" />
                             {{ project.name }}
                         </h2>
                         <dl
@@ -149,44 +153,45 @@ async function remove(project: AccountProject): Promise<void> {
                     <div class="flex flex-wrap gap-2">
                         <Link
                             :href="project.continue_url"
-                            class="rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                            class="inline-flex items-center gap-2 rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                         >
+                            <AppIcon name="edit" class="size-4" />
                             Continue Editing
                         </Link>
                         <button
                             type="button"
-                            class="rounded-md border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                            class="inline-flex items-center gap-2 rounded-md border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                             @click="post(project.duplicate_url)"
                         >
+                            <AppIcon name="copy" class="size-4" />
                             Duplicate
                         </button>
                         <button
                             type="button"
-                            class="rounded-md border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
+                            class="inline-flex items-center gap-2 rounded-md border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
                             @click="remove(project)"
                         >
+                            <AppIcon name="trash" class="size-4" />
                             Delete
                         </button>
                     </div>
                 </div>
             </article>
         </div>
-        <div
+        <EmptyState
             v-else
-            class="rounded-lg border border-dashed border-stone-300 bg-white p-8 text-center shadow-sm"
+            icon="wand"
+            title="No custom LUT drafts yet."
+            message="Create Your First Custom LUT"
+            variant="dashed"
         >
-            <h2 class="text-lg font-semibold text-stone-950">
-                No custom LUT drafts yet.
-            </h2>
-            <p class="mt-2 text-sm text-stone-600">
-                Create Your First Custom LUT
-            </p>
             <Link
                 href="/custom-lut"
-                class="mt-4 inline-flex rounded-md bg-stone-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                class="inline-flex items-center gap-2 rounded-md bg-stone-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
             >
+                <AppIcon name="wand" class="size-4" />
                 Create Your First Custom LUT
             </Link>
-        </div>
+        </EmptyState>
     </AccountLayout>
 </template>

@@ -3,6 +3,7 @@
 use App\Models\User;
 use Database\Seeders\LocalDemoUserSeeder;
 use Database\Seeders\UserSeeder;
+use Illuminate\Support\Facades\Hash;
 
 test('DatabaseSeeder creates no users or administrators', function () {
     $this->seed();
@@ -30,6 +31,42 @@ test('optional local demo seeder refuses production', function () {
 
     (new LocalDemoUserSeeder)->run();
 })->throws(RuntimeException::class, 'Local demo users may only be seeded in local or testing environments.');
+
+test('optional local demo seeder creates stable customer credentials that can log in', function () {
+    $this->seed(LocalDemoUserSeeder::class);
+
+    $customer = User::query()
+        ->where('email', 'demo-customer@example.test')
+        ->firstOrFail();
+
+    expect($customer->is_admin)->toBeFalse()
+        ->and($customer->hasVerifiedEmail())->toBeTrue()
+        ->and(Hash::check('local-demo-passphrase', $customer->password))->toBeTrue();
+
+    $this->post(route('login.store'), [
+        'email' => 'demo-customer@example.test',
+        'password' => 'local-demo-passphrase',
+    ])->assertRedirect('/dashboard');
+
+    $this->assertAuthenticatedAs($customer);
+});
+
+test('optional local demo seeder keeps stable accounts idempotent', function () {
+    $this->seed(LocalDemoUserSeeder::class);
+
+    $firstIds = User::query()
+        ->whereIn('email', ['demo-admin@example.test', 'demo-customer@example.test'])
+        ->pluck('id', 'email');
+
+    $this->seed(LocalDemoUserSeeder::class);
+
+    expect(User::query()->count())->toBe(2)
+        ->and($firstIds)->toHaveCount(2)
+        ->and(User::query()
+            ->whereIn('email', ['demo-admin@example.test', 'demo-customer@example.test'])
+            ->pluck('id', 'email'))
+        ->toEqual($firstIds);
+});
 
 test('users set admin remains intentional for an existing account', function () {
     $user = User::factory()->verified()->create([

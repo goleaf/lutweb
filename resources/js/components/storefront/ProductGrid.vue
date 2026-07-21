@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ProductCard from '@/components/storefront/ProductCard.vue';
+import EmptyState from '@/components/ui/EmptyState.vue';
 import type { PublicProductCard } from '@/types/storefront';
 
 defineProps<{
@@ -21,19 +22,13 @@ defineProps<{
         />
     </div>
 
-    <div
+    <EmptyState
         v-else
-        role="status"
-        class="rounded-lg border border-stone-200 bg-white px-6 py-10 text-center shadow-sm"
-    >
-        <h3 class="text-base font-semibold text-stone-950">
-            {{ emptyTitle ?? 'No products found' }}
-        </h3>
-        <p class="mt-2 text-sm leading-6 text-stone-600">
-            {{
-                emptyMessage ??
-                'The catalog does not have matching published LUTs yet.'
-            }}
-        </p>
-    </div>
+        icon="search"
+        :title="emptyTitle ?? 'No products found'"
+        :message="
+            emptyMessage ??
+            'The catalog does not have matching published LUTs yet.'
+        "
+    />
 </template>

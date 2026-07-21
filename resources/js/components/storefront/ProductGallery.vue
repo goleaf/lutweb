@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 
+import AppIcon from '@/components/AppIcon.vue';
 import ResponsivePicture from '@/components/storefront/ResponsivePicture.vue';
 import type { PublicMedia } from '@/types/storefront';
 
@@ -67,7 +68,10 @@ function markFailed(id: number): void {
                 role="img"
                 :aria-label="`${productName} gallery image placeholder`"
             >
-                Image preview is being prepared.
+                <span class="grid justify-items-center gap-2">
+                    <AppIcon name="image" class="size-8 text-teal-200" />
+                    Image preview is being prepared.
+                </span>
             </div>
         </div>
 
@@ -111,9 +115,10 @@ function markFailed(id: number): void {
                 />
                 <span
                     v-else
-                    class="flex h-full items-center justify-center px-2 text-center text-xs font-semibold text-stone-500"
+                    class="grid h-full place-items-center gap-1 px-2 text-center text-xs font-semibold text-stone-500"
                 >
-                    Preview unavailable
+                    <AppIcon name="image" class="size-5 text-stone-400" />
+                    <span>Preview unavailable</span>
                 </span>
             </button>
         </div>

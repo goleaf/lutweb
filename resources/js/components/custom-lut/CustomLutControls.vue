@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import AppIcon from '@/components/AppIcon.vue';
 import type {
     CanonicalLutParameters,
     LutParameterDefinition,
@@ -87,15 +88,19 @@ function resetGroup(group: string): void {
             class="border-b border-stone-200 pb-5 last:border-b-0 last:pb-0"
         >
             <div class="mb-3 flex items-center justify-between gap-3">
-                <h3 class="text-sm font-semibold text-stone-950">
+                <h3
+                    class="inline-flex items-center gap-2 text-sm font-semibold text-stone-950"
+                >
+                    <AppIcon name="sliders" class="size-4 text-teal-800" />
                     {{ group }}
                 </h3>
                 <button
                     type="button"
-                    class="rounded-md border border-stone-300 px-2 py-1 text-xs font-semibold text-stone-700 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:text-stone-400"
+                    class="inline-flex items-center gap-1.5 rounded-md border border-stone-300 px-2 py-1 text-xs font-semibold text-stone-700 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:text-stone-400"
                     :disabled="disabled"
                     @click="resetGroup(group)"
                 >
+                    <AppIcon name="reset" class="size-3.5" />
                     Reset section
                 </button>
             </div>
@@ -142,10 +147,11 @@ function resetGroup(group: string): void {
                         />
                         <button
                             type="button"
-                            class="rounded-md border border-stone-300 px-2 py-1 text-xs font-semibold text-stone-700 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:text-stone-400"
+                            class="inline-flex items-center gap-1.5 rounded-md border border-stone-300 px-2 py-1 text-xs font-semibold text-stone-700 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:text-stone-400"
                             :disabled="disabled"
                             @click="resetValue(definition)"
                         >
+                            <AppIcon name="reset" class="size-3.5" />
                             Reset
                         </button>
                     </div>
@@ -155,10 +161,11 @@ function resetGroup(group: string): void {
 
         <button
             type="button"
-            class="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:text-stone-400"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:text-stone-400"
             :disabled="disabled"
             @click="emit('resetAll')"
         >
+            <AppIcon name="reset" class="size-4" />
             Reset all
         </button>
     </div>

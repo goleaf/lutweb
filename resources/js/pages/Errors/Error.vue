@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
+import AppIcon from '@/components/AppIcon.vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import { home } from '@/routes';
 import { index as shopIndex } from '@/routes/shop';
@@ -60,7 +61,10 @@ const message = computed(() => {
             class="mx-auto grid min-h-[70vh] w-full max-w-3xl place-items-center px-4 py-16 text-center sm:px-6 lg:px-8"
         >
             <section class="grid gap-6">
-                <p class="text-sm font-semibold tracking-wide text-teal-800">
+                <p
+                    class="inline-flex items-center justify-center gap-2 text-sm font-semibold tracking-wide text-teal-800"
+                >
+                    <AppIcon name="alert-circle" class="size-4" />
                     Error {{ status }}
                 </p>
                 <div class="grid gap-3">
@@ -74,14 +78,16 @@ const message = computed(() => {
                 <div class="flex flex-wrap justify-center gap-3">
                     <Link
                         :href="home()"
-                        class="rounded-md bg-teal-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        class="inline-flex items-center gap-2 rounded-md bg-teal-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                     >
+                        <AppIcon name="home" class="size-4" />
                         Go home
                     </Link>
                     <Link
                         :href="shopIndex()"
-                        class="rounded-md border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-stone-800 hover:border-stone-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        class="inline-flex items-center gap-2 rounded-md border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-stone-800 hover:border-stone-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                     >
+                        <AppIcon name="shop" class="size-4" />
                         Browse LUTs
                     </Link>
                 </div>

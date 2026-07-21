@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
+import AppIcon from '@/components/AppIcon.vue';
 import PaginationLinks from '@/components/storefront/PaginationLinks.vue';
 import ProductGrid from '@/components/storefront/ProductGrid.vue';
 import StorefrontFilterPanel from '@/components/storefront/StorefrontFilters.vue';
+import StorefrontSeoHead from '@/components/storefront/StorefrontSeoHead.vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import { storefrontQuery } from '@/lib/storefront';
 import { show as categoryShow } from '@/routes/categories';
@@ -62,59 +64,32 @@ function resetFilters(): void {
 
 <template>
     <PublicLayout>
-        <Head :title="seo.title">
-            <meta
-                head-key="description"
-                name="description"
-                :content="seo.description"
-            />
-            <meta
-                v-if="seo.robots"
-                head-key="robots"
-                name="robots"
-                :content="seo.robots"
-            />
-            <link
-                head-key="canonical"
-                rel="canonical"
-                :href="seo.canonical_url"
-            />
-            <meta
-                head-key="og:title"
-                property="og:title"
-                :content="seo.og_title ?? seo.title"
-            />
-            <meta
-                head-key="og:description"
-                property="og:description"
-                :content="seo.og_description ?? seo.description"
-            />
-            <meta
-                head-key="og:type"
-                property="og:type"
-                :content="seo.og_type ?? 'website'"
-            />
-            <meta
-                head-key="twitter:card"
-                name="twitter:card"
-                :content="seo.twitter_card ?? 'summary'"
-            />
-        </Head>
+        <StorefrontSeoHead :seo="seo" />
 
         <section class="border-b border-stone-200 bg-white">
             <div class="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
                 <nav aria-label="Breadcrumbs" class="text-sm text-stone-600">
                     <Link
                         :href="shopIndex()"
-                        class="rounded-sm underline-offset-4 hover:text-teal-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
+                        class="inline-flex items-center gap-1.5 rounded-sm underline-offset-4 hover:text-teal-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
                     >
+                        <AppIcon name="shop" class="size-3.5" />
                         Shop
                     </Link>
-                    <span aria-hidden="true" class="mx-2">/</span>
+                    <AppIcon
+                        name="chevron-right"
+                        class="mx-2 inline size-3.5 text-stone-400"
+                        aria-hidden="true"
+                    />
                     <span>{{ category.name }}</span>
                 </nav>
 
-                <p class="mt-6 text-sm font-semibold text-teal-800">Category</p>
+                <p
+                    class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-teal-800"
+                >
+                    <AppIcon name="tag" class="size-4" />
+                    Category
+                </p>
                 <h1 class="mt-3 text-3xl font-semibold text-stone-950">
                     {{ category.name }} LUTs
                 </h1>
@@ -124,13 +99,20 @@ function resetFilters(): void {
                 >
                     {{ category.description }}
                 </p>
-                <p class="mt-3 text-sm text-stone-600">
+                <p
+                    class="mt-3 inline-flex items-center gap-2 text-sm text-stone-600"
+                >
+                    <AppIcon name="package" class="size-4 text-teal-800" />
                     {{ category.products_count ?? 0 }} published product{{
                         category.products_count === 1 ? '' : 's'
                     }}
                     in this category.
                 </p>
-                <p class="mt-2 text-sm text-stone-600" aria-live="polite">
+                <p
+                    class="mt-2 inline-flex items-center gap-2 text-sm text-stone-600"
+                    aria-live="polite"
+                >
+                    <AppIcon name="search" class="size-4 text-teal-800" />
                     {{ resultCount }} result{{ resultCount === 1 ? '' : 's' }}
                     shown with the current filters.
                 </p>
@@ -153,13 +135,17 @@ function resetFilters(): void {
 
             <div class="grid gap-6">
                 <div class="flex flex-wrap items-center justify-between gap-3">
-                    <h2 class="text-lg font-semibold text-stone-950">
+                    <h2
+                        class="inline-flex items-center gap-2 text-lg font-semibold text-stone-950"
+                    >
+                        <AppIcon name="tag" class="size-5 text-teal-800" />
                         {{ category.name }} catalog
                     </h2>
                     <Link
                         :href="shopIndex()"
-                        class="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-semibold text-stone-800 hover:border-stone-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        class="inline-flex items-center gap-2 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-semibold text-stone-800 hover:border-stone-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                     >
+                        <AppIcon name="shop" class="size-4" />
                         Full shop
                     </Link>
                 </div>

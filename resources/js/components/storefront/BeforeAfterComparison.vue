@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 
+import AppIcon from '@/components/AppIcon.vue';
 import ResponsivePicture from '@/components/storefront/ResponsivePicture.vue';
 import type { PublicProductExample } from '@/types/storefront';
 
@@ -47,7 +48,10 @@ function restoreResult(): void {
     <section class="rounded-lg border border-stone-200 bg-white p-4">
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
-                <h3 class="text-base font-semibold text-stone-950">
+                <h3
+                    class="inline-flex items-center gap-2 text-base font-semibold text-stone-950"
+                >
+                    <AppIcon name="image" class="size-4 text-teal-800" />
                     {{ example.title ?? 'Before and after' }}
                 </h3>
                 <p class="mt-1 text-sm text-stone-600">
@@ -70,7 +74,10 @@ function restoreResult(): void {
                     "
                     @click="mode = 'slider'"
                 >
-                    Slider
+                    <span class="inline-flex items-center gap-1.5">
+                        <AppIcon name="sliders" class="size-3.5" />
+                        Slider
+                    </span>
                 </button>
                 <button
                     type="button"
@@ -82,7 +89,10 @@ function restoreResult(): void {
                     "
                     @click="mode = 'hold'"
                 >
-                    Hold
+                    <span class="inline-flex items-center gap-1.5">
+                        <AppIcon name="image" class="size-3.5" />
+                        Hold
+                    </span>
                 </button>
                 <button
                     type="button"
@@ -94,7 +104,10 @@ function restoreResult(): void {
                     "
                     @click="mode = 'side'"
                 >
-                    Side by side
+                    <span class="inline-flex items-center gap-1.5">
+                        <AppIcon name="layers" class="size-3.5" />
+                        Side by side
+                    </span>
                 </button>
             </div>
         </div>
@@ -103,7 +116,10 @@ function restoreResult(): void {
             v-if="hasFailure"
             class="mt-4 rounded-md bg-amber-50 p-3 text-sm text-amber-900"
         >
-            This comparison image could not be loaded.
+            <span class="inline-flex items-start gap-2">
+                <AppIcon name="alert-circle" class="mt-0.5 size-4 shrink-0" />
+                <span>This comparison image could not be loaded.</span>
+            </span>
         </div>
 
         <div v-else class="mt-4">
@@ -173,7 +189,7 @@ function restoreResult(): void {
                 </div>
                 <button
                     type="button"
-                    class="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-semibold text-stone-800 hover:border-stone-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                    class="inline-flex items-center gap-2 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-semibold text-stone-800 hover:border-stone-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                     @pointerdown="revealOriginal"
                     @pointerup="restoreResult"
                     @pointercancel="restoreResult"
@@ -184,6 +200,7 @@ function restoreResult(): void {
                     @keyup.enter.prevent="restoreResult"
                     @blur="restoreResult"
                 >
+                    <AppIcon name="image" class="size-4" />
                     Press and hold to show original
                 </button>
             </div>

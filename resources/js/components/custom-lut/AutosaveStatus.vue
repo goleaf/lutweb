@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppIcon from '@/components/AppIcon.vue';
 import type { WizardAutosaveState } from '@/types/lut-wizard';
 
 defineProps<{
@@ -13,11 +14,19 @@ const labels: Record<WizardAutosaveState, string> = {
     failed: 'Save failed',
     conflict: 'Updated in another tab',
 };
+
+const icons = {
+    saved: 'check-circle',
+    unsaved: 'clock',
+    saving: 'refresh',
+    failed: 'alert-circle',
+    conflict: 'alert-circle',
+} as const;
 </script>
 
 <template>
     <p
-        class="rounded-md border px-3 py-1.5 text-xs font-semibold"
+        class="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-semibold"
         :class="{
             'border-emerald-200 bg-emerald-50 text-emerald-800':
                 state === 'saved',
@@ -28,6 +37,7 @@ const labels: Record<WizardAutosaveState, string> = {
         }"
         aria-live="polite"
     >
+        <AppIcon :name="icons[state]" class="size-3.5" />
         {{ labels[state] }}
         <span v-if="state === 'saved' && savedAt" class="font-normal">
             · {{ new Date(savedAt).toLocaleTimeString() }}

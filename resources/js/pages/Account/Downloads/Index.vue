@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-
+import AccountPagination from '@/components/account/AccountPagination.vue';
+import EmptyState from '@/components/ui/EmptyState.vue';
+import SectionHeading from '@/components/ui/SectionHeading.vue';
 import AccountLayout from '@/layouts/AccountLayout.vue';
 
 type DownloadRow = {
@@ -33,20 +34,18 @@ defineProps<{
 <template>
     <AccountLayout title="Downloads">
         <section class="space-y-5">
-            <div>
-                <p class="text-sm font-medium text-teal-800">History</p>
-                <h1 class="mt-1 text-2xl font-semibold text-stone-950">
-                    Downloads
-                </h1>
-            </div>
+            <SectionHeading
+                as="h1"
+                icon="download"
+                eyebrow="History"
+                title="Downloads"
+            />
 
             <div
+                v-if="downloads.data.length > 0"
                 class="overflow-hidden rounded-lg border border-stone-200 bg-white"
             >
-                <table
-                    v-if="downloads.data.length > 0"
-                    class="w-full text-left text-sm"
-                >
+                <table class="w-full text-left text-sm">
                     <thead
                         class="border-b border-stone-200 bg-stone-50 text-xs font-semibold text-stone-600 uppercase"
                     >
@@ -81,35 +80,20 @@ defineProps<{
                         </tr>
                     </tbody>
                 </table>
-
-                <div v-else class="p-6 text-sm text-stone-600">
-                    Download events will appear here.
-                </div>
             </div>
 
-            <nav
-                v-if="
-                    downloads.meta.prev_page_url || downloads.meta.next_page_url
-                "
-                aria-label="Downloads pagination"
-                class="flex justify-between gap-3"
-            >
-                <Link
-                    v-if="downloads.meta.prev_page_url"
-                    :href="downloads.meta.prev_page_url"
-                    class="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
-                >
-                    Previous
-                </Link>
-                <span v-else />
-                <Link
-                    v-if="downloads.meta.next_page_url"
-                    :href="downloads.meta.next_page_url"
-                    class="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
-                >
-                    Next
-                </Link>
-            </nav>
+            <EmptyState
+                v-else
+                icon="download"
+                title="No download events yet."
+                message="Download events will appear here."
+            />
+
+            <AccountPagination
+                :prev-page-url="downloads.meta.prev_page_url"
+                :next-page-url="downloads.meta.next_page_url"
+                label="Downloads pagination"
+            />
         </section>
     </AccountLayout>
 </template>

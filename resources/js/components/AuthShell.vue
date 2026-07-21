@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 
+import AppIcon from '@/components/AppIcon.vue';
 import { home } from '@/routes';
 
 defineProps<{
@@ -23,13 +24,22 @@ defineProps<{
             <div class="mb-8">
                 <Link
                     :href="home()"
-                    class="inline-flex items-center rounded-sm text-sm font-semibold tracking-wide text-stone-950 underline-offset-4 hover:text-teal-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
+                    class="inline-flex items-center gap-2 rounded-sm text-sm font-semibold tracking-wide text-stone-950 underline-offset-4 hover:text-teal-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
                 >
+                    <AppIcon name="palette" class="size-4 text-teal-800" />
                     LUT Web
                 </Link>
-                <h1 class="mt-8 text-3xl font-semibold text-stone-950">
-                    {{ title }}
-                </h1>
+                <div class="mt-8 flex items-center gap-3">
+                    <span
+                        class="grid size-10 shrink-0 place-items-center rounded-md bg-stone-950 text-white"
+                        aria-hidden="true"
+                    >
+                        <AppIcon name="lock" class="size-5" />
+                    </span>
+                    <h1 class="text-3xl font-semibold text-stone-950">
+                        {{ title }}
+                    </h1>
+                </div>
                 <p class="mt-3 text-sm leading-6 text-stone-600">
                     {{ description }}
                 </p>

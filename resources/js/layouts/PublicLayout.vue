@@ -2,6 +2,7 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
+import AppIcon from '@/components/AppIcon.vue';
 import { dashboard, home, login, privacy, register, terms } from '@/routes';
 import { index as shopIndex } from '@/routes/shop';
 import type { Auth } from '@/types/auth';
@@ -36,9 +37,9 @@ function isCurrent(path: string): boolean {
                 >
                     <span
                         aria-hidden="true"
-                        class="grid size-9 place-items-center rounded-md bg-stone-950 text-sm font-semibold text-white"
+                        class="grid size-9 place-items-center rounded-md bg-stone-950 text-white"
                     >
-                        LW
+                        <AppIcon name="palette" class="size-5" />
                     </span>
                     <span class="text-sm font-semibold tracking-wide">
                         LUT Web
@@ -51,8 +52,9 @@ function isCurrent(path: string): boolean {
                         :aria-current="
                             isCurrent(home.url()) ? 'page' : undefined
                         "
-                        class="rounded-md px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 aria-[current=page]:bg-stone-100 aria-[current=page]:text-stone-950"
+                        class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 aria-[current=page]:bg-stone-100 aria-[current=page]:text-stone-950"
                     >
+                        <AppIcon name="home" class="size-4" />
                         Home
                     </Link>
                     <Link
@@ -60,8 +62,9 @@ function isCurrent(path: string): boolean {
                         :aria-current="
                             isCurrent(shopIndex.url()) ? 'page' : undefined
                         "
-                        class="rounded-md px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 aria-[current=page]:bg-stone-100 aria-[current=page]:text-stone-950"
+                        class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 aria-[current=page]:bg-stone-100 aria-[current=page]:text-stone-950"
                     >
+                        <AppIcon name="shop" class="size-4" />
                         Shop
                     </Link>
                     <Link
@@ -69,8 +72,9 @@ function isCurrent(path: string): boolean {
                         :aria-current="
                             isCurrent('/custom-lut') ? 'page' : undefined
                         "
-                        class="rounded-md px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 aria-[current=page]:bg-stone-100 aria-[current=page]:text-stone-950"
+                        class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 aria-[current=page]:bg-stone-100 aria-[current=page]:text-stone-950"
                     >
+                        <AppIcon name="wand" class="size-4" />
                         Create Your LUT
                     </Link>
                 </div>
@@ -79,21 +83,24 @@ function isCurrent(path: string): boolean {
                     <Link
                         v-if="user"
                         :href="dashboard()"
-                        class="rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        class="inline-flex items-center gap-2 rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                     >
+                        <AppIcon name="dashboard" class="size-4" />
                         Dashboard
                     </Link>
                     <template v-else>
                         <Link
                             :href="login()"
-                            class="rounded-md px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                            class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                         >
+                            <AppIcon name="login" class="size-4" />
                             Login
                         </Link>
                         <Link
                             :href="register()"
-                            class="rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                            class="inline-flex items-center gap-2 rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                         >
+                            <AppIcon name="register" class="size-4" />
                             Register
                         </Link>
                     </template>
@@ -107,34 +114,10 @@ function isCurrent(path: string): boolean {
                     aria-label="Toggle navigation"
                     @click="mobileMenuOpen = !mobileMenuOpen"
                 >
-                    <svg
-                        v-if="!mobileMenuOpen"
-                        aria-hidden="true"
+                    <AppIcon
+                        :name="mobileMenuOpen ? 'close' : 'menu'"
                         class="size-5"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                    >
-                        <path
-                            d="M3 5h14M3 10h14M3 15h14"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                            stroke-linecap="round"
-                        />
-                    </svg>
-                    <svg
-                        v-else
-                        aria-hidden="true"
-                        class="size-5"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                    >
-                        <path
-                            d="m5 5 10 10M15 5 5 15"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                            stroke-linecap="round"
-                        />
-                    </svg>
+                    />
                 </button>
             </nav>
 
@@ -146,46 +129,52 @@ function isCurrent(path: string): boolean {
                 <div class="mx-auto grid w-full max-w-7xl gap-2">
                     <Link
                         :href="home()"
-                        class="rounded-md px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                         @click="mobileMenuOpen = false"
                     >
+                        <AppIcon name="home" class="size-4" />
                         Home
                     </Link>
                     <Link
                         :href="shopIndex()"
-                        class="rounded-md px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                         @click="mobileMenuOpen = false"
                     >
+                        <AppIcon name="shop" class="size-4" />
                         Shop
                     </Link>
                     <Link
                         href="/custom-lut"
-                        class="rounded-md px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                         @click="mobileMenuOpen = false"
                     >
+                        <AppIcon name="wand" class="size-4" />
                         Create Your LUT
                     </Link>
                     <Link
                         v-if="user"
                         :href="dashboard()"
-                        class="rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        class="inline-flex items-center gap-2 rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                         @click="mobileMenuOpen = false"
                     >
+                        <AppIcon name="dashboard" class="size-4" />
                         Dashboard
                     </Link>
                     <template v-else>
                         <Link
                             :href="login()"
-                            class="rounded-md px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                            class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                             @click="mobileMenuOpen = false"
                         >
+                            <AppIcon name="login" class="size-4" />
                             Login
                         </Link>
                         <Link
                             :href="register()"
-                            class="rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                            class="inline-flex items-center gap-2 rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                             @click="mobileMenuOpen = false"
                         >
+                            <AppIcon name="register" class="size-4" />
                             Register
                         </Link>
                     </template>
@@ -202,7 +191,12 @@ function isCurrent(path: string): boolean {
                 class="mx-auto grid w-full max-w-7xl gap-6 px-4 py-8 text-sm text-stone-600 sm:px-6 md:grid-cols-[1fr_auto] lg:px-8"
             >
                 <div>
-                    <p class="font-semibold text-stone-950">LUT Web</p>
+                    <p
+                        class="inline-flex items-center gap-2 font-semibold text-stone-950"
+                    >
+                        <AppIcon name="palette" class="size-4 text-teal-800" />
+                        LUT Web
+                    </p>
                     <p class="mt-2 max-w-xl leading-6">
                         A developing English-language marketplace for
                         downloadable LUT files.
@@ -214,14 +208,16 @@ function isCurrent(path: string): boolean {
                 >
                     <Link
                         :href="terms()"
-                        class="rounded-sm underline-offset-4 hover:text-stone-950 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
+                        class="inline-flex items-center gap-1.5 rounded-sm underline-offset-4 hover:text-stone-950 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
                     >
+                        <AppIcon name="receipt" class="size-3.5" />
                         Terms
                     </Link>
                     <Link
                         :href="privacy()"
-                        class="rounded-sm underline-offset-4 hover:text-stone-950 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
+                        class="inline-flex items-center gap-1.5 rounded-sm underline-offset-4 hover:text-stone-950 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
                     >
+                        <AppIcon name="shield" class="size-3.5" />
                         Privacy
                     </Link>
                     <span>&copy; {{ currentYear }} LUT Web</span>

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-
+import AccountPagination from '@/components/account/AccountPagination.vue';
+import AppIcon from '@/components/AppIcon.vue';
+import EmptyState from '@/components/ui/EmptyState.vue';
+import SectionHeading from '@/components/ui/SectionHeading.vue';
 import AccountLayout from '@/layouts/AccountLayout.vue';
 
 type CatalogLut = {
@@ -34,12 +36,12 @@ defineProps<{
 <template>
     <AccountLayout title="My LUTs">
         <section class="space-y-5">
-            <div>
-                <p class="text-sm font-medium text-teal-800">Library</p>
-                <h1 class="mt-1 text-2xl font-semibold text-stone-950">
-                    My LUTs
-                </h1>
-            </div>
+            <SectionHeading
+                as="h1"
+                icon="folder"
+                eyebrow="Library"
+                title="My LUTs"
+            />
 
             <div v-if="entitlements.data.length > 0" class="grid gap-3">
                 <article
@@ -59,9 +61,14 @@ defineProps<{
                             />
                             <span
                                 v-else
-                                class="size-16 rounded-md bg-stone-200"
+                                class="grid size-16 shrink-0 place-items-center rounded-md bg-stone-200"
                                 aria-hidden="true"
-                            />
+                            >
+                                <AppIcon
+                                    name="image"
+                                    class="size-6 text-stone-500"
+                                />
+                            </span>
                             <div class="min-w-0">
                                 <h2
                                     class="truncate text-base font-semibold text-stone-950"
@@ -79,51 +86,34 @@ defineProps<{
                         <a
                             v-if="entitlement.download_url"
                             :href="entitlement.download_url"
-                            class="rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                            class="inline-flex items-center gap-2 rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                         >
+                            <AppIcon name="download" class="size-4" />
                             Download ZIP
                         </a>
                         <span
                             v-else
-                            class="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-600"
+                            class="inline-flex items-center gap-2 rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-600"
                         >
+                            <AppIcon name="alert-circle" class="size-4" />
                             {{ entitlement.message ?? 'Unavailable' }}
                         </span>
                     </div>
                 </article>
             </div>
 
-            <div
+            <EmptyState
                 v-else
-                class="rounded-lg border border-stone-200 bg-white p-6 text-sm text-stone-600"
-            >
-                Ready-made LUT purchases will appear here.
-            </div>
+                icon="folder"
+                title="No LUTs in your library yet."
+                message="Ready-made LUT purchases will appear here."
+            />
 
-            <nav
-                v-if="
-                    entitlements.meta.prev_page_url ||
-                    entitlements.meta.next_page_url
-                "
-                aria-label="My LUTs pagination"
-                class="flex justify-between gap-3"
-            >
-                <Link
-                    v-if="entitlements.meta.prev_page_url"
-                    :href="entitlements.meta.prev_page_url"
-                    class="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
-                >
-                    Previous
-                </Link>
-                <span v-else />
-                <Link
-                    v-if="entitlements.meta.next_page_url"
-                    :href="entitlements.meta.next_page_url"
-                    class="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
-                >
-                    Next
-                </Link>
-            </nav>
+            <AccountPagination
+                :prev-page-url="entitlements.meta.prev_page_url"
+                :next-page-url="entitlements.meta.next_page_url"
+                label="My LUTs pagination"
+            />
         </section>
     </AccountLayout>
 </template>

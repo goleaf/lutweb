@@ -2,6 +2,7 @@
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
+import AppIcon from '@/components/AppIcon.vue';
 import InputError from '@/components/InputError.vue';
 import BeforeAfterComparison from '@/components/storefront/BeforeAfterComparison.vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
@@ -175,7 +176,10 @@ onBeforeUnmount(() => {
                 class="mx-auto grid w-full max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_22rem] lg:px-8"
             >
                 <div>
-                    <p class="text-sm font-semibold text-teal-800">
+                    <p
+                        class="inline-flex items-center gap-2 text-sm font-semibold text-teal-800"
+                    >
+                        <AppIcon name="image" class="size-4" />
                         Photo tester
                     </p>
                     <h1 class="mt-2 text-3xl font-semibold text-stone-950">
@@ -210,8 +214,9 @@ onBeforeUnmount(() => {
                         </p>
                         <Link
                             :href="product.url"
-                            class="mt-2 inline-flex rounded-sm text-sm font-medium text-teal-800 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
+                            class="mt-2 inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-teal-800 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
                         >
+                            <AppIcon name="arrow-left" class="size-3.5" />
                             Back to LUT
                         </Link>
                     </div>
@@ -232,7 +237,10 @@ onBeforeUnmount(() => {
                 @submit.prevent="submit"
             >
                 <div>
-                    <h2 class="text-xl font-semibold text-stone-950">
+                    <h2
+                        class="inline-flex items-center gap-2 text-xl font-semibold text-stone-950"
+                    >
+                        <AppIcon name="upload" class="size-5 text-teal-800" />
                         Upload a photo to preview this LUT.
                     </h2>
                     <p class="mt-2 text-sm leading-6 text-stone-600">
@@ -267,15 +275,20 @@ onBeforeUnmount(() => {
                         alt="Selected photo preview"
                         class="mx-auto max-h-64 rounded-md object-contain"
                     />
-                    <p v-else class="text-sm text-stone-600">
-                        Drop one image here, or choose a file.
+                    <p
+                        v-else
+                        class="grid justify-items-center gap-2 text-sm text-stone-600"
+                    >
+                        <AppIcon name="upload" class="size-8 text-stone-400" />
+                        <span>Drop one image here, or choose a file.</span>
                     </p>
 
                     <button
                         type="button"
-                        class="mx-auto rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-800 hover:border-stone-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        class="mx-auto inline-flex items-center gap-2 rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-800 hover:border-stone-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                         @click="chooseFile"
                     >
+                        <AppIcon name="image" class="size-4" />
                         Choose photo
                     </button>
 
@@ -307,8 +320,9 @@ onBeforeUnmount(() => {
                     <button
                         type="submit"
                         :disabled="form.processing || !form.photo"
-                        class="rounded-md bg-stone-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:bg-stone-400"
+                        class="inline-flex items-center gap-2 rounded-md bg-stone-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:bg-stone-400"
                     >
+                        <AppIcon name="upload" class="size-4" />
                         {{
                             form.processing
                                 ? 'Uploading photo...'
@@ -317,8 +331,9 @@ onBeforeUnmount(() => {
                     </button>
                     <Link
                         :href="product.url"
-                        class="rounded-md px-3 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                     >
+                        <AppIcon name="arrow-left" class="size-4" />
                         Back to LUT
                     </Link>
                 </div>
@@ -329,7 +344,10 @@ onBeforeUnmount(() => {
                 class="rounded-lg border border-stone-200 bg-white p-6"
                 aria-live="polite"
             >
-                <h2 class="text-xl font-semibold text-stone-950">
+                <h2
+                    class="inline-flex items-center gap-2 text-xl font-semibold text-stone-950"
+                >
+                    <AppIcon name="refresh" class="size-5 text-teal-800" />
                     Processing your preview
                 </h2>
                 <p class="mt-2 text-sm leading-6 text-stone-600">
@@ -351,8 +369,12 @@ onBeforeUnmount(() => {
                 <div>
                     <h2
                         id="ready-heading"
-                        class="text-2xl font-semibold text-stone-950"
+                        class="inline-flex items-center gap-2 text-2xl font-semibold text-stone-950"
                     >
+                        <AppIcon
+                            name="check-circle"
+                            class="size-5 text-teal-800"
+                        />
                         Watermarked preview
                     </h2>
                     <p class="mt-2 text-sm leading-6 text-stone-600">
@@ -399,22 +421,25 @@ onBeforeUnmount(() => {
                 <div class="flex flex-wrap gap-3">
                     <Link
                         :href="product.try_url"
-                        class="rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-800 hover:border-stone-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        class="inline-flex items-center gap-2 rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-800 hover:border-stone-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                     >
+                        <AppIcon name="refresh" class="size-4" />
                         Test another photo
                     </Link>
                     <button
                         type="button"
-                        class="rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
+                        class="inline-flex items-center gap-2 rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
                         @click="deleteTest"
                     >
+                        <AppIcon name="trash" class="size-4" />
                         Delete this test
                     </button>
                     <button
                         type="button"
                         disabled
-                        class="rounded-md bg-stone-200 px-4 py-2 text-sm font-semibold text-stone-500"
+                        class="inline-flex items-center gap-2 rounded-md bg-stone-200 px-4 py-2 text-sm font-semibold text-stone-500"
                     >
+                        <AppIcon name="credit-card" class="size-4" />
                         {{ product.is_free ? 'Get Free LUT' : 'Buy Now' }}
                         <span class="ml-2 text-xs text-amber-800">
                             Coming soon
@@ -427,7 +452,10 @@ onBeforeUnmount(() => {
                 v-if="test?.status === 'failed'"
                 class="rounded-lg border border-amber-200 bg-amber-50 p-5"
             >
-                <h2 class="text-xl font-semibold text-amber-950">
+                <h2
+                    class="inline-flex items-center gap-2 text-xl font-semibold text-amber-950"
+                >
+                    <AppIcon name="alert-circle" class="size-5" />
                     Preview failed
                 </h2>
                 <p class="mt-2 text-sm text-amber-900">
@@ -438,9 +466,10 @@ onBeforeUnmount(() => {
                 </p>
                 <button
                     type="button"
-                    class="mt-4 rounded-md border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700"
+                    class="mt-4 inline-flex items-center gap-2 rounded-md border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700"
                     @click="deleteTest"
                 >
+                    <AppIcon name="trash" class="size-4" />
                     Delete this test
                 </button>
             </section>
@@ -449,7 +478,10 @@ onBeforeUnmount(() => {
                 v-if="test?.status === 'expired'"
                 class="rounded-lg border border-stone-200 bg-white p-5"
             >
-                <h2 class="text-xl font-semibold text-stone-950">
+                <h2
+                    class="inline-flex items-center gap-2 text-xl font-semibold text-stone-950"
+                >
+                    <AppIcon name="clock" class="size-5 text-teal-800" />
                     Preview expired
                 </h2>
                 <p class="mt-2 text-sm leading-6 text-stone-600">
@@ -458,9 +490,10 @@ onBeforeUnmount(() => {
                 </p>
                 <button
                     type="button"
-                    class="mt-4 rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                    class="mt-4 inline-flex items-center gap-2 rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                     @click="deleteTest"
                 >
+                    <AppIcon name="trash" class="size-4" />
                     Delete expired test
                 </button>
             </section>

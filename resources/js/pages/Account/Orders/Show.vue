@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 
+import AppIcon from '@/components/AppIcon.vue';
 import AccountLayout from '@/layouts/AccountLayout.vue';
 import type { DigitalOrderItem } from '@/types/commerce';
 
@@ -31,11 +32,15 @@ defineProps<{
             <div>
                 <Link
                     href="/account/orders"
-                    class="rounded-sm text-sm text-stone-600 underline-offset-4 hover:text-teal-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
+                    class="inline-flex items-center gap-1.5 rounded-sm text-sm text-stone-600 underline-offset-4 hover:text-teal-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
                 >
+                    <AppIcon name="arrow-left" class="size-3.5" />
                     Back to orders
                 </Link>
-                <h1 class="mt-3 text-2xl font-semibold text-stone-950">
+                <h1
+                    class="mt-3 inline-flex items-center gap-2 text-2xl font-semibold text-stone-950"
+                >
+                    <AppIcon name="receipt" class="size-5 text-teal-800" />
                     Order {{ order.number }}
                 </h1>
             </div>
@@ -76,7 +81,12 @@ defineProps<{
             </section>
 
             <section class="rounded-lg border border-stone-200 bg-white p-5">
-                <h2 class="text-base font-semibold text-stone-950">Item</h2>
+                <h2
+                    class="inline-flex items-center gap-2 text-base font-semibold text-stone-950"
+                >
+                    <AppIcon name="package" class="size-4 text-teal-800" />
+                    Item
+                </h2>
                 <div v-if="order.item" class="mt-3 text-sm text-stone-700">
                     <p class="font-medium text-stone-950">
                         {{ order.item.name }}

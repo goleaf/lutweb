@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
+import AppIcon from '@/components/AppIcon.vue';
 import PaginationLinks from '@/components/storefront/PaginationLinks.vue';
 import ProductGrid from '@/components/storefront/ProductGrid.vue';
 import StorefrontFilterPanel from '@/components/storefront/StorefrontFilters.vue';
+import StorefrontSeoHead from '@/components/storefront/StorefrontSeoHead.vue';
+import SectionHeading from '@/components/ui/SectionHeading.vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import { storefrontQuery } from '@/lib/storefront';
 import { index as shopIndex } from '@/routes/shop';
@@ -59,56 +62,18 @@ function resetFilters(): void {
 
 <template>
     <PublicLayout>
-        <Head :title="seo.title">
-            <meta
-                head-key="description"
-                name="description"
-                :content="seo.description"
-            />
-            <meta
-                v-if="seo.robots"
-                head-key="robots"
-                name="robots"
-                :content="seo.robots"
-            />
-            <link
-                head-key="canonical"
-                rel="canonical"
-                :href="seo.canonical_url"
-            />
-            <meta
-                head-key="og:title"
-                property="og:title"
-                :content="seo.og_title ?? seo.title"
-            />
-            <meta
-                head-key="og:description"
-                property="og:description"
-                :content="seo.og_description ?? seo.description"
-            />
-            <meta
-                head-key="og:type"
-                property="og:type"
-                :content="seo.og_type ?? 'website'"
-            />
-            <meta
-                head-key="twitter:card"
-                name="twitter:card"
-                :content="seo.twitter_card ?? 'summary'"
-            />
-        </Head>
+        <StorefrontSeoHead :seo="seo" />
 
         <section class="border-b border-stone-200 bg-white">
             <div class="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-                <p class="text-sm font-semibold text-teal-800">Shop</p>
-                <h1 class="mt-3 text-3xl font-semibold text-stone-950">
-                    Browse professional LUTs
-                </h1>
-                <p class="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-                    Filter the published catalog by style, software, type, and
-                    price. Checkout actions are marked coming soon in this
-                    milestone.
-                </p>
+                <SectionHeading
+                    as="h1"
+                    size="page"
+                    icon="shop"
+                    eyebrow="Shop"
+                    title="Browse professional LUTs"
+                    description="Filter the published catalog by style, software, type, and price. Checkout actions are marked coming soon in this milestone."
+                />
             </div>
         </section>
 
@@ -130,12 +95,19 @@ function resetFilters(): void {
                     class="flex flex-wrap items-center justify-between gap-3"
                     aria-live="polite"
                 >
-                    <h2 class="text-lg font-semibold text-stone-950">
+                    <h2
+                        class="inline-flex items-center gap-2 text-lg font-semibold text-stone-950"
+                    >
+                        <AppIcon name="package" class="size-5 text-teal-800" />
                         {{ resultCount }} result{{
                             resultCount === 1 ? '' : 's'
                         }}
                     </h2>
-                    <p v-if="filters.q" class="text-sm text-stone-600">
+                    <p
+                        v-if="filters.q"
+                        class="inline-flex items-center gap-2 text-sm text-stone-600"
+                    >
+                        <AppIcon name="search" class="size-4" />
                         Search: &ldquo;{{ filters.q }}&rdquo;
                     </p>
                 </div>

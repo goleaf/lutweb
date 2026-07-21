@@ -2,6 +2,7 @@
 import { Head, router } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
+import AppIcon from '@/components/AppIcon.vue';
 import AutosaveStatus from '@/components/custom-lut/AutosaveStatus.vue';
 import CustomLutControls from '@/components/custom-lut/CustomLutControls.vue';
 import CustomLutPhotoStrip from '@/components/custom-lut/CustomLutPhotoStrip.vue';
@@ -58,6 +59,13 @@ const sections: WizardSection[] = [
     'fine-tune',
     'review',
 ];
+const sectionIcons = {
+    photos: 'image',
+    style: 'palette',
+    variations: 'sparkles',
+    'fine-tune': 'sliders',
+    review: 'check-circle',
+} as const;
 
 const activeParameters = computed(
     () => previewVariant.value?.parameters ?? parameters.value,
@@ -473,9 +481,18 @@ onBeforeUnmount(() => {
                             scheduleSave();
                         "
                     />
-                    <p class="mt-1 text-sm text-stone-600">
-                        Draft expires
-                        {{ new Date(project.expires_at).toLocaleDateString() }}
+                    <p
+                        class="mt-1 inline-flex items-center gap-2 text-sm text-stone-600"
+                    >
+                        <AppIcon name="clock" class="size-4 text-teal-800" />
+                        <span>
+                            Draft expires
+                            {{
+                                new Date(
+                                    project.expires_at,
+                                ).toLocaleDateString()
+                            }}
+                        </span>
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
@@ -485,25 +502,28 @@ onBeforeUnmount(() => {
                     />
                     <button
                         type="button"
-                        class="rounded-md border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:text-stone-400"
+                        class="inline-flex items-center gap-2 rounded-md border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:text-stone-400"
                         :disabled="undoStack.length === 0"
                         @click="undo"
                     >
+                        <AppIcon name="undo" class="size-4" />
                         Undo
                     </button>
                     <button
                         type="button"
-                        class="rounded-md border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:text-stone-400"
+                        class="inline-flex items-center gap-2 rounded-md border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:text-stone-400"
                         :disabled="redoStack.length === 0"
                         @click="redo"
                     >
+                        <AppIcon name="redo" class="size-4" />
                         Redo
                     </button>
                     <button
                         type="button"
-                        class="rounded-md border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        class="inline-flex items-center gap-2 rounded-md border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                         @click="resetAll"
                     >
+                        <AppIcon name="reset" class="size-4" />
                         Reset
                     </button>
                 </div>
@@ -547,7 +567,7 @@ onBeforeUnmount(() => {
                         v-for="item in sections"
                         :key="item"
                         type="button"
-                        class="rounded-md border px-3 py-2 font-semibold capitalize focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        class="inline-flex items-center justify-center gap-2 rounded-md border px-3 py-2 font-semibold capitalize focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                         :class="
                             section === item
                                 ? 'border-stone-950 bg-stone-950 text-white'
@@ -555,6 +575,7 @@ onBeforeUnmount(() => {
                         "
                         @click="section = item"
                     >
+                        <AppIcon :name="sectionIcons[item]" class="size-4" />
                         {{ item.replace('-', ' ') }}
                     </button>
                 </nav>
@@ -597,7 +618,13 @@ onBeforeUnmount(() => {
 
                     <div v-else-if="section === 'review'" class="space-y-4">
                         <div>
-                            <h2 class="text-sm font-semibold text-stone-950">
+                            <h2
+                                class="inline-flex items-center gap-2 text-sm font-semibold text-stone-950"
+                            >
+                                <AppIcon
+                                    name="check-circle"
+                                    class="size-4 text-teal-800"
+                                />
                                 Review
                             </h2>
                             <p class="mt-1 text-sm text-stone-600">
@@ -647,14 +674,21 @@ onBeforeUnmount(() => {
                         <button
                             type="button"
                             disabled
-                            class="w-full rounded-md border border-stone-300 bg-stone-100 px-3 py-2.5 text-sm font-semibold text-stone-500"
+                            class="inline-flex w-full items-center justify-center gap-2 rounded-md border border-stone-300 bg-stone-100 px-3 py-2.5 text-sm font-semibold text-stone-500"
                         >
-                            Buy and Download — Coming soon
+                            <AppIcon name="download" class="size-4" />
+                            Buy and Download - Coming soon
                         </button>
                     </div>
 
                     <div v-else class="space-y-3">
-                        <h2 class="text-sm font-semibold text-stone-950">
+                        <h2
+                            class="inline-flex items-center gap-2 text-sm font-semibold text-stone-950"
+                        >
+                            <AppIcon
+                                name="image"
+                                class="size-4 text-teal-800"
+                            />
                             Photos
                         </h2>
                         <p class="text-sm leading-6 text-stone-600">

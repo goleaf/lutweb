@@ -2,6 +2,7 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
+import AppIcon from '@/components/AppIcon.vue';
 import { logout } from '@/routes';
 import { index as downloadsIndex } from '@/routes/account/downloads';
 import { index as lutsIndex } from '@/routes/account/luts';
@@ -17,11 +18,11 @@ const user = computed(() => page.props.auth.user);
 const logoutForm = useForm({});
 
 const links = [
-    { label: 'My LUTs', href: lutsIndex().url },
-    { label: 'Custom LUTs', href: '/account/custom-luts' },
-    { label: 'Orders', href: ordersIndex().url },
-    { label: 'Downloads', href: downloadsIndex().url },
-];
+    { label: 'My LUTs', href: lutsIndex().url, icon: 'folder' },
+    { label: 'Custom LUTs', href: '/account/custom-luts', icon: 'wand' },
+    { label: 'Orders', href: ordersIndex().url, icon: 'receipt' },
+    { label: 'Downloads', href: downloadsIndex().url, icon: 'download' },
+] as const;
 
 function current(path: string): boolean {
     return page.url === path || page.url.startsWith(`${path}?`);
@@ -45,8 +46,9 @@ function submitLogout(): void {
                 <div>
                     <Link
                         href="/"
-                        class="rounded-sm text-sm font-semibold tracking-wide text-stone-950 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
+                        class="inline-flex items-center gap-2 rounded-sm text-sm font-semibold tracking-wide text-stone-950 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
                     >
+                        <AppIcon name="palette" class="size-4 text-teal-800" />
                         LUT Web
                     </Link>
                     <p class="text-xs text-stone-500">
@@ -58,8 +60,9 @@ function submitLogout(): void {
                     <button
                         type="submit"
                         :disabled="logoutForm.processing"
-                        class="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:text-stone-400"
+                        class="inline-flex items-center gap-2 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:text-stone-400"
                     >
+                        <AppIcon name="logout" class="size-4" />
                         Log out
                     </button>
                 </form>
@@ -78,14 +81,27 @@ function submitLogout(): void {
                         :key="link.href"
                         :href="link.href"
                         :aria-current="current(link.href) ? 'page' : undefined"
-                        class="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm font-medium text-stone-700 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 aria-[current=page]:bg-stone-950 aria-[current=page]:text-white"
+                        class="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-stone-700 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 aria-[current=page]:bg-stone-950 aria-[current=page]:text-white"
                     >
-                        {{ link.label }}
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                            <AppIcon
+                                :name="link.icon"
+                                class="size-4 shrink-0"
+                            />
+                            <span class="truncate">{{ link.label }}</span>
+                        </span>
+                        <AppIcon
+                            name="chevron-right"
+                            class="size-4 shrink-0 opacity-60"
+                        />
                     </Link>
                     <span
-                        class="flex w-full items-center justify-between rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-left text-sm text-stone-500"
+                        class="flex w-full items-center justify-between gap-3 rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-left text-sm text-stone-500"
                     >
-                        Profile
+                        <span class="inline-flex items-center gap-2">
+                            <AppIcon name="user" class="size-4" />
+                            Profile
+                        </span>
                         <span class="text-xs font-medium text-amber-700">
                             Coming soon
                         </span>

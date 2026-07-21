@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import AppIcon from '@/components/AppIcon.vue';
 import type { WizardProjectPhoto } from '@/types/lut-wizard';
 
 const props = defineProps<{
@@ -87,7 +88,12 @@ async function remove(photo: WizardProjectPhoto): Promise<void> {
 <template>
     <section class="space-y-3">
         <div>
-            <h2 class="text-sm font-semibold text-stone-950">Photos</h2>
+            <h2
+                class="inline-flex items-center gap-2 text-sm font-semibold text-stone-950"
+            >
+                <AppIcon name="image" class="size-4 text-teal-800" />
+                Photos
+            </h2>
             <p class="mt-1 text-sm leading-6 text-stone-600">
                 Upload up to three photos to test the same LUT across different
                 scenes. Photos and previews are automatically deleted one hour
@@ -127,15 +133,27 @@ async function remove(photo: WizardProjectPhoto): Promise<void> {
                         />
                         <div
                             v-else
-                            class="grid aspect-[4/3] place-items-center rounded-md bg-stone-100 text-sm text-stone-600"
+                            class="grid aspect-[4/3] place-items-center gap-2 rounded-md bg-stone-100 p-3 text-center text-sm text-stone-600"
                         >
-                            {{
-                                item.photo.status === 'expired'
-                                    ? 'Preview expired'
-                                    : item.photo.status === 'failed'
-                                      ? 'Failed'
-                                      : 'Processing'
-                            }}
+                            <AppIcon
+                                :name="
+                                    item.photo.status === 'expired'
+                                        ? 'clock'
+                                        : item.photo.status === 'failed'
+                                          ? 'alert-circle'
+                                          : 'refresh'
+                                "
+                                class="size-6 text-stone-400"
+                            />
+                            <span>
+                                {{
+                                    item.photo.status === 'expired'
+                                        ? 'Preview expired'
+                                        : item.photo.status === 'failed'
+                                          ? 'Failed'
+                                          : 'Processing'
+                                }}
+                            </span>
                         </div>
                         <span
                             class="mt-2 block truncate text-xs font-medium text-stone-700"
@@ -149,9 +167,10 @@ async function remove(photo: WizardProjectPhoto): Promise<void> {
                         }}</span>
                         <button
                             type="button"
-                            class="rounded-md border border-stone-300 px-2 py-1 text-xs font-semibold text-stone-700 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                            class="inline-flex items-center gap-1.5 rounded-md border border-stone-300 px-2 py-1 text-xs font-semibold text-stone-700 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                             @click="remove(item.photo)"
                         >
+                            <AppIcon name="trash" class="size-3.5" />
                             Remove
                         </button>
                     </div>
@@ -166,7 +185,13 @@ async function remove(photo: WizardProjectPhoto): Promise<void> {
                     <label
                         class="grid min-h-28 cursor-pointer place-items-center rounded-md border border-dashed border-stone-300 bg-stone-50 p-3 text-center text-sm font-semibold text-stone-700 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-teal-700 hover:bg-white"
                     >
-                        <span>Upload photo {{ item.slot }}</span>
+                        <span class="grid justify-items-center gap-2">
+                            <AppIcon
+                                name="upload"
+                                class="size-6 text-stone-400"
+                            />
+                            <span>Upload photo {{ item.slot }}</span>
+                        </span>
                         <input
                             type="file"
                             accept="image/jpeg,image/png,image/webp"

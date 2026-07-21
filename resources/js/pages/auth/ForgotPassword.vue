@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
+import AppIcon from '@/components/AppIcon.vue';
 import AuthShell from '@/components/AuthShell.vue';
 import InputError from '@/components/InputError.vue';
 import { login } from '@/routes';
@@ -28,9 +29,10 @@ function submit(): void {
     >
         <div
             v-if="status"
-            class="mb-5 rounded-md border border-teal-200 bg-teal-50 px-3 py-2 text-sm font-medium text-teal-900"
+            class="mb-5 flex items-start gap-2 rounded-md border border-teal-200 bg-teal-50 px-3 py-2 text-sm font-medium text-teal-900"
         >
-            {{ status }}
+            <AppIcon name="check-circle" class="mt-0.5 size-4 shrink-0" />
+            <span>{{ status }}</span>
         </div>
 
         <form class="space-y-5" @submit.prevent="submit">
@@ -56,8 +58,9 @@ function submit(): void {
             <button
                 type="submit"
                 :disabled="form.processing"
-                class="inline-flex w-full items-center justify-center rounded-md bg-stone-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:bg-stone-400"
+                class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-stone-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:bg-stone-400"
             >
+                <AppIcon name="mail" class="size-4" />
                 {{ form.processing ? 'Sending link...' : 'Send reset link' }}
             </button>
         </form>
@@ -66,8 +69,9 @@ function submit(): void {
             Remembered it?
             <Link
                 :href="login()"
-                class="font-medium text-teal-800 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
+                class="inline-flex items-center gap-1.5 font-medium text-teal-800 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
             >
+                <AppIcon name="login" class="size-3.5" />
                 Log in
             </Link>
         </p>

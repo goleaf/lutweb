@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppIcon from '@/components/AppIcon.vue';
 import type { WizardProjectVariant } from '@/types/lut-wizard';
 
 defineProps<{
@@ -22,7 +23,12 @@ const labels = ['Variant A', 'Variant B', 'Variant C', 'Variant D'];
 <template>
     <section class="space-y-3">
         <div>
-            <h2 class="text-sm font-semibold text-stone-950">Variations</h2>
+            <h2
+                class="inline-flex items-center gap-2 text-sm font-semibold text-stone-950"
+            >
+                <AppIcon name="sparkles" class="size-4 text-teal-800" />
+                Variations
+            </h2>
             <p class="mt-1 text-sm text-stone-600">
                 Generate four controlled variations, preview locally, then
                 explicitly save one.
@@ -31,26 +37,29 @@ const labels = ['Variant A', 'Variant B', 'Variant C', 'Variant D'];
         <div class="flex flex-wrap gap-2">
             <button
                 type="button"
-                class="rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:bg-stone-400"
+                class="inline-flex items-center gap-2 rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:bg-stone-400"
                 :disabled="busy"
                 @click="emit('generateFresh')"
             >
+                <AppIcon name="sparkles" class="size-4" />
                 Generate 4 Variations
             </button>
             <button
                 type="button"
-                class="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:text-stone-400"
+                class="inline-flex items-center gap-2 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:text-stone-400"
                 :disabled="busy"
                 @click="emit('generateMore')"
             >
+                <AppIcon name="refresh" class="size-4" />
                 Generate 4 More Like This
             </button>
             <button
                 v-if="previewingHash"
                 type="button"
-                class="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                class="inline-flex items-center gap-2 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                 @click="emit('current')"
             >
+                <AppIcon name="reset" class="size-4" />
                 Current Look
             </button>
         </div>
@@ -67,7 +76,10 @@ const labels = ['Variant A', 'Variant B', 'Variant C', 'Variant D'];
                 }"
             >
                 <div class="flex items-center justify-between gap-3">
-                    <h3 class="font-semibold text-stone-950">
+                    <h3
+                        class="inline-flex items-center gap-2 font-semibold text-stone-950"
+                    >
+                        <AppIcon name="sparkles" class="size-4 text-teal-800" />
                         {{ labels[index] ?? `Variant ${variant.position}` }}
                     </h3>
                     <span class="text-xs font-semibold text-stone-500">
@@ -86,16 +98,18 @@ const labels = ['Variant A', 'Variant B', 'Variant C', 'Variant D'];
                 <div class="mt-4 flex flex-wrap gap-2">
                     <button
                         type="button"
-                        class="rounded-md border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        class="inline-flex items-center gap-2 rounded-md border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                         @click="emit('preview', variant)"
                     >
+                        <AppIcon name="image" class="size-4" />
                         Preview
                     </button>
                     <button
                         type="button"
-                        class="rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        class="inline-flex items-center gap-2 rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                         @click="emit('use', variant)"
                     >
+                        <AppIcon name="check-circle" class="size-4" />
                         Use This Look
                     </button>
                 </div>
@@ -103,9 +117,10 @@ const labels = ['Variant A', 'Variant B', 'Variant C', 'Variant D'];
         </div>
         <p
             v-else
-            class="rounded-lg border border-dashed border-stone-300 bg-white p-5 text-sm text-stone-600"
+            class="grid justify-items-start rounded-lg border border-dashed border-stone-300 bg-white p-5 text-sm text-stone-600"
         >
-            No variations generated yet.
+            <AppIcon name="sparkles" class="mb-3 size-8 text-stone-400" />
+            <span>No variations generated yet.</span>
         </p>
     </section>
 </template>

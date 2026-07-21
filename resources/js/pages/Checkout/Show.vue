@@ -2,6 +2,12 @@
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
+import AppIcon from '@/components/AppIcon.vue';
+import CatalogCheckoutProductCard from '@/components/checkout/CatalogCheckoutProductCard.vue';
+import CheckoutOrderSummary from '@/components/checkout/CheckoutOrderSummary.vue';
+import CheckoutPageHeader from '@/components/checkout/CheckoutPageHeader.vue';
+import LegalConsentCard from '@/components/checkout/LegalConsentCard.vue';
+import StatusNotice from '@/components/ui/StatusNotice.vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import { loadPayPalV6Core } from '@/lib/paypal-v6';
 import type {
@@ -375,167 +381,47 @@ function toCaptureResponse(value: unknown): CaptureResponse {
             <meta head-key="robots" name="robots" content="noindex,nofollow" />
         </Head>
 
-        <section class="border-b border-stone-200 bg-white">
-            <div class="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-                <Link
-                    :href="product.url"
-                    class="rounded-sm text-sm text-stone-600 underline-offset-4 hover:text-teal-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
-                >
-                    Back to product
-                </Link>
-                <h1 class="mt-3 text-3xl font-semibold text-stone-950">
-                    Review your LUT
-                </h1>
-            </div>
-        </section>
+        <CheckoutPageHeader
+            :back-href="product.url"
+            back-label="Back to product"
+            title="Review your LUT"
+        />
 
         <section
             class="mx-auto grid w-full max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:px-8"
         >
             <div class="space-y-5">
-                <div class="rounded-lg border border-stone-200 bg-white p-5">
-                    <div class="flex gap-4">
-                        <img
-                            v-if="product.cover"
-                            :src="product.cover.url"
-                            :alt="product.cover.alt_text"
-                            class="size-24 rounded-md object-cover"
-                        />
-                        <span
-                            v-else
-                            class="size-24 rounded-md bg-stone-200"
-                            aria-hidden="true"
-                        />
-                        <div>
-                            <p
-                                class="text-xs font-semibold tracking-wide text-teal-800 uppercase"
-                            >
-                                {{ product.type_label }}
-                            </p>
-                            <h2
-                                class="mt-1 text-xl font-semibold text-stone-950"
-                            >
-                                {{ product.name }}
-                            </h2>
-                            <p class="mt-1 text-sm text-stone-600">
-                                Version {{ product.version ?? 'current' }}
-                            </p>
-                        </div>
-                    </div>
+                <CatalogCheckoutProductCard :product="product" />
 
-                    <ul class="mt-5 grid gap-2 text-sm text-stone-700">
-                        <li
-                            v-for="item in product.package_contents"
-                            :key="item"
-                            class="rounded-md border border-stone-200 bg-stone-50 px-3 py-2"
-                        >
-                            {{ item }}
-                        </li>
-                    </ul>
-                </div>
+                <LegalConsentCard
+                    v-model:terms-accepted="termsAndLicenseAccepted"
+                    v-model:digital-delivery-accepted="digitalDeliveryAccepted"
+                    :terms-url="legal.terms_of_sale_url"
+                    :license-url="legal.license_url"
+                    :refund-policy-url="legal.refund_policy_url"
+                />
 
-                <div class="rounded-lg border border-stone-200 bg-white p-5">
-                    <h2 class="text-base font-semibold text-stone-950">
-                        Legal consent
-                    </h2>
-                    <p class="mt-2 text-sm leading-6 text-stone-600">
-                        All sales of digital products are final except where a
-                        refund or another remedy is required by applicable law.
-                    </p>
-
-                    <label class="mt-4 flex gap-3 text-sm text-stone-700">
-                        <input
-                            v-model="termsAndLicenseAccepted"
-                            type="checkbox"
-                            class="mt-1 size-4 rounded border-stone-300 text-teal-700 focus:ring-teal-700"
-                        />
-                        <span>
-                            I agree to the
-                            <Link
-                                :href="legal.terms_of_sale_url"
-                                class="font-medium text-teal-800 underline-offset-4 hover:underline"
-                                >Terms of Sale</Link
-                            >
-                            and
-                            <Link
-                                :href="legal.license_url"
-                                class="font-medium text-teal-800 underline-offset-4 hover:underline"
-                                >License Agreement</Link
-                            >.
-                        </span>
-                    </label>
-
-                    <label class="mt-4 flex gap-3 text-sm text-stone-700">
-                        <input
-                            v-model="digitalDeliveryAccepted"
-                            type="checkbox"
-                            class="mt-1 size-4 rounded border-stone-300 text-teal-700 focus:ring-teal-700"
-                        />
-                        <span>
-                            I request immediate access to this digital product
-                            and acknowledge that, where permitted by applicable
-                            law, I lose my withdrawal right once digital
-                            delivery begins.
-                        </span>
-                    </label>
-
-                    <p class="mt-4 text-xs leading-5 text-stone-500">
-                        Refund Policy:
-                        <Link
-                            :href="legal.refund_policy_url"
-                            class="font-medium text-teal-800 underline-offset-4 hover:underline"
-                            >review policy</Link
-                        >.
-                    </p>
-                </div>
-
-                <div
-                    class="rounded-lg border border-teal-200 bg-teal-50 p-4 text-sm leading-6 text-teal-950"
-                >
+                <StatusNotice icon="shield" tone="success">
                     Secure digital delivery starts only after the server
                     verifies a completed payment capture or completes a free
                     claim.
-                </div>
+                </StatusNotice>
             </div>
 
-            <aside
-                class="h-fit rounded-lg border border-stone-200 bg-white p-5"
+            <CheckoutOrderSummary
+                :subtotal="pricing.subtotal"
+                :tax="pricing.tax"
+                :total="pricing.total"
+                note="One order contains exactly one product. No cart, quantity, coupons, address, or phone number are needed."
+                :account-email="account.email"
             >
-                <h2 class="text-base font-semibold text-stone-950">Order</h2>
-                <dl class="mt-4 space-y-3 text-sm">
-                    <div class="flex justify-between gap-4">
-                        <dt class="text-stone-600">Subtotal</dt>
-                        <dd class="font-medium text-stone-950">
-                            {{ pricing.subtotal }}
-                        </dd>
-                    </div>
-                    <div class="flex justify-between gap-4">
-                        <dt class="text-stone-600">Tax</dt>
-                        <dd class="font-medium text-stone-950">
-                            {{ pricing.tax }}
-                        </dd>
-                    </div>
-                    <div
-                        class="flex justify-between gap-4 border-t border-stone-200 pt-3 text-base"
-                    >
-                        <dt class="font-semibold text-stone-950">Total</dt>
-                        <dd class="font-semibold text-stone-950">
-                            {{ pricing.total }}
-                        </dd>
-                    </div>
-                </dl>
-
-                <p class="mt-4 text-xs leading-5 text-stone-500">
-                    One order contains exactly one product. No cart, quantity,
-                    coupons, address, or phone number are needed.
-                </p>
-
-                <div class="mt-5">
+                <template #actions>
                     <Link
                         v-if="purchase.action === 'owned'"
                         :href="purchase.owned_url"
-                        class="block rounded-md bg-stone-950 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        class="flex items-center justify-center gap-2 rounded-md bg-stone-950 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                     >
+                        <AppIcon name="folder" class="size-4" />
                         Go to My LUTs
                     </Link>
 
@@ -546,8 +432,9 @@ function toCaptureResponse(value: unknown): CaptureResponse {
                         <button
                             type="submit"
                             :disabled="!consentsReady || claimForm.processing"
-                            class="w-full rounded-md bg-stone-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:bg-stone-300"
+                            class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-stone-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:bg-stone-300"
                         >
+                            <AppIcon name="download" class="size-4" />
                             {{
                                 claimForm.processing
                                     ? 'Claiming...'
@@ -560,12 +447,14 @@ function toCaptureResponse(value: unknown): CaptureResponse {
                         v-else-if="purchase.action === 'buy'"
                         class="space-y-3"
                     >
-                        <p
+                        <StatusNotice
                             v-if="!consentsReady"
-                            class="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900"
+                            icon="alert-circle"
+                            tone="warning"
+                            compact
                         >
                             Accept the required legal terms to enable PayPal.
-                        </p>
+                        </StatusNotice>
                         <paypal-button
                             ref="paypalButton"
                             type="pay"
@@ -574,36 +463,34 @@ function toCaptureResponse(value: unknown): CaptureResponse {
                         />
                         <p
                             v-if="paypalState === 'loading'"
-                            class="text-sm text-stone-600"
+                            class="inline-flex items-center gap-2 text-sm text-stone-600"
                         >
+                            <AppIcon name="refresh" class="size-4" />
                             Loading PayPal.
                         </p>
                     </div>
 
-                    <p
-                        v-else
-                        class="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-600"
-                    >
+                    <StatusNotice v-else icon="alert-circle" compact>
                         {{
                             purchase.message ??
                             'Checkout is not available for this product.'
                         }}
-                    </p>
-                </div>
+                    </StatusNotice>
+                </template>
 
-                <p
-                    v-if="statusMessage"
-                    class="mt-4 rounded-md bg-stone-100 px-3 py-2 text-sm text-stone-700"
-                    role="status"
-                    aria-live="polite"
-                >
-                    {{ statusMessage }}
-                </p>
-
-                <p class="mt-4 text-xs leading-5 text-stone-500">
-                    Account: {{ account.email }}
-                </p>
-            </aside>
+                <template #status>
+                    <StatusNotice
+                        v-if="statusMessage"
+                        class="mt-4"
+                        icon="alert-circle"
+                        compact
+                        role="status"
+                        live
+                    >
+                        {{ statusMessage }}
+                    </StatusNotice>
+                </template>
+            </CheckoutOrderSummary>
         </section>
     </PublicLayout>
 </template>

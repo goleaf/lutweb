@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
 
 test('real FFmpeg can apply an identity 3D CUBE with tetrahedral interpolation', function () {
-    if ((string) env('RUN_REAL_FFMPEG_TESTS', 'false') !== 'true') {
+    if (! filter_var(env('RUN_REAL_FFMPEG_TESTS', false), FILTER_VALIDATE_BOOL)) {
         $this->markTestSkipped('Set RUN_REAL_FFMPEG_TESTS=true to run the real FFmpeg integration test.');
     }
 

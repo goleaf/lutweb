@@ -77,8 +77,14 @@ class FilesRelationManager extends RelationManager
                 CreateAction::make()->authorize(true),
             ])
             ->recordActions([
-                EditAction::make()->authorize(true),
-                DeleteAction::make()->authorize(true),
+                EditAction::make()
+                    ->authorize(true)
+                    ->disabled(fn ($record): bool => $record->isSoldPackage())
+                    ->tooltip(fn ($record): ?string => $record->isSoldPackage() ? 'Sold package ZIPs are immutable. Create a new product version for updates.' : null),
+                DeleteAction::make()
+                    ->authorize(true)
+                    ->disabled(fn ($record): bool => $record->isSoldPackage())
+                    ->tooltip(fn ($record): ?string => $record->isSoldPackage() ? 'Sold package ZIPs cannot be deleted while customers may download them.' : null),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

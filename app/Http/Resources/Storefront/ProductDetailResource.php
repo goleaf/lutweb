@@ -15,6 +15,7 @@ use App\Models\ProductMedia;
 use App\Models\ProductVersion;
 use App\Models\Tag;
 use App\Services\Checkout\ProductPurchaseEligibility;
+use App\Services\LutTester\ProductLutTestEligibility;
 use App\Services\Seo\SeoMetaFactory;
 use App\Services\StorefrontMedia\StorefrontResponsiveImageFactory;
 use App\Support\Catalog\EurMoney;
@@ -48,6 +49,7 @@ class ProductDetailResource extends JsonResource
             ? app(StorefrontResponsiveImageFactory::class)->forMedia($product->coverMedia)
             : null;
         $purchase = app(ProductPurchaseEligibility::class)->check($product, $request->user());
+        $canTestOnPhoto = app(ProductLutTestEligibility::class)->canTest($product);
 
         return [
             'id' => $product->id,
@@ -56,7 +58,7 @@ class ProductDetailResource extends JsonResource
             'name' => $product->name,
             'slug' => $product->slug,
             'url' => route('shop.show', $product->slug),
-            'try_url' => $product->is_testable ? route('shop.tester.create', $product->slug) : null,
+            'try_url' => $canTestOnPhoto ? route('shop.tester.create', $product->slug) : null,
             'short_description' => $product->short_description,
             'description' => $product->description,
             'formatted_price' => $product->isFree() ? 'Free' : '€'.EurMoney::formatCents($product->price_cents),

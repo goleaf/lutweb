@@ -410,6 +410,18 @@ test('product detail props expose only safe tester and checkout links', function
         ->not->toHaveKey('product_version_id');
 });
 
+test('product detail omits tester link when current LUT file is not eligible', function () {
+    $product = storefrontProductWithFullDetail([
+        'is_testable' => true,
+    ]);
+
+    $product->currentVersion?->files()->delete();
+
+    $props = $this->get(route('shop.show', $product->slug))->inertiaProps('product');
+
+    expect($props)->toHaveKey('try_url', null);
+});
+
 test('SourceCube is not included in public package contents', function () {
     $product = storefrontProductWithFullDetail();
 

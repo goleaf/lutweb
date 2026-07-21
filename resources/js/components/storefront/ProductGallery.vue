@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 
+import ResponsivePicture from '@/components/storefront/ResponsivePicture.vue';
 import type { PublicMedia } from '@/types/storefront';
 
 const props = defineProps<{
@@ -41,8 +42,17 @@ function markFailed(id: number): void {
         <div
             class="aspect-[4/3] overflow-hidden rounded-lg border border-stone-200 bg-stone-900"
         >
+            <ResponsivePicture
+                v-if="selected?.image && !selectedFailed"
+                :image="selected.image"
+                sizes="(min-width: 1024px) 66vw, 100vw"
+                loading="eager"
+                fetchpriority="high"
+                class="h-full w-full"
+                @error="markFailed(selected.id)"
+            />
             <img
-                v-if="selected && !selectedFailed"
+                v-else-if="selected?.url && !selectedFailed"
                 :src="selected.url"
                 :alt="selected.alt_text"
                 :width="selected.width ?? undefined"
@@ -80,14 +90,23 @@ function markFailed(id: number): void {
                 :aria-label="`Show image ${index + 1} for ${productName}`"
                 @click="selectImage(index)"
             >
+                <ResponsivePicture
+                    v-if="image.image && !failedIds.includes(image.id)"
+                    :image="image.image"
+                    sizes="96px"
+                    class="h-full w-full object-cover"
+                    loading="lazy"
+                    @error="markFailed(image.id)"
+                />
                 <img
-                    v-if="!failedIds.includes(image.id)"
+                    v-else-if="image.url && !failedIds.includes(image.id)"
                     :src="image.url"
                     :alt="image.alt_text"
                     :width="image.width ?? undefined"
                     :height="image.height ?? undefined"
                     class="h-full w-full object-cover"
                     loading="lazy"
+                    decoding="async"
                     @error="markFailed(image.id)"
                 />
                 <span

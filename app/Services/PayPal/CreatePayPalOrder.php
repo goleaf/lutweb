@@ -25,6 +25,10 @@ class CreatePayPalOrder
             throw new PayPalApiException('Local order is incomplete.');
         }
 
+        $cancelUrl = $item->isCustomLutBuild() && $item->wizard_project_id !== null && $item->custom_lut_build_id !== null
+            ? route('custom-lut.checkout.show', [$item->wizard_project_id, $item->custom_lut_build_id])
+            : route('shop.show', $item->product_slug);
+
         return $this->client->post('/v2/checkout/orders', [
             'intent' => 'CAPTURE',
             'purchase_units' => [
@@ -48,7 +52,7 @@ class CreatePayPalOrder
                     ],
                     'items' => [
                         [
-                            'name' => Str::limit($item->product_name, 120, ''),
+                            'name' => Str::limit($item->displayName(), 120, ''),
                             'sku' => $item->product_sku ?: $item->product_slug,
                             'unit_amount' => [
                                 'currency_code' => 'EUR',
@@ -67,7 +71,7 @@ class CreatePayPalOrder
                         'user_action' => 'PAY_NOW',
                         'shipping_preference' => 'NO_SHIPPING',
                         'return_url' => route('account.orders.show', $order),
-                        'cancel_url' => route('checkout.show', $item->product_slug),
+                        'cancel_url' => $cancelUrl,
                     ],
                 ],
             ],

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\CustomLutBuild;
 use App\Models\DownloadEvent;
 use App\Models\Entitlement;
 use App\Models\LutTestUpload;
@@ -9,6 +10,7 @@ use App\Models\Order;
 use App\Models\WizardProject;
 use App\Models\WizardProjectPhoto;
 use App\Models\WizardProjectVariant;
+use App\Policies\CustomLutBuildPolicy;
 use App\Policies\DownloadEventPolicy;
 use App\Policies\EntitlementPolicy;
 use App\Policies\LutTestUploadPolicy;
@@ -74,6 +76,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(LutTestUpload::class, LutTestUploadPolicy::class);
         Gate::policy(Order::class, OrderPolicy::class);
         Gate::policy(Entitlement::class, EntitlementPolicy::class);
+        Gate::policy(CustomLutBuild::class, CustomLutBuildPolicy::class);
         Gate::policy(DownloadEvent::class, DownloadEventPolicy::class);
         Gate::policy(WizardProject::class, WizardProjectPolicy::class);
         Gate::policy(WizardProjectPhoto::class, WizardProjectPhotoPolicy::class);
@@ -152,5 +155,27 @@ class AppServiceProvider extends ServiceProvider
                 Limit::perMinutes(10, (int) config('checkout.throttles.downloads_per_ten_minutes', 10))->by($userKey),
             ];
         });
+
+        RateLimiter::for('custom-lut-checkout-page', fn (Request $request): Limit => Limit::perMinute((int) config('custom-lut-commerce.rate_limits.checkout_page_per_minute', 30))
+            ->by((string) ($request->user()?->getAuthIdentifier() ?: $request->ip())));
+
+        RateLimiter::for('custom-lut-checkout', function (Request $request): array {
+            $userKey = (string) ($request->user()?->getAuthIdentifier() ?: 'guest');
+
+            return [
+                Limit::perMinute((int) config('custom-lut-commerce.rate_limits.checkout_per_minute', 10))->by($userKey),
+            ];
+        });
+
+        RateLimiter::for('entitlement-downloads', function (Request $request): array {
+            $userKey = (string) ($request->user()?->getAuthIdentifier() ?: 'guest');
+
+            return [
+                Limit::perMinutes(10, (int) config('checkout.throttles.downloads_per_ten_minutes', 10))->by($userKey),
+            ];
+        });
+
+        RateLimiter::for('health', fn (Request $request): Limit => Limit::perMinute((int) config('security.health.rate_limit_per_minute', 120))
+            ->by((string) ($request->ip() ?: 'unknown')));
     }
 }

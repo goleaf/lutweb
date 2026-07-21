@@ -50,8 +50,8 @@ class PayPalWebhookEventResource extends Resource
                 Action::make('retry')
                     ->authorize(true)
                     ->requiresConfirmation()
-                    ->visible(fn (PayPalWebhookEvent $record): bool => $record->verification_status === PayPalWebhookVerificationStatus::Verified
-                        && $record->processing_status === PayPalWebhookProcessingStatus::Failed)
+                    ->visible(fn (PayPalWebhookEvent $record): bool => $record->verification_status->value === PayPalWebhookVerificationStatus::Verified->value
+                        && $record->processing_status->value === PayPalWebhookProcessingStatus::Failed->value)
                     ->action(function (PayPalWebhookEvent $record): void {
                         $record->forceFill([
                             'processing_status' => PayPalWebhookProcessingStatus::Pending,

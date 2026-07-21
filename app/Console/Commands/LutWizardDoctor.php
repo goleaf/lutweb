@@ -20,7 +20,7 @@ use Throwable;
 
 class LutWizardDoctor extends Command
 {
-    protected $signature = 'lut-wizard:doctor';
+    protected $signature = 'lut-wizard:doctor {--self-test}';
 
     protected $description = 'Check Custom LUT Wizard backend configuration and capabilities.';
 
@@ -55,6 +55,10 @@ class LutWizardDoctor extends Command
         $this->check('Variation count is exactly 4', (int) config('lut-wizard.variation_count') === 4);
         $this->check('Variation rate limits are positive', (int) config('lut-wizard.variation_per_minute_limit') > 0 && (int) config('lut-wizard.variation_daily_limit') > 0);
         $this->warnWhen('Worker source is missing from asset tree', 'Worker source is present in asset tree', ! is_file(resource_path('js/workers/lut-preview.worker.ts')));
+
+        if ((bool) $this->option('self-test')) {
+            $this->check('Self-test generated watermarked preview', $this->selfTest($watermark));
+        }
 
         $this->line('Doctor complete: '.$this->failures.' FAIL, '.$this->warnings.' WARN.');
 
@@ -130,6 +134,29 @@ class LutWizardDoctor extends Command
     private function canEncodeWebp(): bool
     {
         return $this->canEncodeAndDecode(new WebpEncoder);
+    }
+
+    private function selfTest(ApplyPreviewWatermark $watermark): bool
+    {
+        $directory = storage_path('app/private/custom-lut-work/doctor-self-test-'.bin2hex(random_bytes(4)));
+        $input = $directory.'/input.png';
+        $output = $directory.'/watermarked.webp';
+
+        try {
+            File::ensureDirectoryExists($directory);
+            $this->imageManager()->createImage(640, 480)->fill('rgb(42 74 88)')->encode(new PngEncoder)->save($input);
+
+            $watermark->apply($input, $output);
+            $decoded = $this->imageManager()->decodePath($output);
+
+            return $decoded->width() === 640 && $decoded->height() === 480;
+        } catch (Throwable) {
+            return false;
+        } finally {
+            if (is_dir($directory) && ! is_link($directory)) {
+                File::deleteDirectory($directory);
+            }
+        }
     }
 
     private function activeStylesAreValid(ValidateWizardStyleConfiguration $validator): bool

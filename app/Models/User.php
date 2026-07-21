@@ -104,6 +104,30 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     }
 
     /**
+     * @return HasMany<ProductMedia, $this>
+     */
+    public function confirmedProductMediaRights(): HasMany
+    {
+        return $this->hasMany(ProductMedia::class, 'rights_confirmed_by');
+    }
+
+    /**
+     * @return HasMany<ProductExample, $this>
+     */
+    public function confirmedProductExampleRights(): HasMany
+    {
+        return $this->hasMany(ProductExample::class, 'rights_confirmed_by');
+    }
+
+    /**
+     * @return HasMany<AuditEvent, $this>
+     */
+    public function auditEvents(): HasMany
+    {
+        return $this->hasMany(AuditEvent::class, 'actor_user_id');
+    }
+
+    /**
      * @return HasMany<WizardProject, $this>
      */
     public function wizardProjects(): HasMany

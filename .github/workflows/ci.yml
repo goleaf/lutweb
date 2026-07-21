@@ -1,0 +1,87 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+
+    env:
+      APP_ENV: testing
+      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      APP_DEBUG: false
+      DB_CONNECTION: sqlite
+      DB_DATABASE: database/database.sqlite
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
+      PAYPAL_MODE: sandbox
+      SEO_INDEXING_ENABLED: false
+      SECURITY_HEADERS_ENABLED: true
+      CSP_ENABLED: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, fileinfo, exif, gd
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Prepare database
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress --ansi
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Optional transform conformance
+        run: npm run test:lut-transform --if-present
+
+      - name: Application checks
+        run: composer ci:check
+
+      - name: Production frontend build
+        run: npm run build
+
+      - name: Route list
+        run: php artisan route:list --except-vendor
+
+      - name: Schedule list
+        run: php artisan schedule:list
+
+      - name: Fresh migrations and seeders
+        run: php artisan migrate:fresh --seed --no-interaction
+
+      - name: Full Pest suite
+        run: php artisan test --compact
+
+      - name: Composer dependency audit
+        run: composer audit --locked
+
+      - name: npm production dependency audit
+        run: npm audit --omit=dev --audit-level=high

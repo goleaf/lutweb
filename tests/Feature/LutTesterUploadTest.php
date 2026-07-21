@@ -203,6 +203,7 @@ test('a file larger than the configured maximum is rejected', function () {
 });
 
 test('an original filename containing path traversal characters is never used as a storage path', function () {
+    config(['lut-tester.max_upload_mb' => 10]);
     Queue::fake();
     $product = lutTesterUploadProduct();
     $user = User::factory()->verified()->create();

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 
 import { home } from '@/routes';
 
@@ -10,6 +10,10 @@ defineProps<{
 </script>
 
 <template>
+    <Head>
+        <meta head-key="robots" name="robots" content="noindex,nofollow" />
+    </Head>
+
     <main
         class="min-h-screen bg-stone-50 px-4 py-8 text-stone-950 sm:px-6 lg:px-8"
     >

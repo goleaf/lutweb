@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
- * @property int $user_id
+ * @property int|null $user_id
  * @property DigitalAssetKind $digital_asset_kind
  * @property string $order_id
  * @property string $order_item_id

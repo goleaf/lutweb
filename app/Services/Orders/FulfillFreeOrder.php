@@ -2,6 +2,7 @@
 
 namespace App\Services\Orders;
 
+use App\Actions\Notifications\DispatchNotificationOnce;
 use App\Enums\FulfillmentStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
@@ -13,6 +14,7 @@ class FulfillFreeOrder
 {
     public function __construct(
         private readonly GrantOrderEntitlement $grantEntitlement,
+        private readonly DispatchNotificationOnce $dispatchNotificationOnce,
     ) {}
 
     public function handle(Order $order): Order
@@ -44,7 +46,12 @@ class FulfillFreeOrder
         });
 
         if (! $alreadyFulfilled && $fulfilled->user !== null) {
-            $fulfilled->user->notify(new LutReadyForDownload($fulfilled));
+            $this->dispatchNotificationOnce->handle(
+                eventKey: 'order:'.$fulfilled->id.':download-ready',
+                user: $fulfilled->user,
+                notification: new LutReadyForDownload($fulfilled),
+                related: $fulfilled,
+            );
         }
 
         return $fulfilled;

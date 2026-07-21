@@ -3,14 +3,10 @@
 namespace App\Services\Downloads;
 
 use App\Enums\DownloadStatus;
-use App\Enums\FulfillmentStatus;
-use App\Enums\OrderStatus;
-use App\Enums\PaymentStatus;
-use App\Enums\ProductFileKind;
 use App\Models\DownloadEvent;
 use App\Models\Entitlement;
-use App\Models\ProductFile;
 use App\Models\User;
+use App\Services\Checkout\ResolveEntitlementPackage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -18,42 +14,42 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StreamEntitlementDownload
 {
+    public function __construct(
+        private readonly ResolveEntitlementPackage $packages,
+    ) {}
+
     public function handle(Request $request, Entitlement $entitlement): StreamedResponse
     {
         $user = $request->user();
 
-        if (! $user instanceof User || ! $this->mayDownload($user, $entitlement)) {
+        if (! $user instanceof User) {
             abort(404);
         }
 
-        $entitlement->loadMissing(['order.payment', 'order.item', 'productFile']);
-        $file = $entitlement->productFile;
-
-        if (! $file instanceof ProductFile || ! $this->fileIsAllowed($file)) {
-            abort(404);
-        }
-
-        $disk = Storage::disk('private');
-
-        if (! $disk->exists($file->path)) {
-            abort(404);
-        }
+        $package = $this->packages->handle($entitlement, $user);
+        $disk = Storage::disk($package->disk);
+        $item = $entitlement->orderItem;
 
         $event = DownloadEvent::query()->create([
             'entitlement_id' => $entitlement->id,
             'user_id' => $user->id,
             'order_id' => $entitlement->order_id,
+            'digital_asset_kind' => $entitlement->digital_asset_kind,
             'product_id' => $entitlement->product_id,
             'product_version_id' => $entitlement->product_version_id,
             'product_file_id' => $entitlement->product_file_id,
+            'wizard_project_id' => $entitlement->wizard_project_id,
+            'custom_lut_build_id' => $entitlement->custom_lut_build_id,
+            'custom_lut_build_file_id' => $entitlement->custom_lut_build_file_id,
+            'item_display_name_snapshot' => $item?->displayName(),
+            'item_version_snapshot' => $item?->versionLabel(),
             'status' => DownloadStatus::Started,
             'ip_address' => $request->ip(),
             'user_agent' => Str::limit((string) $request->userAgent(), 500, ''),
             'started_at' => now(),
-            'size_bytes' => $file->size_bytes,
+            'size_bytes' => $package->sizeBytes,
         ]);
 
-        $filename = $this->filename($entitlement);
         $headers = [
             'Content-Type' => 'application/zip',
             'Cache-Control' => 'private, no-store, max-age=0',
@@ -61,12 +57,12 @@ class StreamEntitlementDownload
             'X-Content-Type-Options' => 'nosniff',
         ];
 
-        if ($file->size_bytes !== null) {
-            $headers['Content-Length'] = (string) $file->size_bytes;
+        if ($package->sizeBytes > 0) {
+            $headers['Content-Length'] = (string) $package->sizeBytes;
         }
 
-        return response()->streamDownload(function () use ($disk, $file, $event): void {
-            $stream = $disk->readStream($file->path);
+        $response = response()->streamDownload(function () use ($disk, $package, $event): void {
+            $stream = $disk->readStream($package->path);
 
             if (! is_resource($stream)) {
                 $this->markFailed($event);
@@ -99,38 +95,14 @@ class StreamEntitlementDownload
             } finally {
                 fclose($stream);
             }
-        }, $filename, $headers);
-    }
+        }, $package->downloadName, $headers);
 
-    private function mayDownload(User $user, Entitlement $entitlement): bool
-    {
-        $entitlement->loadMissing(['order.payment']);
-        $order = $entitlement->order;
-        $payment = $order?->payment;
+        $response->setPrivate();
+        $response->setMaxAge(0);
+        $response->headers->addCacheControlDirective('no-store');
+        $response->headers->set('Pragma', 'no-cache');
 
-        return $entitlement->mayBeDownloadedBy($user)
-            && $order !== null
-            && $order->status === OrderStatus::Completed
-            && $order->fulfillment_status === FulfillmentStatus::Ready
-            && in_array($order->payment_status, [PaymentStatus::Completed, PaymentStatus::NotRequired], true)
-            && ($payment === null || in_array($payment->status, [PaymentStatus::Completed, PaymentStatus::NotRequired], true));
-    }
-
-    private function fileIsAllowed(ProductFile $file): bool
-    {
-        return $file->kind === ProductFileKind::PackageZip
-            && $file->disk === 'private'
-            && collect(config('checkout.product_file_prefixes', ['catalog/product-files']))
-                ->contains(fn (string $prefix): bool => str_starts_with($file->path, trim($prefix, '/').'/'));
-    }
-
-    private function filename(Entitlement $entitlement): string
-    {
-        $item = $entitlement->order?->item;
-        $slug = Str::slug($item?->product_slug ?: $item?->product_name ?: 'lut-package');
-        $version = Str::slug($item?->product_version ?: 'v1');
-
-        return trim($slug.'-'.$version, '-').'.zip';
+        return $response;
     }
 
     private function markFailed(DownloadEvent $event): void

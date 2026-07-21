@@ -6,6 +6,7 @@ use App\Enums\LutTransformVersion;
 use App\Enums\WizardPhotoStatus;
 use App\Enums\WizardProjectStatus;
 use App\ValueObjects\LutTransformParameters;
+use Carbon\CarbonInterface;
 use Database\Factories\WizardProjectFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -15,7 +16,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -32,10 +32,10 @@ use Illuminate\Support\Carbon;
  * @property int $revision
  * @property int $variation_generation
  * @property string|null $last_mutation_id
- * @property Carbon|null $last_autosaved_at
- * @property Carbon $expires_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonInterface|null $last_autosaved_at
+ * @property CarbonInterface $expires_at
+ * @property CarbonInterface|null $created_at
+ * @property CarbonInterface|null $updated_at
  */
 #[Fillable([
     'id',

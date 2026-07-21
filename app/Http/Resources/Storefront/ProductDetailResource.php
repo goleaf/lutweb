@@ -14,10 +14,12 @@ use App\Models\ProductFile;
 use App\Models\ProductMedia;
 use App\Models\ProductVersion;
 use App\Models\Tag;
+use App\Services\Checkout\ProductPurchaseEligibility;
+use App\Services\Seo\SeoMetaFactory;
+use App\Services\StorefrontMedia\StorefrontResponsiveImageFactory;
 use App\Support\Catalog\EurMoney;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 class ProductDetailResource extends JsonResource
 {
@@ -42,6 +44,11 @@ class ProductDetailResource extends JsonResource
             ->values()
             ->all();
 
+        $coverImage = $this->publicMedia($product->coverMedia)
+            ? app(StorefrontResponsiveImageFactory::class)->forMedia($product->coverMedia)
+            : null;
+        $purchase = app(ProductPurchaseEligibility::class)->check($product, $request->user());
+
         return [
             'id' => $product->id,
             'type' => $product->type->value,
@@ -49,6 +56,7 @@ class ProductDetailResource extends JsonResource
             'name' => $product->name,
             'slug' => $product->slug,
             'url' => route('shop.show', $product->slug),
+            'try_url' => $product->is_testable ? route('shop.tester.create', $product->slug) : null,
             'short_description' => $product->short_description,
             'description' => $product->description,
             'formatted_price' => $product->isFree() ? 'Free' : '€'.EurMoney::formatCents($product->price_cents),
@@ -67,36 +75,40 @@ class ProductDetailResource extends JsonResource
             'tags' => $this->tags($product),
             'compatible_software' => $this->compatibleSoftware($product),
             'bundle_items' => $this->bundleItems($product, $request),
-            'seo' => [
-                'title' => $product->meta_title ?: $product->name,
-                'description' => $product->meta_description ?: $product->short_description,
-                'canonical_url' => route('shop.show', $product->slug),
-                'image' => $this->publicMedia($product->coverMedia)
-                    ? Storage::disk('public')->url($product->coverMedia->path)
+            'purchase' => [
+                'action' => $purchase->action,
+                'checkout_url' => in_array($purchase->action, ['buy', 'claim'], true)
+                    ? route('checkout.show', $product->slug)
                     : null,
+                'owned_url' => $purchase->action === 'owned' ? route('account.luts.index') : null,
+                'purchase_unavailable_message' => $purchase->message,
+            ],
+            'seo' => [
+                ...app(SeoMetaFactory::class)
+                    ->product($product, $coverImage['fallback_jpeg_url'] ?? null)
+                    ->toArray(),
+                'image' => $coverImage['fallback_jpeg_url'] ?? null,
             ],
         ];
     }
 
     /**
-     * @return array<int, array{id: int, title: string|null, before: array{url: string, alt_text: string}, after: array{url: string, alt_text: string}}>
+     * @return array<int, array<string, mixed>>
      */
     private function examples(Product $product): array
     {
+        $images = app(StorefrontResponsiveImageFactory::class);
+
         return $product->activeExamples
+            ->filter(fn (ProductExample $example): bool => $example->isReady())
             ->filter(fn (ProductExample $example): bool => $example->before_disk === 'public' && $example->after_disk === 'public')
             ->map(fn (ProductExample $example): array => [
                 'id' => $example->id,
                 'title' => $example->title,
-                'before' => [
-                    'url' => Storage::disk('public')->url($example->before_path),
-                    'alt_text' => $example->before_alt_text,
-                ],
-                'after' => [
-                    'url' => Storage::disk('public')->url($example->after_path),
-                    'alt_text' => $example->after_alt_text,
-                ],
+                'before' => $images->before($example),
+                'after' => $images->after($example),
             ])
+            ->filter(fn (array $example): bool => $example['before'] !== null && $example['after'] !== null)
             ->values()
             ->all();
     }

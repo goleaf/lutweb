@@ -60,6 +60,8 @@ class CreateCustomLutCheckoutOrder
                 ]);
             }
 
+            $this->ensureUnpaidOrderLimits($user, $lockedBuild);
+
             $settings = $result->settings;
             $packageFile = $result->packageFile;
 
@@ -145,5 +147,30 @@ class CreateCustomLutCheckoutOrder
     private function sku(CustomLutBuild $build): string
     {
         return 'CUSTOM-LUT-'.Str::upper(Str::substr($build->id, 0, 10));
+    }
+
+    private function ensureUnpaidOrderLimits(User $user, CustomLutBuild $build): void
+    {
+        $buildLimit = (int) config('custom-lut-commerce.max_active_unpaid_orders_per_build', 1);
+        $userLimit = (int) config('custom-lut-commerce.max_active_unpaid_orders_per_user', 5);
+
+        $query = Order::query()
+            ->where('user_id', $user->id)
+            ->whereIn('status', [OrderStatus::Pending->value, OrderStatus::Processing->value])
+            ->whereIn('payment_status', [PaymentStatus::Created->value, PaymentStatus::Approved->value, PaymentStatus::Pending->value])
+            ->where('fulfillment_status', FulfillmentStatus::Pending->value)
+            ->whereHas('item', fn ($itemQuery) => $itemQuery->where('digital_asset_kind', DigitalAssetKind::CustomLutBuild->value));
+
+        if ($userLimit > 0 && (clone $query)->count() >= $userLimit) {
+            throw ValidationException::withMessages([
+                'custom_lut_build' => 'You have too many active pending Custom LUT checkouts.',
+            ]);
+        }
+
+        if ($buildLimit > 0 && (clone $query)->whereHas('item', fn ($itemQuery) => $itemQuery->where('custom_lut_build_id', $build->id))->count() >= $buildLimit) {
+            throw ValidationException::withMessages([
+                'custom_lut_build' => 'A pending checkout already exists for this LUT package.',
+            ]);
+        }
     }
 }

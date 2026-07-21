@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Actions\StorefrontMedia\MarkProductExamplesStale;
 use App\Enums\ProductFileKind;
 use Database\Factories\ProductFileFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -93,6 +94,14 @@ class ProductFile extends Model
         return $this->hasMany(DownloadEvent::class);
     }
 
+    /**
+     * @return HasMany<ProductExample, $this>
+     */
+    public function processedExamples(): HasMany
+    {
+        return $this->hasMany(ProductExample::class, 'processed_product_file_id');
+    }
+
     public function isSoldPackage(): bool
     {
         if ($this->kind !== ProductFileKind::PackageZip) {
@@ -139,6 +148,12 @@ class ProductFile extends Model
 
         static::deleted(function (ProductFile $file): void {
             self::deleteStoredFileAfterCommit($file->disk, $file->path);
+        });
+
+        static::saved(function (ProductFile $file): void {
+            if ($file->wasChanged(['kind', 'path', 'sha256', 'disk']) && $file->productVersion?->product instanceof Product) {
+                app(MarkProductExamplesStale::class)->forProduct($file->productVersion->product);
+            }
         });
     }
 

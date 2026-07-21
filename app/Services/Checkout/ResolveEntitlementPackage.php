@@ -29,9 +29,18 @@ class ResolveEntitlementPackage
         $order = $entitlement->order;
 
         if (
-            $order->status !== OrderStatus::Completed
+            $order === null
+            || $entitlement->orderItem === null
+            || $order->status !== OrderStatus::Completed
             || $order->fulfillment_status !== FulfillmentStatus::Ready
             || ! in_array($order->payment_status, [PaymentStatus::Completed, PaymentStatus::NotRequired], true)
+        ) {
+            throw new NotFoundHttpException;
+        }
+
+        if (
+            $order->payment_status === PaymentStatus::Completed
+            && ($order->payment === null || $order->payment->status !== PaymentStatus::Completed)
         ) {
             throw new NotFoundHttpException;
         }
@@ -51,7 +60,7 @@ class ResolveEntitlementPackage
             throw new NotFoundHttpException;
         }
 
-        if (! Storage::disk($file->disk)->exists($file->path)) {
+        if (! $this->hasApprovedCatalogPrefix($file->path) || ! Storage::disk($file->disk)->exists($file->path)) {
             throw new NotFoundHttpException;
         }
 
@@ -59,7 +68,7 @@ class ResolveEntitlementPackage
             DigitalAssetKind::CatalogProduct,
             $file->disk,
             $file->path,
-            $this->downloadName($entitlement->orderItem->product_slug, 'zip'),
+            $this->downloadName($entitlement->orderItem->product_slug.'-'.$entitlement->orderItem->product_version, 'zip'),
             $file->size_bytes,
         );
     }
@@ -87,6 +96,10 @@ class ResolveEntitlementPackage
             throw new NotFoundHttpException;
         }
 
+        if ((bool) config('custom-lut-commerce.verify_package_hash_on_download', false)) {
+            $this->assertCustomLutPackageHash($file);
+        }
+
         return new ResolvedEntitlementPackage(
             DigitalAssetKind::CustomLutBuild,
             $file->disk,
@@ -94,6 +107,41 @@ class ResolveEntitlementPackage
             $this->downloadName($entitlement->orderItem->product_slug, 'zip'),
             $file->size_bytes,
         );
+    }
+
+    private function assertCustomLutPackageHash(CustomLutBuildFile $file): void
+    {
+        if ($file->sha256 === null || ! preg_match('/\A[a-f0-9]{64}\z/i', $file->sha256)) {
+            throw new NotFoundHttpException;
+        }
+
+        $stream = Storage::disk($file->disk)->readStream($file->path);
+
+        if ($stream === null) {
+            throw new NotFoundHttpException;
+        }
+
+        try {
+            $context = hash_init('sha256');
+
+            while (! feof($stream)) {
+                $chunk = fread($stream, 1024 * 1024);
+
+                if ($chunk === false) {
+                    throw new NotFoundHttpException;
+                }
+
+                hash_update($context, $chunk);
+            }
+
+            $actualHash = hash_final($context);
+        } finally {
+            fclose($stream);
+        }
+
+        if (! hash_equals(strtolower($file->sha256), $actualHash)) {
+            throw new NotFoundHttpException;
+        }
     }
 
     private function downloadName(string $stem, string $extension): string
@@ -105,5 +153,29 @@ class ResolveEntitlementPackage
         }
 
         return $safeStem.'.'.$extension;
+    }
+
+    private function hasApprovedCatalogPrefix(string $path): bool
+    {
+        $normalizedPath = trim($path, '/');
+        $prefixes = config('checkout.product_file_prefixes', ['catalog/product-files']);
+
+        if (! is_array($prefixes)) {
+            return false;
+        }
+
+        foreach ($prefixes as $prefix) {
+            if (! is_string($prefix)) {
+                continue;
+            }
+
+            $normalizedPrefix = trim($prefix, '/').'/';
+
+            if (Str::startsWith($normalizedPath, $normalizedPrefix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 
+import ResponsivePicture from '@/components/storefront/ResponsivePicture.vue';
 import type { PublicProductExample } from '@/types/storefront';
 
 const props = defineProps<{
@@ -11,6 +12,11 @@ const mode = ref<'slider' | 'hold' | 'side'>('slider');
 const position = ref(50);
 const showOriginal = ref(false);
 const failedImages = ref<string[]>([]);
+const beforeUrl = computed(() => props.example.before.fallback_jpeg_url);
+const afterUrl = computed(() => props.example.after.fallback_jpeg_url);
+const holdImage = computed(() =>
+    showOriginal.value ? props.example.before : props.example.after,
+);
 
 const beforeClipStyle = computed(() => ({
     clipPath: `inset(0 ${100 - position.value}% 0 0)`,
@@ -18,8 +24,8 @@ const beforeClipStyle = computed(() => ({
 
 const hasFailure = computed(
     () =>
-        failedImages.value.includes(props.example.before.url) ||
-        failedImages.value.includes(props.example.after.url),
+        failedImages.value.includes(beforeUrl.value) ||
+        failedImages.value.includes(afterUrl.value),
 );
 
 function markFailed(url: string): void {
@@ -105,20 +111,20 @@ function restoreResult(): void {
                 <div
                     class="relative aspect-[4/3] overflow-hidden rounded-md bg-stone-900"
                 >
-                    <img
-                        :src="example.after.url"
-                        :alt="example.after.alt_text"
+                    <ResponsivePicture
+                        :image="example.after"
+                        sizes="(min-width: 768px) 720px, 100vw"
                         class="h-full w-full object-cover"
                         loading="lazy"
-                        @error="markFailed(example.after.url)"
+                        @error="markFailed(afterUrl)"
                     />
-                    <img
-                        :src="example.before.url"
-                        :alt="example.before.alt_text"
+                    <ResponsivePicture
+                        :image="example.before"
+                        sizes="(min-width: 768px) 720px, 100vw"
                         class="absolute inset-0 h-full w-full object-cover"
                         :style="beforeClipStyle"
                         loading="lazy"
-                        @error="markFailed(example.before.url)"
+                        @error="markFailed(beforeUrl)"
                     />
                     <div
                         class="pointer-events-none absolute inset-y-0 w-0.5 bg-white shadow"
@@ -152,26 +158,12 @@ function restoreResult(): void {
                 <div
                     class="relative aspect-[4/3] overflow-hidden rounded-md bg-stone-900"
                 >
-                    <img
-                        :src="
-                            showOriginal
-                                ? example.before.url
-                                : example.after.url
-                        "
-                        :alt="
-                            showOriginal
-                                ? example.before.alt_text
-                                : example.after.alt_text
-                        "
+                    <ResponsivePicture
+                        :image="holdImage"
+                        sizes="(min-width: 768px) 720px, 100vw"
                         class="h-full w-full object-cover"
                         loading="lazy"
-                        @error="
-                            markFailed(
-                                showOriginal
-                                    ? example.before.url
-                                    : example.after.url,
-                            )
-                        "
+                        @error="markFailed(showOriginal ? beforeUrl : afterUrl)"
                     />
                     <span
                         class="absolute top-3 left-3 rounded-full bg-stone-950/80 px-2 py-1 text-xs font-semibold text-white"
@@ -201,12 +193,12 @@ function restoreResult(): void {
                     <div
                         class="aspect-[4/3] overflow-hidden rounded-md bg-stone-900"
                     >
-                        <img
-                            :src="example.before.url"
-                            :alt="example.before.alt_text"
+                        <ResponsivePicture
+                            :image="example.before"
+                            sizes="(min-width: 768px) 50vw, 100vw"
                             class="h-full w-full object-cover"
                             loading="lazy"
-                            @error="markFailed(example.before.url)"
+                            @error="markFailed(beforeUrl)"
                         />
                     </div>
                     <figcaption class="text-sm font-semibold text-stone-800">
@@ -217,12 +209,12 @@ function restoreResult(): void {
                     <div
                         class="aspect-[4/3] overflow-hidden rounded-md bg-stone-900"
                     >
-                        <img
-                            :src="example.after.url"
-                            :alt="example.after.alt_text"
+                        <ResponsivePicture
+                            :image="example.after"
+                            sizes="(min-width: 768px) 50vw, 100vw"
                             class="h-full w-full object-cover"
                             loading="lazy"
-                            @error="markFailed(example.after.url)"
+                            @error="markFailed(afterUrl)"
                         />
                     </div>
                     <figcaption class="text-sm font-semibold text-stone-800">

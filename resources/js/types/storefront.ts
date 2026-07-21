@@ -1,12 +1,55 @@
 export type PublicMediaKind = 'cover' | 'gallery';
 
+export type ResponsiveImageSource = {
+    srcset: string;
+    type: 'image/jpeg' | 'image/webp';
+    sizes: string;
+};
+
+export type ResponsiveImage = {
+    alt_text: string;
+    aspect_ratio: string;
+    fallback_jpeg_url: string;
+    webp_srcset: string;
+    jpeg_srcset: string;
+    width: number | null;
+    height: number | null;
+    placeholder_color: string;
+    credit: string | null;
+};
+
+export type JsonLdData =
+    | string
+    | number
+    | boolean
+    | null
+    | JsonLdData[]
+    | {
+          [key: string]: JsonLdData;
+      };
+
+export type SeoMeta = {
+    title: string;
+    description: string;
+    canonical_url: string;
+    robots: string;
+    og_title: string;
+    og_description: string;
+    og_type: string;
+    og_image: string | null;
+    twitter_card: string;
+    json_ld: JsonLdData | null;
+};
+
 export type PublicMedia = {
     id: number;
     kind: PublicMediaKind;
-    url: string;
+    url: string | null;
     alt_text: string;
     width: number | null;
     height: number | null;
+    image: ResponsiveImage | null;
+    processing_status?: string;
 };
 
 export type PublicCategory = {
@@ -36,14 +79,8 @@ export type PublicCompatibleSoftware = {
 export type PublicProductExample = {
     id: number;
     title: string | null;
-    before: {
-        url: string;
-        alt_text: string;
-    };
-    after: {
-        url: string;
-        alt_text: string;
-    };
+    before: ResponsiveImage;
+    after: ResponsiveImage;
 };
 
 export type PublicProductCard = {
@@ -72,6 +109,7 @@ export type PublicBundleItem = {
 export type PublicProductDetail = PublicProductCard & {
     description: string | null;
     published_at: string | null;
+    try_url: string | null;
     media: PublicMedia[];
     examples: PublicProductExample[];
     package_contents: string[];
@@ -79,6 +117,12 @@ export type PublicProductDetail = PublicProductCard & {
     tags: PublicTag[];
     compatible_software: PublicCompatibleSoftware[];
     bundle_items: PublicBundleItem[];
+    purchase: {
+        action: 'buy' | 'claim' | 'owned' | 'unavailable';
+        checkout_url: string | null;
+        owned_url: string | null;
+        purchase_unavailable_message: string | null;
+    };
     seo: StorefrontSeo;
 };
 
@@ -167,5 +211,12 @@ export type StorefrontSeo = {
     title: string;
     description: string;
     canonical_url: string;
+    robots?: string;
     image?: string | null;
+    og_title?: string;
+    og_description?: string;
+    og_type?: string;
+    og_image?: string | null;
+    twitter_card?: string;
+    json_ld?: JsonLdData | null;
 };

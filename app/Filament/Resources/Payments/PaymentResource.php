@@ -34,6 +34,10 @@ class PaymentResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('order.number')->label('Order')->searchable(),
+                TextColumn::make('order.item.digital_asset_kind')
+                    ->label('Type')
+                    ->badge()
+                    ->formatStateUsing(fn ($state): string => $state?->label() ?? (string) $state),
                 TextColumn::make('provider')->badge()->formatStateUsing(fn ($state): string => $state?->label() ?? (string) $state),
                 TextColumn::make('status')->badge()->formatStateUsing(fn ($state): string => $state?->label() ?? (string) $state),
                 TextColumn::make('amount_cents')
@@ -60,6 +64,6 @@ class PaymentResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with('order');
+        return parent::getEloquentQuery()->with('order.item');
     }
 }

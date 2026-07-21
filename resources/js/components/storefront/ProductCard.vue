@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 
+import ResponsivePicture from '@/components/storefront/ResponsivePicture.vue';
 import { show as productShow } from '@/routes/shop';
 import type { PublicProductCard } from '@/types/storefront';
 
@@ -20,14 +21,23 @@ withDefaults(
         class="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm transition hover:border-stone-300"
     >
         <Link :href="productShow(product.slug)" class="block">
+            <ResponsivePicture
+                v-if="product.cover?.image"
+                :image="product.cover.image"
+                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                class="aspect-[4/3] w-full object-cover"
+                :loading="loading"
+                :fetchpriority="loading === 'eager' ? 'high' : 'auto'"
+            />
             <img
-                v-if="product.cover"
+                v-else-if="product.cover?.url"
                 :src="product.cover.url"
                 :alt="product.cover.alt_text"
                 :width="product.cover.width ?? undefined"
                 :height="product.cover.height ?? undefined"
                 class="aspect-[4/3] w-full object-cover"
                 :loading="loading"
+                decoding="async"
             />
             <div
                 v-else

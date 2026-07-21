@@ -2,12 +2,19 @@
 
 namespace App\Actions\Catalog;
 
+use App\Actions\Audit\RecordAuditEvent;
 use App\Enums\ProductFileKind;
 use App\Enums\ProductMediaKind;
 use App\Enums\ProductStatus;
 use App\Enums\ProductType;
 use App\Enums\ProductVersionStatus;
+use App\Enums\StorefrontImageFormat;
+use App\Enums\StorefrontImageStatus;
+use App\Enums\StorefrontImageVariantRole;
 use App\Models\Product;
+use App\Models\ProductExample;
+use App\Models\ProductMedia;
+use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -15,6 +22,10 @@ use Illuminate\Validation\ValidationException;
 
 class PublishProduct
 {
+    public function __construct(
+        private readonly RecordAuditEvent $audit,
+    ) {}
+
     public function handle(Product $product, ?CarbonInterface $publishedAt = null): Product
     {
         $this->validate($product);
@@ -25,7 +36,11 @@ class PublishProduct
                 'published_at' => $publishedAt ?? now(),
             ])->save();
 
-            return $product->refresh();
+            $product = $product->refresh();
+            $actor = request()->user();
+            $this->audit->handle('product.published', actor: $actor instanceof User ? $actor : null, auditable: $product);
+
+            return $product;
         });
     }
 
@@ -53,12 +68,36 @@ class PublishProduct
             $errors['categories'] = 'Add at least one category before publishing.';
         }
 
-        if ($product->media()->where('kind', ProductMediaKind::Cover)->count() !== 1) {
+        $covers = $product->media()
+            ->where('kind', ProductMediaKind::Cover)
+            ->with('variants')
+            ->get();
+
+        if ($covers->count() !== 1) {
             $errors['cover'] = 'Add exactly one cover image before publishing.';
+        } else {
+            $cover = $covers->first();
+
+            if (! $cover instanceof ProductMedia || ! $cover->isReady()) {
+                $errors['cover'] = 'The cover image must be ready before publishing.';
+            } elseif (Str::of($cover->alt_text)->trim()->isEmpty()) {
+                $errors['cover_alt_text'] = 'The cover image needs English alt text before publishing.';
+            } elseif (! $cover->hasConfirmedUsageRights()) {
+                $errors['cover_rights'] = 'Confirm usage rights for the cover image before publishing.';
+            } elseif (! $this->hasResponsiveVariantPair($cover, StorefrontImageVariantRole::Media)) {
+                $errors['cover_derivatives'] = 'The cover image needs verified JPEG and WebP storefront derivatives before publishing.';
+            }
         }
 
-        if ($product->examples()->where('is_active', true)->count() === 0) {
+        $examples = $product->examples()
+            ->where('is_active', true)
+            ->with('variants')
+            ->get();
+
+        if ($examples->count() === 0) {
             $errors['examples'] = 'Add at least one active before and after example before publishing.';
+        } elseif (! $examples->contains(fn (ProductExample $example): bool => $this->exampleIsPublishable($example))) {
+            $errors['examples'] = 'Add at least one ready active example with confirmed rights, alt text and JPEG/WebP derivatives before publishing.';
         }
 
         $currentVersion = $product->currentVersion()->with('files')->first();
@@ -75,6 +114,25 @@ class PublishProduct
         if ($errors !== []) {
             throw ValidationException::withMessages($errors);
         }
+    }
+
+    private function exampleIsPublishable(ProductExample $example): bool
+    {
+        return $example->processing_status === StorefrontImageStatus::Ready
+            && $example->hasConfirmedUsageRights()
+            && Str::of($example->before_alt_text)->trim()->isNotEmpty()
+            && Str::of($example->after_alt_text)->trim()->isNotEmpty()
+            && $this->hasResponsiveVariantPair($example, StorefrontImageVariantRole::Before)
+            && $this->hasResponsiveVariantPair($example, StorefrontImageVariantRole::After);
+    }
+
+    private function hasResponsiveVariantPair(ProductMedia|ProductExample $imageable, StorefrontImageVariantRole $role): bool
+    {
+        $variants = $imageable->variants
+            ->filter(fn ($variant): bool => $variant->role === $role && $variant->isPublicDerivative());
+
+        return $variants->contains('format', StorefrontImageFormat::Jpeg)
+            && $variants->contains('format', StorefrontImageFormat::Webp);
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Storefront\CategoryResource;
 use App\Http\Resources\Storefront\ProductCardResource;
 use App\Queries\Storefront\ProductCatalogQuery;
+use App\Services\Seo\SeoMetaFactory;
 use App\Support\Storefront\StorefrontFilterData;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,7 +14,7 @@ use Inertia\Response;
 
 class CategoryController extends Controller
 {
-    public function show(string $categorySlug, Request $request, ProductCatalogQuery $catalog): Response
+    public function show(string $categorySlug, Request $request, ProductCatalogQuery $catalog, SeoMetaFactory $seo): Response
     {
         $category = $catalog->findActiveCategory($categorySlug);
         $filters = StorefrontFilterData::fromRequest($request, $category->slug);
@@ -25,11 +26,9 @@ class CategoryController extends Controller
             'resultCount' => $products->total(),
             'filters' => $filters->toArray(),
             'filterOptions' => $this->filterOptions($catalog),
-            'seo' => [
-                'title' => $category->name.' LUTs - LUT Web',
-                'description' => $category->description ?: 'Browse '.$category->name.' LUTs for photographers and creators.',
-                'canonical_url' => route('categories.show', $category->slug),
-            ],
+            'seo' => $filters->isFiltered($category->slug)
+                ? $seo->shop(filtered: true, canonicalPath: route('categories.show', $category->slug, absolute: false))->toArray()
+                : $seo->category($category)->toArray(),
         ]);
     }
 

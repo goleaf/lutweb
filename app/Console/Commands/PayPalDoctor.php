@@ -23,11 +23,6 @@ class PayPalDoctor extends Command
      */
     private array $failures = [];
 
-    /**
-     * @var list<string>
-     */
-    private array $warnings = [];
-
     public function handle(CheckoutReadiness $readiness, ProductPurchaseEligibility $eligibility, PayPalHttpClient $paypal): int
     {
         $live = $readiness->isLiveMode();
@@ -121,16 +116,33 @@ class PayPalDoctor extends Command
             return;
         }
 
-        $webhooks = collect(is_array($response['webhooks'] ?? null) ? $response['webhooks'] : []);
-        $configured = $webhooks->firstWhere('id', config('paypal.webhook_id'));
+        $webhookPayload = is_array($response['webhooks'] ?? null) ? $response['webhooks'] : [];
+        $configured = null;
+
+        foreach ($webhookPayload as $webhook) {
+            if (is_array($webhook) && ($webhook['id'] ?? null) === config('paypal.webhook_id')) {
+                $configured = $webhook;
+
+                break;
+            }
+        }
 
         $this->check('Configured PayPal webhook ID exists remotely', is_array($configured), required: true);
 
         if (is_array($configured) && Route::has('webhooks.paypal')) {
             $this->check('Remote webhook URL matches application route', ($configured['url'] ?? null) === route('webhooks.paypal'), required: true);
-            $eventNames = collect($configured['event_types'] ?? [])->pluck('name')->filter()->values();
-            $missing = collect(config('paypal.recommended_webhook_events', []))->diff($eventNames);
-            $this->check('Remote webhook subscribes to recommended events', $missing->isEmpty(), required: false);
+            $configuredEvents = is_array($configured['event_types'] ?? null) ? $configured['event_types'] : [];
+            $recommendedEvents = array_values(array_filter((array) config('paypal.recommended_webhook_events', []), is_string(...)));
+            $eventNames = [];
+
+            foreach ($configuredEvents as $eventType) {
+                if (is_array($eventType) && is_string($eventType['name'] ?? null)) {
+                    $eventNames[] = $eventType['name'];
+                }
+            }
+
+            $missing = array_diff($recommendedEvents, $eventNames);
+            $this->check('Remote webhook subscribes to recommended events', $missing === [], required: false);
         }
     }
 
@@ -167,7 +179,6 @@ class PayPalDoctor extends Command
 
     private function warnLine(string $label): void
     {
-        $this->warnings[] = $label;
         $this->line('<fg=yellow>WARN</> '.$label);
     }
 

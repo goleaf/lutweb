@@ -33,7 +33,9 @@ function submitLogout(): void {
 </script>
 
 <template>
-    <Head :title="props.title" />
+    <Head :title="props.title">
+        <meta head-key="robots" name="robots" content="noindex,nofollow" />
+    </Head>
 
     <main class="min-h-screen bg-stone-50 text-stone-950">
         <header class="border-b border-stone-200 bg-white">

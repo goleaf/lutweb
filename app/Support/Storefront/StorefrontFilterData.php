@@ -58,6 +58,17 @@ class StorefrontFilterData
         );
     }
 
+    public function isFiltered(?string $baseCategory = null): bool
+    {
+        return $this->q !== null
+            || $this->tag !== null
+            || $this->software !== null
+            || $this->type !== 'all'
+            || $this->pricing !== 'all'
+            || $this->sort !== 'featured'
+            || ($baseCategory === null && $this->category !== null);
+    }
+
     /**
      * @return array{q: string|null, category: string|null, tag: string|null, software: string|null, type: string, pricing: string, sort: string}
      */

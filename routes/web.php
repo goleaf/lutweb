@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\Account\CaptureOrderPayPalController;
 use App\Http\Controllers\Account\CustomLutController as AccountCustomLutController;
+use App\Http\Controllers\Account\CustomLutPurchaseController;
 use App\Http\Controllers\Account\DashboardController;
 use App\Http\Controllers\Account\DownloadHistoryController;
+use App\Http\Controllers\Account\EntitlementDownloadController;
 use App\Http\Controllers\Account\LutLibraryController;
 use App\Http\Controllers\Account\OrderController;
 use App\Http\Controllers\Checkout\ClaimFreeProductController;
@@ -15,6 +17,11 @@ use App\Http\Controllers\CustomLut\ProjectPhotoController;
 use App\Http\Controllers\CustomLut\ProjectPhotoPreviewController;
 use App\Http\Controllers\CustomLut\ProjectStyleController;
 use App\Http\Controllers\CustomLut\ProjectVariationController;
+use App\Http\Controllers\CustomLutCheckoutController;
+use App\Http\Controllers\CustomLutPayPalOrderController;
+use App\Http\Controllers\Operations\HealthController;
+use App\Http\Controllers\Seo\RobotsController;
+use App\Http\Controllers\Seo\SitemapController;
 use App\Http\Controllers\Storefront\CategoryController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\LutTesterController;
@@ -36,6 +43,16 @@ $authMiddleware = (string) config('fortify.auth_middleware', 'auth').':'.$guard;
 $verificationLimiter = (string) config('fortify.limiters.verification', '6,1');
 
 Route::get('/', HomeController::class)->name('home');
+Route::get('/robots.txt', RobotsController::class)->name('robots');
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap.index');
+
+Route::prefix('health')
+    ->name('health.')
+    ->middleware('throttle:health')
+    ->group(function (): void {
+        Route::get('/live', [HealthController::class, 'live'])->name('live');
+        Route::get('/ready', [HealthController::class, 'ready'])->name('ready');
+    });
 
 Route::prefix('shop')->name('shop.')->group(function () use ($authMiddleware): void {
     Route::get('/', [ShopController::class, 'index'])->name('index');
@@ -66,6 +83,12 @@ Route::middleware([$authMiddleware, 'verified', 'not_suspended'])->group(functio
             ->middleware('throttle:lut-wizard-create')
             ->name('store');
         Route::get('/{wizardProject}', [CustomLutProjectController::class, 'show'])->name('show');
+        Route::get('/{wizardProject}/builds/{customLutBuild}/checkout', [CustomLutCheckoutController::class, 'show'])
+            ->middleware('throttle:custom-lut-checkout-page')
+            ->name('checkout.show');
+        Route::post('/{wizardProject}/builds/{customLutBuild}/checkout/paypal/orders', [CustomLutPayPalOrderController::class, 'store'])
+            ->middleware('throttle:custom-lut-checkout')
+            ->name('checkout.paypal.orders.store');
         Route::patch('/{wizardProject}', [ProjectMutationController::class, 'update'])
             ->middleware('throttle:lut-wizard-mutation')
             ->name('update');
@@ -160,6 +183,11 @@ Route::middleware([$authMiddleware, 'verified', 'account.active'])
         Route::get('/luts/{entitlement}/download', [LutLibraryController::class, 'download'])
             ->middleware('throttle:account-downloads')
             ->name('luts.download');
+        Route::get('/custom-luts/purchased', [CustomLutPurchaseController::class, 'index'])->name('custom-luts.purchased.index');
+        Route::get('/custom-luts/purchased/{entitlement}', [CustomLutPurchaseController::class, 'show'])->name('custom-luts.purchased.show');
+        Route::get('/custom-lut-packages/{entitlement}/download', [EntitlementDownloadController::class, 'download'])
+            ->middleware('throttle:entitlement-downloads')
+            ->name('custom-luts.download');
 
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');

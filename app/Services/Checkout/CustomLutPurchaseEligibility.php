@@ -65,14 +65,6 @@ class CustomLutPurchaseEligibility
             return CustomLutPurchaseEligibilityResult::unavailable('PayPal checkout is not available yet.');
         }
 
-        if ($build->status !== CustomLutBuildStatus::Ready) {
-            return CustomLutPurchaseEligibilityResult::unavailable('This LUT package is not ready for purchase.');
-        }
-
-        if (! $build->sale_ready || $build->contains_draft_documents) {
-            return CustomLutPurchaseEligibilityResult::unavailable('This LUT package is not approved for sale yet.');
-        }
-
         if ($build->expires_at !== null && $build->expires_at->isPast()) {
             return CustomLutPurchaseEligibilityResult::unavailable('This LUT package has expired.');
         }
@@ -91,6 +83,14 @@ class CustomLutPurchaseEligibility
             if (! $build->is_current || $project->revision !== $build->project_revision || $project->parameters_hash !== $build->parameters_hash) {
                 return CustomLutPurchaseEligibilityResult::stale();
             }
+        }
+
+        if ($build->status !== CustomLutBuildStatus::Ready) {
+            return CustomLutPurchaseEligibilityResult::unavailable('This LUT package is not ready for purchase.');
+        }
+
+        if (! $build->sale_ready || $build->contains_draft_documents) {
+            return CustomLutPurchaseEligibilityResult::unavailable('This LUT package is not approved for sale yet.');
         }
 
         if (! in_array($build->transform_version, config('custom-lut-commerce.supported_transform_versions', []), true)) {
@@ -130,9 +130,9 @@ class CustomLutPurchaseEligibility
     {
         return Entitlement::query()
             ->where('user_id', $user->id)
-            ->where('digital_asset_kind', DigitalAssetKind::CustomLutBuild)
+            ->where('digital_asset_kind', DigitalAssetKind::CustomLutBuild->value)
             ->where('custom_lut_build_id', $build->id)
-            ->where('status', EntitlementStatus::Active)
+            ->where('status', EntitlementStatus::Active->value)
             ->exists();
     }
 
@@ -143,13 +143,13 @@ class CustomLutPurchaseEligibility
         return Order::query()
             ->with(['item', 'payment'])
             ->where('user_id', $user->id)
-            ->whereIn('status', [OrderStatus::Pending, OrderStatus::Processing])
-            ->whereIn('payment_status', [PaymentStatus::Created, PaymentStatus::Approved, PaymentStatus::Pending])
-            ->where('fulfillment_status', FulfillmentStatus::Pending)
+            ->whereIn('status', [OrderStatus::Pending->value, OrderStatus::Processing->value])
+            ->whereIn('payment_status', [PaymentStatus::Created->value, PaymentStatus::Approved->value, PaymentStatus::Pending->value])
+            ->where('fulfillment_status', FulfillmentStatus::Pending->value)
             ->where('created_at', '>=', $reuseAfter)
             ->whereHas('item', function ($query) use ($build): void {
                 $query
-                    ->where('digital_asset_kind', DigitalAssetKind::CustomLutBuild)
+                    ->where('digital_asset_kind', DigitalAssetKind::CustomLutBuild->value)
                     ->where('custom_lut_build_id', $build->id);
             })
             ->latest()

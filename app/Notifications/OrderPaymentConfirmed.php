@@ -13,11 +13,11 @@ class OrderPaymentConfirmed extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public bool $afterCommit = true;
-
     public function __construct(
         public readonly Order $order,
-    ) {}
+    ) {
+        $this->afterCommit();
+    }
 
     /**
      * @return list<string>
@@ -36,7 +36,7 @@ class OrderPaymentConfirmed extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject('Payment confirmed for '.$this->order->number)
             ->greeting('Payment confirmed')
-            ->line('Order '.$this->order->number.' for '.($item?->product_name ?? 'your LUT').' has been paid.')
+            ->line('Order '.$this->order->number.' for '.($item->product_name ?? 'your LUT').' has been paid.')
             ->line('Amount: '.$amount)
             ->action('View order', route('account.orders.show', $this->order))
             ->line('The downloadable ZIP is available only after signing in to your LUT Web account.');

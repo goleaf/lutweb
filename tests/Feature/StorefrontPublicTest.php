@@ -396,7 +396,7 @@ test('product detail props do not expose ProductFile disk path private filename 
         ->not->toContain('/storage/products/releases');
 });
 
-test('product detail props do not expose tester routes during the read-only storefront milestone', function () {
+test('product detail props expose only safe tester and checkout links', function () {
     $product = storefrontProductWithFullDetail([
         'is_testable' => true,
     ]);
@@ -404,8 +404,10 @@ test('product detail props do not expose tester routes during the read-only stor
     $props = $this->get(route('shop.show', $product->slug))->inertiaProps('product');
 
     expect($props)
-        ->not->toHaveKey('can_test_on_photo')
-        ->not->toHaveKey('test_url');
+        ->toHaveKey('try_url', route('shop.tester.create', $product->slug))
+        ->toHaveKey('purchase.action')
+        ->not->toHaveKey('product_file_id')
+        ->not->toHaveKey('product_version_id');
 });
 
 test('SourceCube is not included in public package contents', function () {

@@ -9,6 +9,7 @@ import type {
     PublicLutTestUpload,
     PublicProductExample,
     PublicTesterProduct,
+    ResponsiveImage,
 } from '@/types/storefront';
 
 const props = defineProps<{
@@ -43,18 +44,32 @@ const comparisonExample = computed<PublicProductExample | null>(() => {
     return {
         id: 1,
         title: `${props.product.name} test preview`,
-        before: {
-            url: props.test.before_url,
-            alt_text: `Watermarked original preview for ${props.product.name}`,
-        },
-        after: {
-            url: props.test.after_url,
-            alt_text: `Watermarked LUT result preview for ${props.product.name}`,
-        },
+        before: previewImage(
+            props.test.before_url,
+            `Watermarked original preview for ${props.product.name}`,
+        ),
+        after: previewImage(
+            props.test.after_url,
+            `Watermarked LUT result preview for ${props.product.name}`,
+        ),
     };
 });
 
 const afterOpacity = computed(() => intensity.value / 100);
+
+function previewImage(url: string, altText: string): ResponsiveImage {
+    return {
+        alt_text: altText,
+        aspect_ratio: '4 / 3',
+        fallback_jpeg_url: url,
+        webp_srcset: '',
+        jpeg_srcset: '',
+        width: null,
+        height: null,
+        placeholder_color: '#1c1917',
+        credit: null,
+    };
+}
 
 function chooseFile(): void {
     fileInput.value?.click();
@@ -353,12 +368,12 @@ onBeforeUnmount(() => {
                         class="relative aspect-[4/3] overflow-hidden rounded-md bg-stone-900"
                     >
                         <img
-                            :src="comparisonExample.before.url"
+                            :src="comparisonExample.before.fallback_jpeg_url"
                             :alt="comparisonExample.before.alt_text"
                             class="h-full w-full object-contain"
                         />
                         <img
-                            :src="comparisonExample.after.url"
+                            :src="comparisonExample.after.fallback_jpeg_url"
                             :alt="comparisonExample.after.alt_text"
                             class="absolute inset-0 h-full w-full object-contain"
                             :style="{ opacity: afterOpacity }"

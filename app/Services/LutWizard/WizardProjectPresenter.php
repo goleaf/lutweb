@@ -7,7 +7,7 @@ use App\Models\WizardProjectPhoto;
 use App\Models\WizardProjectVariant;
 use App\Models\WizardStyle;
 use App\ValueObjects\LutTransformParameters;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\URL;
 

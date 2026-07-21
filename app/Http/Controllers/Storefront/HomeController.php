@@ -6,12 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Storefront\CategoryResource;
 use App\Http\Resources\Storefront\ProductCardResource;
 use App\Queries\Storefront\ProductCatalogQuery;
+use App\Services\Seo\SeoMetaFactory;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class HomeController extends Controller
 {
-    public function __invoke(ProductCatalogQuery $catalog): Response
+    public function __invoke(ProductCatalogQuery $catalog, SeoMetaFactory $seo): Response
     {
         $filterOptions = $catalog->filterOptions();
 
@@ -19,11 +20,7 @@ class HomeController extends Controller
             'featuredProducts' => ProductCardResource::collection($catalog->featured()),
             'categories' => CategoryResource::collection($filterOptions['categories']),
             'freeProducts' => ProductCardResource::collection($catalog->free()),
-            'seo' => [
-                'title' => 'LUT Web - Professional LUTs for photographers and creators',
-                'description' => 'Try looks on your photos, create custom LUTs, and securely download your purchases.',
-                'canonical_url' => route('home'),
-            ],
+            'seo' => $seo->home()->toArray(),
         ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users;
 
+use App\Actions\Audit\RecordAuditEvent;
 use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Filament\Resources\Users\Pages\ViewUser;
 use App\Models\User;
@@ -53,6 +54,7 @@ class UserResource extends Resource
                     ->visible(fn (User $record): bool => ! $record->is_suspended)
                     ->action(function (User $record): void {
                         $record->forceFill(['is_suspended' => true])->save();
+                        app(RecordAuditEvent::class)->handle('user.suspended', actor: auth()->user() instanceof User ? auth()->user() : null, auditable: $record, targetUser: $record);
                         Notification::make()->title('Account suspended')->success()->send();
                     }),
                 Action::make('restore')
@@ -62,6 +64,7 @@ class UserResource extends Resource
                     ->visible(fn (User $record): bool => $record->is_suspended)
                     ->action(function (User $record): void {
                         $record->forceFill(['is_suspended' => false])->save();
+                        app(RecordAuditEvent::class)->handle('user.restored', actor: auth()->user() instanceof User ? auth()->user() : null, auditable: $record, targetUser: $record);
                         Notification::make()->title('Account restored')->success()->send();
                     }),
             ]);

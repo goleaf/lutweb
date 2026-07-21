@@ -7,7 +7,7 @@ return [
     'tax_ready' => (bool) env('CHECKOUT_TAX_READY', false),
     'live_payments_allowed' => (bool) env('CHECKOUT_LIVE_PAYMENTS_ALLOWED', false),
     'pending_order_expires_minutes' => (int) env('CHECKOUT_PENDING_ORDER_EXPIRES_MINUTES', 30),
-    'product_file_prefixes' => ['catalog/product-files'],
+    'product_file_prefixes' => ['catalog/product-files', 'products/releases'],
     'throttles' => [
         'checkout_per_minute' => (int) env('CHECKOUT_ATTEMPTS_PER_MINUTE', 10),
         'checkout_per_hour' => (int) env('CHECKOUT_ATTEMPTS_PER_HOUR', 60),

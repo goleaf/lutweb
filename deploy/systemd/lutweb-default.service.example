@@ -1,0 +1,17 @@
+[Unit]
+Description=LUT Web queue worker - default and notifications
+After=network.target
+
+[Service]
+Type=simple
+User=www-data-placeholder
+Group=www-data-placeholder
+WorkingDirectory=/var/www/lutweb-placeholder
+ExecStart=/usr/bin/php artisan queue:work --queue=default,notifications --sleep=3 --tries=3 --timeout=120
+ExecStop=/bin/kill -TERM $MAINPID
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=90
+
+[Install]
+WantedBy=multi-user.target

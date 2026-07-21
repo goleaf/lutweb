@@ -2,45 +2,98 @@
 
 namespace App\Http\Controllers\Account;
 
+use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Models\User;
+use App\Support\Catalog\EurMoney;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
-use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class OrderController extends Controller
 {
-    public function show(Request $request, Order $order): Response
+    public function index(Request $request): Response
     {
-        /** @var User $user */
-        $user = $request->user();
+        $orders = Order::query()
+            ->with(['item'])
+            ->where('user_id', $request->user()->id)
+            ->latest('created_at')
+            ->paginate(15)
+            ->withQueryString();
 
-        abort_unless($order->belongsToUser($user), HttpResponse::HTTP_NOT_FOUND);
+        return Inertia::render('Account/Orders/Index', [
+            'orders' => [
+                'data' => $orders->getCollection()->map(fn (Order $order): array => $this->summary($order))->values(),
+                'meta' => Arr::except($orders->toArray(), ['data']),
+            ],
+        ]);
+    }
 
-        $order->loadMissing(['item.entitlement', 'payment']);
+    public function show(Order $order): Response
+    {
+        $this->authorize('view', $order);
+
+        $order->loadMissing(['item', 'payment', 'entitlement']);
 
         return Inertia::render('Account/Orders/Show', [
             'order' => [
-                'id' => $order->id,
-                'number' => $order->number,
-                'status' => $order->status->value,
-                'payment_status' => $order->payment_status->value,
-                'fulfillment_status' => $order->fulfillment_status->value,
-                'currency' => $order->currency,
-                'subtotal_cents' => $order->subtotal_cents,
-                'tax_cents' => $order->tax_cents,
-                'total_cents' => $order->total_cents,
+                ...$this->summary($order),
+                'subtotal' => 'EUR '.EurMoney::formatCents($order->subtotal_cents),
+                'tax' => 'EUR '.EurMoney::formatCents($order->tax_cents),
+                'total' => 'EUR '.EurMoney::formatCents($order->total_cents),
+                'terms_of_sale_version' => $order->terms_of_sale_version,
                 'license_version' => $order->license_version,
-                'item' => $order->item === null ? null : [
-                    'kind' => $order->item->digital_asset_kind->value,
-                    'kind_label' => $order->item->digital_asset_kind->label(),
-                    'name' => $order->item->displayName(),
-                    'version' => $order->item->versionLabel(),
-                ],
-                'capture_url' => route('account.orders.paypal.capture', $order),
+                'refund_policy_version' => $order->refund_policy_version,
+                'digital_delivery_consent_version' => $order->digital_delivery_consent_version,
+                'paid_at' => $order->paid_at?->toISOString(),
+                'fulfilled_at' => $order->fulfilled_at?->toISOString(),
+                'paypal_reference' => $order->payment?->paypal_capture_id
+                    ? Str::mask($order->payment->paypal_capture_id, '*', 4, max(strlen($order->payment->paypal_capture_id) - 8, 0))
+                    : null,
+                'download_url' => $order->entitlement?->isActive() === true ? route('account.luts.download', $order->entitlement) : null,
+                'polling' => in_array($order->payment_status, [PaymentStatus::Created, PaymentStatus::Approved, PaymentStatus::Pending], true),
             ],
         ]);
+    }
+
+    public function cancel(Order $order): RedirectResponse
+    {
+        $this->authorize('cancel', $order);
+
+        $order->forceFill([
+            'status' => OrderStatus::Cancelled,
+            'payment_status' => PaymentStatus::Failed,
+            'cancelled_at' => now(),
+        ])->save();
+
+        return redirect()->route('account.orders.show', $order);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function summary(Order $order): array
+    {
+        return [
+            'id' => $order->id,
+            'number' => $order->number,
+            'product_name' => $order->item?->product_name,
+            'product_type' => $order->item?->product_type,
+            'product_version' => $order->item?->product_version,
+            'created_at' => $order->created_at?->toISOString(),
+            'amount' => 'EUR '.EurMoney::formatCents($order->total_cents),
+            'currency' => $order->currency,
+            'status' => $order->status->value,
+            'status_label' => $order->status->label(),
+            'payment_status' => $order->payment_status->value,
+            'payment_status_label' => $order->payment_status->label(),
+            'fulfillment_status' => $order->fulfillment_status->value,
+            'fulfillment_status_label' => $order->fulfillment_status->label(),
+            'url' => route('account.orders.show', $order),
+        ];
     }
 }

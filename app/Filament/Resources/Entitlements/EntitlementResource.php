@@ -2,12 +2,17 @@
 
 namespace App\Filament\Resources\Entitlements;
 
+use App\Actions\Audit\RecordAuditEvent;
+use App\Enums\CustomLutBuildFileKind;
+use App\Enums\DigitalAssetKind;
 use App\Enums\EntitlementStatus;
 use App\Enums\FulfillmentStatus;
 use App\Enums\PaymentStatus;
+use App\Enums\ProductFileKind;
 use App\Filament\Resources\Entitlements\Pages\ListEntitlements;
 use App\Filament\Resources\Entitlements\Pages\ViewEntitlement;
 use App\Models\Entitlement;
+use App\Models\User;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
@@ -41,7 +46,11 @@ class EntitlementResource extends Resource
             ->columns([
                 TextColumn::make('user.email')->label('Customer')->searchable(),
                 TextColumn::make('order.number')->label('Order')->searchable(),
-                TextColumn::make('orderItem.product_name')->label('Product')->searchable(),
+                TextColumn::make('digital_asset_kind')
+                    ->label('Type')
+                    ->badge()
+                    ->formatStateUsing(fn ($state): string => $state?->label() ?? (string) $state),
+                TextColumn::make('orderItem.product_name')->label('Item')->searchable(),
                 TextColumn::make('orderItem.product_version')->label('Version'),
                 TextColumn::make('status')->badge()->formatStateUsing(fn ($state): string => $state?->label() ?? (string) $state),
                 TextColumn::make('granted_at')->dateTime()->sortable(),
@@ -68,6 +77,16 @@ class EntitlementResource extends Resource
                             'fulfillment_status' => FulfillmentStatus::Revoked,
                         ])->save();
 
+                        $actor = auth()->user();
+                        app(RecordAuditEvent::class)->handle(
+                            'entitlement.revoked',
+                            actor: $actor instanceof User ? $actor : null,
+                            auditable: $record,
+                            targetUser: $record->user,
+                            metadata: ['reason' => (string) $data['reason']],
+                            allowedMetadataKeys: ['reason'],
+                        );
+
                         Notification::make()->title('Entitlement revoked')->success()->send();
                     }),
                 Action::make('restore')
@@ -79,11 +98,10 @@ class EntitlementResource extends Resource
                         Textarea::make('reason')->required()->maxLength(190),
                     ])
                     ->action(function (Entitlement $record, array $data): void {
-                        $record->loadMissing(['order.payment', 'productFile']);
+                        $record->loadMissing(['order.payment', 'productFile', 'customLutBuildFile']);
                         $order = $record->order;
-                        $file = $record->productFile;
 
-                        if ($order === null || $file === null || ! Storage::disk('private')->exists($file->path)) {
+                        if ($order === null || ! self::packageExistsFor($record)) {
                             Notification::make()->title('Entitlement cannot be restored')->danger()->send();
 
                             return;
@@ -105,6 +123,16 @@ class EntitlementResource extends Resource
                             'fulfillment_status' => FulfillmentStatus::Ready,
                         ])->save();
 
+                        $actor = auth()->user();
+                        app(RecordAuditEvent::class)->handle(
+                            'entitlement.restored',
+                            actor: $actor instanceof User ? $actor : null,
+                            auditable: $record,
+                            targetUser: $record->user,
+                            metadata: ['reason' => (string) $data['reason']],
+                            allowedMetadataKeys: ['reason'],
+                        );
+
                         Notification::make()->title('Entitlement restored')->success()->send();
                     }),
             ]);
@@ -121,6 +149,26 @@ class EntitlementResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['user', 'order.payment', 'orderItem', 'productFile']);
+            ->with(['user', 'order.payment', 'orderItem', 'productFile', 'customLutBuildFile']);
+    }
+
+    private static function packageExistsFor(Entitlement $entitlement): bool
+    {
+        if ($entitlement->digital_asset_kind === DigitalAssetKind::CatalogProduct) {
+            $file = $entitlement->productFile;
+
+            return $file !== null
+                && $file->kind === ProductFileKind::PackageZip
+                && $file->disk === 'private'
+                && Storage::disk($file->disk)->exists($file->path);
+        }
+
+        $file = $entitlement->customLutBuildFile;
+
+        return $file !== null
+            && $file->kind === CustomLutBuildFileKind::PackageZip
+            && $file->custom_lut_build_id === $entitlement->custom_lut_build_id
+            && $file->disk === config('custom-lut-commerce.private_disk', 'private')
+            && Storage::disk($file->disk)->exists($file->path);
     }
 }

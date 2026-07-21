@@ -1,0 +1,41 @@
+body {
+    background-color: #fafaf9;
+    color: #292524;
+    font-family:
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        sans-serif;
+}
+
+.wrapper {
+    background-color: #fafaf9;
+}
+
+.content-cell {
+    max-width: 640px;
+}
+
+.panel {
+    border-color: #e7e5e4;
+}
+
+.button-primary,
+.button-success {
+    background-color: #115e59;
+    border-bottom-color: #0f766e;
+    border-left-color: #0f766e;
+    border-right-color: #0f766e;
+    border-top-color: #0f766e;
+}
+
+.button-primary:hover,
+.button-success:hover {
+    background-color: #134e4a;
+}
+
+.footer {
+    color: #78716c;
+}

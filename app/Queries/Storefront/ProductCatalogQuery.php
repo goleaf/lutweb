@@ -133,13 +133,14 @@ class ProductCatalogQuery
                 'price_cents',
                 'currency',
                 'is_featured',
+                'is_testable',
                 'published_at',
             ])
             ->published()
             ->with([
                 'coverMedia' => fn ($query) => $query
-                    ->select(['id', 'product_id', 'kind', 'disk', 'path', 'alt_text', 'width', 'height', 'sort_order'])
-                    ->where('disk', 'public'),
+                    ->select($this->mediaSelect())
+                    ->with(['variants' => fn ($query) => $query->select($this->variantSelect())]),
                 'categories' => fn ($query) => $query
                     ->select(['categories.id', 'name', 'slug', 'description', 'is_active', 'sort_order'])
                     ->where('is_active', true)
@@ -165,6 +166,7 @@ class ProductCatalogQuery
                 'price_cents',
                 'currency',
                 'is_featured',
+                'is_testable',
                 'published_at',
                 'meta_title',
                 'meta_description',
@@ -173,15 +175,14 @@ class ProductCatalogQuery
             ->published()
             ->with([
                 'coverMedia' => fn ($query) => $query
-                    ->select(['id', 'product_id', 'kind', 'disk', 'path', 'alt_text', 'width', 'height', 'sort_order'])
-                    ->where('disk', 'public'),
+                    ->select($this->mediaSelect())
+                    ->with(['variants' => fn ($query) => $query->select($this->variantSelect())]),
                 'galleryMedia' => fn ($query) => $query
-                    ->select(['id', 'product_id', 'kind', 'disk', 'path', 'alt_text', 'width', 'height', 'sort_order'])
-                    ->where('disk', 'public'),
+                    ->select($this->mediaSelect())
+                    ->with(['variants' => fn ($query) => $query->select($this->variantSelect())]),
                 'activeExamples' => fn ($query) => $query
-                    ->select(['id', 'product_id', 'title', 'before_disk', 'before_path', 'before_alt_text', 'after_disk', 'after_path', 'after_alt_text', 'sort_order', 'is_active'])
-                    ->where('before_disk', 'public')
-                    ->where('after_disk', 'public'),
+                    ->select($this->exampleSelect())
+                    ->with(['variants' => fn ($query) => $query->select($this->variantSelect())]),
                 'categories' => fn ($query) => $query
                     ->select(['categories.id', 'name', 'slug', 'description', 'is_active', 'sort_order'])
                     ->where('is_active', true)
@@ -198,9 +199,78 @@ class ProductCatalogQuery
                 'bundleItems:id,bundle_id,product_id,sort_order',
                 'bundleItems.product:id,type,status,name,slug,short_description,price_cents,currency,is_featured,published_at,deleted_at',
                 'bundleItems.product.coverMedia' => fn ($query) => $query
-                    ->select(['id', 'product_id', 'kind', 'disk', 'path', 'alt_text', 'width', 'height', 'sort_order'])
-                    ->where('disk', 'public'),
+                    ->select($this->mediaSelect())
+                    ->with(['variants' => fn ($query) => $query->select($this->variantSelect())]),
             ]);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function mediaSelect(): array
+    {
+        return [
+            'id',
+            'product_id',
+            'kind',
+            'disk',
+            'path',
+            'alt_text',
+            'width',
+            'height',
+            'sort_order',
+            'processing_status',
+            'source_credit',
+            'source_credit_is_public',
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function exampleSelect(): array
+    {
+        return [
+            'id',
+            'product_id',
+            'title',
+            'before_disk',
+            'before_path',
+            'before_alt_text',
+            'after_disk',
+            'after_path',
+            'after_alt_text',
+            'is_active',
+            'sort_order',
+            'processing_status',
+            'source_width',
+            'source_height',
+            'source_credit',
+            'source_credit_is_public',
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function variantSelect(): array
+    {
+        return [
+            'id',
+            'imageable_type',
+            'imageable_id',
+            'role',
+            'format',
+            'disk',
+            'path',
+            'mime_type',
+            'width',
+            'height',
+            'quality',
+            'size_bytes',
+            'sha256',
+            'generated_at',
+        ];
     }
 
     /**

@@ -14,12 +14,11 @@ class ProcessPayPalWebhook implements ShouldQueue
 
     public int $tries = 3;
 
-    public bool $afterCommit = true;
-
     public function __construct(
         public readonly string $eventId,
     ) {
         $this->onQueue((string) config('paypal.webhook_queue', 'payments'));
+        $this->afterCommit();
     }
 
     /**
@@ -32,6 +31,9 @@ class ProcessPayPalWebhook implements ShouldQueue
         ];
     }
 
+    /**
+     * @return list<int>
+     */
     public function backoff(): array
     {
         return [10, 60, 180];

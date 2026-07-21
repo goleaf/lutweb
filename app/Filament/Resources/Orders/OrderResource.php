@@ -41,7 +41,15 @@ class OrderResource extends Resource
             ->columns([
                 TextColumn::make('number')->searchable()->sortable(),
                 TextColumn::make('customer_name')->searchable(),
-                TextColumn::make('item.product_name')->label('Product')->searchable(),
+                TextColumn::make('item.digital_asset_kind')
+                    ->label('Type')
+                    ->badge()
+                    ->formatStateUsing(fn ($state): string => $state?->label() ?? (string) $state),
+                TextColumn::make('item.product_name')->label('Item')->searchable(),
+                TextColumn::make('item.custom_lut_parameters_hash')
+                    ->label('Parameters')
+                    ->formatStateUsing(fn (?string $state): string => $state === null ? 'Not set' : substr($state, 0, 12))
+                    ->toggleable(),
                 TextColumn::make('total_cents')
                     ->label('Total')
                     ->formatStateUsing(fn (int $state): string => 'EUR '.EurMoney::formatCents($state))

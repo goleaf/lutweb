@@ -5,10 +5,10 @@ namespace App\Http\Resources\Storefront;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductMedia;
+use App\Services\StorefrontMedia\StorefrontResponsiveImageFactory;
 use App\Support\Catalog\EurMoney;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 class ProductCardResource extends JsonResource
 {
@@ -54,21 +54,24 @@ class ProductCardResource extends JsonResource
     }
 
     /**
-     * @return array{id: int, kind: string, url: string, alt_text: string, width: int|null, height: int|null}|null
+     * @return array<string, mixed>|null
      */
     private function media(?ProductMedia $media): ?array
     {
-        if ($media === null || $media->disk !== 'public') {
+        if ($media === null) {
             return null;
         }
+
+        $image = app(StorefrontResponsiveImageFactory::class)->forMedia($media);
 
         return [
             'id' => $media->id,
             'kind' => $media->kind->value,
-            'url' => Storage::disk('public')->url($media->path),
+            'url' => $image['fallback_jpeg_url'] ?? null,
             'alt_text' => $media->alt_text,
             'width' => $media->width,
             'height' => $media->height,
+            'image' => $image,
         ];
     }
 }

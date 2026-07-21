@@ -80,6 +80,9 @@ class CompletePayPalCapture
         return $order->refresh();
     }
 
+    /**
+     * @param  array<string, mixed>  $response
+     */
     private function markCompleted(Order $order, Payment $payment, PayPalCaptureValidationResult $result, array $response): void
     {
         $capture = $result->capture ?? [];
@@ -154,6 +157,10 @@ class CompletePayPalCapture
         }
     }
 
+    /**
+     * @param  array<string, mixed>  $response
+     * @param  array<string, mixed>  $capture
+     */
     private function payeeMerchantId(array $response, array $capture): ?string
     {
         return $this->stringOrNull($response['purchase_units'][0]['payee']['merchant_id'] ?? null)

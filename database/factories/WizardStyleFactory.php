@@ -21,10 +21,12 @@ class WizardStyleFactory extends Factory
     public function definition(): array
     {
         $base = LutTransformParameters::neutral()->toArray();
+        $name = fake()->words(2, true);
+        $slugTitle = fake()->unique()->words(3, true);
 
         return [
-            'name' => fake()->words(2, true),
-            'slug' => Str::slug(fake()->unique()->words(3, true)),
+            'name' => is_string($name) ? $name : implode(' ', $name),
+            'slug' => Str::slug(is_string($slugTitle) ? $slugTitle : implode(' ', $slugTitle)),
             'description' => fake()->sentence(),
             'transform_version' => LutTransformVersion::V1,
             'base_parameters' => $base,

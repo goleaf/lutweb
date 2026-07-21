@@ -1,0 +1,17 @@
+[Unit]
+Description=LUT Web queue worker - images and builds
+After=network.target
+
+[Service]
+Type=simple
+User=www-data-placeholder
+Group=www-data-placeholder
+WorkingDirectory=/var/www/lutweb-placeholder
+ExecStart=/usr/bin/php artisan queue:work --queue=images,builds --sleep=3 --tries=2 --timeout=900
+ExecStop=/bin/kill -TERM $MAINPID
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=180
+
+[Install]
+WantedBy=multi-user.target

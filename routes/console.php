@@ -1,7 +1,9 @@
 <?php
 
+use App\Jobs\QueueHeartbeatJob;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
@@ -17,5 +19,20 @@ Schedule::command('lut-wizard:prune')
     ->withoutOverlapping(20);
 
 Schedule::command('paypal:webhooks:purge-payloads')
+    ->daily()
+    ->withoutOverlapping();
+
+Schedule::job(new QueueHeartbeatJob, 'default')
+    ->everyMinute()
+    ->withoutOverlapping(5);
+
+Schedule::call(function (): void {
+    Cache::put('operations:scheduler-heartbeat', now()->toISOString(), now()->addMinutes(10));
+})
+    ->name('operations:scheduler-heartbeat')
+    ->everyMinute()
+    ->withoutOverlapping(5);
+
+Schedule::command('storefront-media:prune')
     ->daily()
     ->withoutOverlapping();

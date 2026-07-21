@@ -336,10 +336,20 @@ class ProcessPayPalWebhookEvent
      */
     private function handleDispute(array $resource): void
     {
-        $captureId = collect($resource['disputed_transactions'] ?? [])
-            ->pluck('seller_transaction_id')
-            ->filter(fn (mixed $value): bool => is_string($value) && $value !== '')
-            ->first();
+        $captureId = null;
+        $transactions = $resource['disputed_transactions'] ?? [];
+
+        if (is_array($transactions)) {
+            foreach ($transactions as $transaction) {
+                if (! is_array($transaction) || ! is_string($transaction['seller_transaction_id'] ?? null)) {
+                    continue;
+                }
+
+                $captureId = $transaction['seller_transaction_id'];
+
+                break;
+            }
+        }
 
         if (! is_string($captureId)) {
             return;

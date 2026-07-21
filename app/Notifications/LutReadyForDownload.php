@@ -12,11 +12,11 @@ class LutReadyForDownload extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public bool $afterCommit = true;
-
     public function __construct(
         public readonly Order $order,
-    ) {}
+    ) {
+        $this->afterCommit();
+    }
 
     /**
      * @return list<string>
@@ -33,7 +33,7 @@ class LutReadyForDownload extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject('Your LUT is ready')
             ->greeting('Your LUT is ready')
-            ->line(($this->order->item?->product_name ?? 'Your LUT').' is ready for secure download.')
+            ->line(($this->order->item->product_name ?? 'Your LUT').' is ready for secure download.')
             ->line('Order: '.$this->order->number)
             ->action('Go to My LUTs', route('account.luts.index'))
             ->line('No ZIP file is attached to this email. Download access stays inside your account.');

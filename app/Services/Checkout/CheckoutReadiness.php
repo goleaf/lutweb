@@ -100,7 +100,7 @@ class CheckoutReadiness
      */
     private function legalProblems(): array
     {
-        return collect([
+        return array_values(collect([
             'Terms of Sale version' => config('legal.terms_of_sale_version'),
             'License Agreement version' => config('legal.license_version'),
             'Refund Policy version' => config('legal.refund_policy_version'),
@@ -109,8 +109,7 @@ class CheckoutReadiness
             ->filter(fn (mixed $version): bool => blank($version))
             ->keys()
             ->map(fn (string $label): string => "{$label} is missing.")
-            ->values()
-            ->all();
+            ->all());
     }
 
     /**
@@ -118,7 +117,7 @@ class CheckoutReadiness
      */
     private function finalLegalProblems(): array
     {
-        return collect([
+        return array_values(collect([
             'Terms of Sale version' => config('legal.terms_of_sale_version'),
             'License Agreement version' => config('legal.license_version'),
             'Refund Policy version' => config('legal.refund_policy_version'),
@@ -127,8 +126,7 @@ class CheckoutReadiness
             ->filter(fn (mixed $version): bool => is_string($version) && Str::startsWith($version, 'draft-'))
             ->keys()
             ->map(fn (string $label): string => "{$label} is still a draft.")
-            ->values()
-            ->all();
+            ->all());
     }
 
     private function validSellerCountry(): bool

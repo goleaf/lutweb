@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Actions\StorefrontMedia\MarkProductExamplesStale;
 use App\Enums\ProductVersionStatus;
 use Database\Factories\ProductVersionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -44,6 +45,12 @@ class ProductVersion extends Model
                 throw ValidationException::withMessages([
                     'version' => 'A purchased product version cannot be deleted. Create a new version for updates.',
                 ]);
+            }
+        });
+
+        static::saved(function (ProductVersion $version): void {
+            if ($version->wasChanged(['status', 'is_current']) && $version->product instanceof Product) {
+                app(MarkProductExamplesStale::class)->forProduct($version->product);
             }
         });
     }
@@ -94,6 +101,14 @@ class ProductVersion extends Model
     public function downloadEvents(): HasMany
     {
         return $this->hasMany(DownloadEvent::class);
+    }
+
+    /**
+     * @return HasMany<ProductExample, $this>
+     */
+    public function processedExamples(): HasMany
+    {
+        return $this->hasMany(ProductExample::class, 'processed_product_version_id');
     }
 
     /**

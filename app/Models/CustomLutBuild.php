@@ -127,7 +127,7 @@ class CustomLutBuild extends Model
     public function packageFile(): HasOne
     {
         return $this->hasOne(CustomLutBuildFile::class)
-            ->where('kind', CustomLutBuildFileKind::PackageZip);
+            ->where('kind', CustomLutBuildFileKind::PackageZip->value);
     }
 
     /**
@@ -170,7 +170,7 @@ class CustomLutBuild extends Model
     public function scopeSaleReady(Builder $query): Builder
     {
         return $query
-            ->where('status', CustomLutBuildStatus::Ready)
+            ->where('status', CustomLutBuildStatus::Ready->value)
             ->where('sale_ready', true)
             ->where('contains_draft_documents', false);
     }

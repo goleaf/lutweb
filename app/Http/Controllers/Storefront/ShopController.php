@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Storefront\CategoryResource;
 use App\Http\Resources\Storefront\ProductCardResource;
 use App\Queries\Storefront\ProductCatalogQuery;
+use App\Services\Seo\SeoMetaFactory;
 use App\Support\Storefront\StorefrontFilterData;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,7 +14,7 @@ use Inertia\Response;
 
 class ShopController extends Controller
 {
-    public function index(Request $request, ProductCatalogQuery $catalog): Response
+    public function index(Request $request, ProductCatalogQuery $catalog, SeoMetaFactory $seo): Response
     {
         $filters = StorefrontFilterData::fromRequest($request);
         $products = $catalog->paginate($filters);
@@ -23,11 +24,7 @@ class ShopController extends Controller
             'resultCount' => $products->total(),
             'filters' => $filters->toArray(),
             'filterOptions' => $this->filterOptions($catalog),
-            'seo' => [
-                'title' => $filters->q ? 'Search results for "'.$filters->q.'" - LUT Web' : 'Shop LUTs - LUT Web',
-                'description' => 'Browse professional LUTs for photographers and creators.',
-                'canonical_url' => route('shop.index'),
-            ],
+            'seo' => $seo->shop(filtered: $filters->isFiltered())->toArray(),
         ]);
     }
 

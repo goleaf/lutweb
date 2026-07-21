@@ -11,7 +11,27 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property string $id
+ * @property DigitalAssetKind $digital_asset_kind
+ * @property string $entitlement_id
+ * @property int|null $user_id
+ * @property string $order_id
+ * @property int|null $product_id
+ * @property int|null $product_version_id
+ * @property int|null $product_file_id
+ * @property string|null $item_display_name_snapshot
+ * @property string|null $item_version_snapshot
+ * @property DownloadStatus $status
+ * @property string|null $ip_address
+ * @property string|null $user_agent
+ * @property Carbon $started_at
+ * @property Carbon|null $completed_at
+ * @property Carbon|null $failed_at
+ * @property int|null $size_bytes
+ */
 #[Fillable([
     'id',
     'digital_asset_kind',

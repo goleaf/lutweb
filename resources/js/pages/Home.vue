@@ -33,12 +33,42 @@ const categories = computed(() =>
 <template>
     <PublicLayout>
         <Head :title="seo.title">
-            <meta name="description" :content="seo.description" />
-            <link rel="canonical" :href="seo.canonical_url" />
-            <meta property="og:title" :content="seo.title" />
-            <meta property="og:description" :content="seo.description" />
-            <meta property="og:type" content="website" />
-            <meta name="twitter:card" content="summary" />
+            <meta
+                head-key="description"
+                name="description"
+                :content="seo.description"
+            />
+            <meta
+                v-if="seo.robots"
+                head-key="robots"
+                name="robots"
+                :content="seo.robots"
+            />
+            <link
+                head-key="canonical"
+                rel="canonical"
+                :href="seo.canonical_url"
+            />
+            <meta
+                head-key="og:title"
+                property="og:title"
+                :content="seo.og_title ?? seo.title"
+            />
+            <meta
+                head-key="og:description"
+                property="og:description"
+                :content="seo.og_description ?? seo.description"
+            />
+            <meta
+                head-key="og:type"
+                property="og:type"
+                :content="seo.og_type ?? 'website'"
+            />
+            <meta
+                head-key="twitter:card"
+                name="twitter:card"
+                :content="seo.twitter_card ?? 'summary'"
+            />
         </Head>
 
         <section class="border-b border-stone-200 bg-white">

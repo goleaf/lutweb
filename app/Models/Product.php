@@ -241,6 +241,17 @@ class Product extends Model
      */
     public function scopePublished(Builder $query): Builder
     {
+        return self::applyPublishedConstraints($query);
+    }
+
+    /**
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
+    public static function applyPublishedConstraints(Builder $query): Builder
+    {
         return $query
             ->where('status', ProductStatus::Published)
             ->whereNotNull('published_at')

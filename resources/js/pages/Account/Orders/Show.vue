@@ -9,15 +9,19 @@ type OrderDetail = {
     id: string;
     number: string;
     status: string;
+    status_label: string;
     payment_status: string;
+    payment_status_label: string;
     fulfillment_status: string;
+    fulfillment_status_label: string;
     currency: 'EUR';
     amount: string;
-    subtotal_cents: number;
-    tax_cents: number;
-    total_cents: number;
+    subtotal: string;
+    tax: string;
+    total: string;
     license_version: string;
     item: DigitalOrderItem | null;
+    download_url: string | null;
     capture_url: string;
 };
 
@@ -56,19 +60,19 @@ defineProps<{
                     <div>
                         <dt class="text-stone-500">Order status</dt>
                         <dd class="font-medium text-stone-900">
-                            {{ order.status }}
+                            {{ order.status_label }}
                         </dd>
                     </div>
                     <div>
                         <dt class="text-stone-500">Payment status</dt>
                         <dd class="font-medium text-stone-900">
-                            {{ order.payment_status }}
+                            {{ order.payment_status_label }}
                         </dd>
                     </div>
                     <div>
                         <dt class="text-stone-500">Fulfillment status</dt>
                         <dd class="font-medium text-stone-900">
-                            {{ order.fulfillment_status }}
+                            {{ order.fulfillment_status_label }}
                         </dd>
                     </div>
                     <div>
@@ -95,6 +99,14 @@ defineProps<{
                         {{ order.item.kind_label }} -
                         {{ order.item.version ?? 'Version' }}
                     </p>
+                    <a
+                        v-if="order.download_url"
+                        :href="order.download_url"
+                        class="mt-4 inline-flex items-center gap-2 rounded-md bg-teal-800 px-3 py-2 text-sm font-semibold text-white hover:bg-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                    >
+                        <AppIcon name="download" class="size-4" />
+                        Download ZIP
+                    </a>
                 </div>
                 <p v-else class="mt-3 text-sm text-stone-600">
                     The order item snapshot is unavailable.

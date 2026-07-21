@@ -476,6 +476,7 @@ async function prepareBuild(): Promise<void> {
 async function removeBuild(): Promise<void> {
     if (
         build.value === null ||
+        build.value.links.delete === null ||
         !window.confirm('Remove this prepared package?')
     ) {
         return;
@@ -495,6 +496,52 @@ async function removeBuild(): Promise<void> {
     } finally {
         buildBusy.value = false;
     }
+}
+
+async function openCheckout(): Promise<void> {
+    buildError.value = null;
+
+    if (build.value?.commerce.checkout_url === null) {
+        buildError.value =
+            build.value.commerce.message ??
+            'This package is not available for checkout yet.';
+
+        return;
+    }
+
+    await flushSave();
+
+    if (autosaveState.value === 'conflict') {
+        buildError.value =
+            'Resolve the updated project state before starting checkout.';
+
+        return;
+    }
+
+    if (autosaveState.value !== 'saved') {
+        buildError.value = 'Save the current project before starting checkout.';
+
+        return;
+    }
+
+    if (
+        build.value === null ||
+        build.value.commerce.checkout_url === null ||
+        (buildIsStale.value && build.value.commerce.state !== 'resume') ||
+        build.value.commerce.state === 'stale_build'
+    ) {
+        buildError.value = 'This LUT changed and must be prepared again.';
+
+        return;
+    }
+
+    router.visit(build.value.commerce.checkout_url);
+}
+
+function commerceActionLabel(current: CustomLutBuild): string {
+    return current.commerce.state === 'resume'
+        ? 'Resume Checkout'
+        : 'Buy and Download';
 }
 
 function formatBytes(value: number | null): string {
@@ -991,6 +1038,50 @@ onBeforeUnmount(() => {
                                 RGBA8 preview differences are expected.
                             </p>
                         </div>
+
+                        <div
+                            v-if="build"
+                            class="rounded-md border border-stone-200 bg-white p-3"
+                            aria-live="polite"
+                        >
+                            <div class="space-y-2 text-sm text-stone-700">
+                                <p
+                                    v-if="
+                                        build.commerce.price &&
+                                        (build.commerce.state === 'eligible' ||
+                                            build.commerce.state === 'resume')
+                                    "
+                                    class="font-semibold text-stone-950"
+                                >
+                                    Custom LUT price:
+                                    {{ build.commerce.price }}
+                                </p>
+                                <p
+                                    v-if="build.commerce.state === 'owned'"
+                                    class="font-medium text-teal-800"
+                                >
+                                    You own this exact LUT build.
+                                </p>
+                                <p
+                                    v-else-if="build.commerce.message"
+                                    class="text-stone-600"
+                                >
+                                    {{ build.commerce.message }}
+                                </p>
+                                <p
+                                    v-else-if="
+                                        build.commerce.state === 'eligible' ||
+                                        build.commerce.state === 'resume'
+                                    "
+                                    class="text-stone-600"
+                                >
+                                    This purchase contains the exact immutable
+                                    LUT package shown here. Future edits to your
+                                    project create a separate build.
+                                </p>
+                            </div>
+                        </div>
+
                         <div class="grid gap-2">
                             <button
                                 type="button"
@@ -1031,14 +1122,58 @@ onBeforeUnmount(() => {
                                 Remove Prepared Package
                             </button>
                         </div>
-                        <button
-                            type="button"
-                            disabled
-                            class="inline-flex w-full items-center justify-center gap-2 rounded-md border border-stone-300 bg-stone-100 px-3 py-2.5 text-sm font-semibold text-stone-500"
-                        >
-                            <AppIcon name="download" class="size-4" />
-                            Buy and Download - Coming soon
-                        </button>
+                        <div class="grid gap-2">
+                            <button
+                                v-if="
+                                    build &&
+                                    (build.commerce.state === 'eligible' ||
+                                        build.commerce.state === 'resume')
+                                "
+                                type="button"
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-teal-800 px-3 py-2.5 text-sm font-semibold text-white hover:bg-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:bg-stone-300"
+                                :disabled="
+                                    buildBusy ||
+                                    autosaveState === 'conflict' ||
+                                    (buildIsStale &&
+                                        build.commerce.state !== 'resume')
+                                "
+                                @click="openCheckout"
+                            >
+                                <AppIcon name="download" class="size-4" />
+                                {{ commerceActionLabel(build) }}
+                            </button>
+                            <a
+                                v-else-if="
+                                    build?.commerce.state === 'owned' &&
+                                    build.commerce.download_url
+                                "
+                                :href="build.commerce.download_url"
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-teal-800 px-3 py-2.5 text-sm font-semibold text-white hover:bg-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                            >
+                                <AppIcon name="download" class="size-4" />
+                                Download Your LUT
+                            </a>
+                            <button
+                                v-else
+                                type="button"
+                                disabled
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-md border border-stone-300 bg-stone-100 px-3 py-2.5 text-sm font-semibold text-stone-500"
+                            >
+                                <AppIcon name="download" class="size-4" />
+                                Buy and Download
+                            </button>
+                            <a
+                                v-if="
+                                    build?.commerce.state === 'owned' &&
+                                    build.commerce.purchased_url
+                                "
+                                :href="build.commerce.purchased_url"
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-md border border-stone-300 px-3 py-2.5 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                            >
+                                <AppIcon name="receipt" class="size-4" />
+                                View Purchase
+                            </a>
+                        </div>
                     </div>
 
                     <div v-else class="space-y-3">

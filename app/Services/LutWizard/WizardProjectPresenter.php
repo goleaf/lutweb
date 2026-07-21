@@ -3,12 +3,18 @@
 namespace App\Services\LutWizard;
 
 use App\Enums\CustomLutBuildFileKind;
+use App\Enums\DigitalAssetKind;
 use App\Models\CustomLutBuild;
 use App\Models\CustomLutBuildFile;
+use App\Models\Entitlement;
+use App\Models\Order;
+use App\Models\User;
 use App\Models\WizardProject;
 use App\Models\WizardProjectPhoto;
 use App\Models\WizardProjectVariant;
 use App\Models\WizardStyle;
+use App\Services\Checkout\CustomLutPurchaseEligibility;
+use App\Support\Catalog\EurMoney;
 use App\ValueObjects\LutTransformParameters;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
@@ -16,10 +22,14 @@ use Illuminate\Support\Facades\URL;
 
 class WizardProjectPresenter
 {
+    public function __construct(
+        private readonly CustomLutPurchaseEligibility $customLutPurchaseEligibility,
+    ) {}
+
     /**
      * @return array<string, mixed>
      */
-    public function editor(WizardProject $project): array
+    public function editor(WizardProject $project, ?User $user = null): array
     {
         $project->loadMissing([
             'photos' => fn ($query) => $query->orderBy('sort_order'),
@@ -31,7 +41,7 @@ class WizardProjectPresenter
             'project' => $this->project($project),
             'photos' => $project->photos->map(fn (WizardProjectPhoto $photo): array => $this->photo($project, $photo))->values()->all(),
             'variants' => $project->variants->map(fn (WizardProjectVariant $variant): array => $this->variant($variant, $project->parameters_hash))->values()->all(),
-            'build' => $project->latestBuild instanceof CustomLutBuild ? $this->build($project->latestBuild) : null,
+            'build' => $project->latestBuild instanceof CustomLutBuild ? $this->build($project->latestBuild, $project, $user) : null,
             'styles' => WizardStyle::query()
                 ->where('is_active', true)
                 ->orderByDesc('is_featured')
@@ -83,10 +93,11 @@ class WizardProjectPresenter
     /**
      * @return array<string, mixed>
      */
-    public function build(CustomLutBuild $build): array
+    public function build(CustomLutBuild $build, ?WizardProject $project = null, ?User $user = null): array
     {
         $build->loadMissing('files');
         $packageFile = $build->files->first(fn (CustomLutBuildFile $file): bool => $file->kind === CustomLutBuildFileKind::PackageZip);
+        $routeProject = $project ?? $build->wizardProject;
 
         return [
             'id' => $build->id,
@@ -121,9 +132,10 @@ class WizardProjectPresenter
                 ])
                 ->values()
                 ->all(),
+            'commerce' => $this->commerce($build, $routeProject, $user),
             'links' => [
-                'status' => route('custom-lut.builds.show', [$build->wizard_project_id, $build]),
-                'delete' => route('custom-lut.builds.destroy', [$build->wizard_project_id, $build]),
+                'status' => $routeProject instanceof WizardProject ? route('custom-lut.builds.show', [$routeProject, $build]) : null,
+                'delete' => $routeProject instanceof WizardProject ? route('custom-lut.builds.destroy', [$routeProject, $build]) : null,
             ],
         ];
     }
@@ -197,7 +209,7 @@ class WizardProjectPresenter
                     'active_photo_count' => $project->photos_count,
                     'revision' => $project->revision,
                     'parameters_hash' => $project->parameters_hash,
-                    'latest_build' => $project->latestBuild instanceof CustomLutBuild ? $this->build($project->latestBuild) : null,
+                    'latest_build' => $project->latestBuild instanceof CustomLutBuild ? $this->build($project->latestBuild, $project) : null,
                     'continue_url' => route('custom-lut.show', $project),
                     'prepare_build_url' => route('custom-lut.builds.store', $project),
                     'duplicate_url' => route('custom-lut.duplicate', $project),
@@ -230,5 +242,74 @@ class WizardProjectPresenter
             'wizardProject' => $project->id,
             'wizardProjectPhoto' => $photo->id,
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function commerce(CustomLutBuild $build, ?WizardProject $project, ?User $user): array
+    {
+        if (! $user instanceof User) {
+            return $this->commerceUnavailable();
+        }
+
+        $result = $this->customLutPurchaseEligibility->check($build, $user);
+        $entitlement = $result->state === 'owned'
+            ? $this->activeCustomLutEntitlement($build, $user)
+            : null;
+        $priceCents = null;
+
+        if ($result->settings !== null) {
+            $priceCents = $result->settings->price_cents;
+        } elseif ($result->order !== null) {
+            $priceCents = $result->order->total_cents;
+        } elseif ($entitlement instanceof Entitlement && $entitlement->order !== null) {
+            $priceCents = $entitlement->order->total_cents;
+        }
+
+        $mayOpenCheckout = in_array($result->state, ['eligible', 'resume'], true)
+            && $project instanceof WizardProject;
+
+        return [
+            'state' => $result->state,
+            'message' => $result->message,
+            'price_cents' => $priceCents,
+            'price' => $priceCents === null || $priceCents <= 0 ? null : 'EUR '.EurMoney::formatCents($priceCents),
+            'currency' => 'EUR',
+            'checkout_url' => $mayOpenCheckout ? route('custom-lut.checkout.show', [$project, $build]) : null,
+            'purchased_url' => $entitlement instanceof Entitlement ? route('account.custom-luts.purchased.show', $entitlement) : null,
+            'download_url' => $entitlement instanceof Entitlement && $entitlement->isActive() ? route('account.custom-luts.download', $entitlement) : null,
+            'order_url' => $result->order instanceof Order ? route('account.orders.show', $result->order) : null,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function commerceUnavailable(): array
+    {
+        return [
+            'state' => 'unavailable',
+            'message' => null,
+            'price_cents' => null,
+            'price' => null,
+            'currency' => 'EUR',
+            'checkout_url' => null,
+            'purchased_url' => null,
+            'download_url' => null,
+            'order_url' => null,
+        ];
+    }
+
+    private function activeCustomLutEntitlement(CustomLutBuild $build, User $user): ?Entitlement
+    {
+        return Entitlement::query()
+            ->with(['order', 'orderItem'])
+            ->where('user_id', $user->id)
+            ->where('digital_asset_kind', DigitalAssetKind::CustomLutBuild->value)
+            ->where('custom_lut_build_id', $build->id)
+            ->active()
+            ->latest('granted_at')
+            ->first();
     }
 }

@@ -11,6 +11,7 @@ use App\Models\WizardProject;
 use App\Services\CustomLutBuilds\DeleteCustomLutBuild;
 use App\Services\LutWizard\WizardProjectPresenter;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
@@ -35,17 +36,19 @@ class ProjectBuildController extends Controller
         );
 
         return response()->json([
-            'build' => $presenter->build($build->loadMissing('files')),
+            'build' => $presenter->build($build->loadMissing('files'), $wizardProject, $user),
         ]);
     }
 
-    public function show(WizardProject $wizardProject, CustomLutBuild $customLutBuild, WizardProjectPresenter $presenter): JsonResponse
+    public function show(Request $request, WizardProject $wizardProject, CustomLutBuild $customLutBuild, WizardProjectPresenter $presenter): JsonResponse
     {
         $this->assertBuildBelongsToProject($wizardProject, $customLutBuild);
         Gate::authorize('view', $customLutBuild);
+        $user = $request->user();
+        abort_unless($user instanceof User, HttpResponse::HTTP_FORBIDDEN);
 
         return response()->json([
-            'build' => $presenter->build($customLutBuild->loadMissing('files')),
+            'build' => $presenter->build($customLutBuild->loadMissing('files'), $wizardProject, $user),
         ]);
     }
 

@@ -6,6 +6,7 @@ return [
     'checkout_route_enabled' => true,
     'payment_queue' => env('CUSTOM_LUT_PAYMENT_QUEUE', env('PAYPAL_PAYMENT_QUEUE', 'payments')),
     'rate_limits' => [
+        'checkout_page_per_minute' => (int) env('CUSTOM_LUT_CHECKOUT_PAGE_ATTEMPTS_PER_MINUTE', 30),
         'checkout_per_minute' => (int) env('CUSTOM_LUT_CHECKOUT_ATTEMPTS_PER_MINUTE', 10),
         'capture_per_minute' => (int) env('CUSTOM_LUT_CAPTURE_ATTEMPTS_PER_MINUTE', 10),
         'downloads_per_ten_minutes' => (int) env('CUSTOM_LUT_DOWNLOADS_PER_TEN_MINUTES', 10),

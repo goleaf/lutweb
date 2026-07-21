@@ -7,6 +7,7 @@ import AccountLayout from '@/layouts/AccountLayout.vue';
 type DownloadRow = {
     id: string;
     product_name: string;
+    version: string | null;
     order_number: string | null;
     started_at: string | null;
     completed_at: string | null;
@@ -63,7 +64,12 @@ defineProps<{
                             :key="download.id"
                         >
                             <td class="px-4 py-3 font-medium text-stone-950">
-                                {{ download.product_name }}
+                                <span class="block">
+                                    {{ download.product_name }}
+                                </span>
+                                <span class="text-xs text-stone-500">
+                                    {{ download.version ?? 'Version' }}
+                                </span>
                             </td>
                             <td class="px-4 py-3 text-stone-700">
                                 {{ download.order_number ?? 'Unknown' }}

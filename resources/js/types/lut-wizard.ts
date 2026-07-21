@@ -187,6 +187,21 @@ export interface CustomLutBuildFailure {
     failure_message: string | null;
 }
 
+export type CustomLutBuildCommerceState =
+    'eligible' | 'owned' | 'resume' | 'stale_build' | 'unavailable';
+
+export interface CustomLutBuildCommerce {
+    state: CustomLutBuildCommerceState;
+    message: string | null;
+    price_cents: number | null;
+    price: string | null;
+    currency: 'EUR';
+    checkout_url: string | null;
+    purchased_url: string | null;
+    download_url: string | null;
+    order_url: string | null;
+}
+
 export interface CustomLutBuild
     extends CustomLutBuildReadiness, CustomLutBuildFailure {
     id: string;
@@ -204,9 +219,10 @@ export interface CustomLutBuild
     expires_at: string | null;
     package_size_bytes: number | null;
     files: CustomLutBuildFileSummary[];
+    commerce: CustomLutBuildCommerce;
     links: {
-        status: string;
-        delete: string;
+        status: string | null;
+        delete: string | null;
     };
 }
 

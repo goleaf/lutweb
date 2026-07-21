@@ -35,7 +35,7 @@ class ProjectStyleController extends Controller
         return response()->json([
             'project' => $presenter->project($project),
             'variants' => [],
-            'build' => $project->latestBuild === null ? null : $presenter->build($project->latestBuild),
+            'build' => $project->latestBuild === null ? null : $presenter->build($project->latestBuild, $project, $user),
         ]);
     }
 }

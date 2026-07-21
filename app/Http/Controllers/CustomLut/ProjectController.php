@@ -10,6 +10,7 @@ use App\Models\WizardProject;
 use App\Services\LutWizard\DeleteWizardProject;
 use App\Services\LutWizard\WizardProjectPresenter;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -39,12 +40,16 @@ class ProjectController extends Controller
     }
 
     public function show(
+        Request $request,
         WizardProject $wizardProject,
         WizardProjectPresenter $presenter,
     ): Response {
         Gate::authorize('view', $wizardProject);
 
-        return Inertia::render('CustomLut/Show', $presenter->editor($wizardProject));
+        $user = $request->user();
+        abort_unless($user instanceof User, 403);
+
+        return Inertia::render('CustomLut/Show', $presenter->editor($wizardProject, $user));
     }
 
     public function destroy(WizardProject $wizardProject, DeleteWizardProject $deleteProject): RedirectResponse

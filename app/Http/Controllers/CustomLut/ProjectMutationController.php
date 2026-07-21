@@ -28,7 +28,7 @@ class ProjectMutationController extends Controller
 
         return response()->json([
             'project' => $presenter->project($project),
-            'build' => $project->latestBuild === null ? null : $presenter->build($project->latestBuild),
+            'build' => $project->latestBuild === null ? null : $presenter->build($project->latestBuild, $project, $user),
         ]);
     }
 }

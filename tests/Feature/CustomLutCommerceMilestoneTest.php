@@ -208,6 +208,101 @@ test('custom LUT checkout page exposes only safe item and legal props', function
         ->not->toContain($build->parameters_hash);
 });
 
+test('custom LUT editor exposes safe commerce state for eligible and owned builds', function (): void {
+    $user = User::factory()->verified()->create();
+    [$project, $build] = customLutCommerceBuild($user);
+    customLutCommerceEnableSettings(1999);
+
+    $props = $this->actingAs($user)
+        ->get(route('custom-lut.show', $project))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('CustomLut/Show')
+            ->where('build.commerce.state', 'eligible')
+            ->where('build.commerce.price_cents', 1999)
+            ->where('build.commerce.price', 'EUR 19.99')
+            ->where('build.commerce.checkout_url', route('custom-lut.checkout.show', [$project, $build])))
+        ->inertiaProps();
+
+    expect(json_encode($props, JSON_THROW_ON_ERROR))
+        ->not->toContain('sandbox-client-secret')
+        ->not->toContain('sandbox-webhook-id')
+        ->not->toContain('MERCHANT-123')
+        ->not->toContain('custom-lut-builds/');
+
+    $order = app(CreateCustomLutCheckoutOrder::class)->handle($user, $build, customLutCommerceConsent());
+
+    Entitlement::query()->create([
+        'user_id' => $user->id,
+        'digital_asset_kind' => DigitalAssetKind::CustomLutBuild,
+        'order_id' => $order->id,
+        'order_item_id' => $order->item->id,
+        'wizard_project_id' => $build->wizard_project_id,
+        'custom_lut_build_id' => $build->id,
+        'custom_lut_build_file_id' => $order->item->custom_lut_build_file_id,
+        'status' => EntitlementStatus::Active,
+        'granted_at' => now(),
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('custom-lut.show', $project))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('CustomLut/Show')
+            ->where('build.commerce.state', 'owned')
+            ->where('build.commerce.download_url', route('account.custom-luts.download', Entitlement::query()->firstOrFail()))
+            ->where('build.commerce.purchased_url', route('account.custom-luts.purchased.show', Entitlement::query()->firstOrFail())));
+});
+
+test('dashboard reports catalog and custom LUT counts without leaking another account', function (): void {
+    $user = User::factory()->verified()->create();
+    $otherUser = User::factory()->verified()->create();
+    [, $build] = customLutCommerceBuild($user);
+    [, $otherBuild] = customLutCommerceBuild($otherUser);
+    customLutCommerceEnableSettings(1999);
+
+    Entitlement::factory()->create([
+        'user_id' => $user->id,
+        'digital_asset_kind' => DigitalAssetKind::CatalogProduct,
+        'status' => EntitlementStatus::Active,
+    ]);
+
+    $order = app(CreateCustomLutCheckoutOrder::class)->handle($user, $build, customLutCommerceConsent());
+    Entitlement::query()->create([
+        'user_id' => $user->id,
+        'digital_asset_kind' => DigitalAssetKind::CustomLutBuild,
+        'order_id' => $order->id,
+        'order_item_id' => $order->item->id,
+        'wizard_project_id' => $build->wizard_project_id,
+        'custom_lut_build_id' => $build->id,
+        'custom_lut_build_file_id' => $order->item->custom_lut_build_file_id,
+        'status' => EntitlementStatus::Active,
+        'granted_at' => now(),
+    ]);
+
+    $otherOrder = app(CreateCustomLutCheckoutOrder::class)->handle($otherUser, $otherBuild, customLutCommerceConsent());
+    Entitlement::query()->create([
+        'user_id' => $otherUser->id,
+        'digital_asset_kind' => DigitalAssetKind::CustomLutBuild,
+        'order_id' => $otherOrder->id,
+        'order_item_id' => $otherOrder->item->id,
+        'wizard_project_id' => $otherBuild->wizard_project_id,
+        'custom_lut_build_id' => $otherBuild->id,
+        'custom_lut_build_file_id' => $otherOrder->item->custom_lut_build_file_id,
+        'status' => EntitlementStatus::Active,
+        'granted_at' => now(),
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Dashboard')
+            ->where('counts.ready_made_luts', 1)
+            ->where('counts.purchased_custom_luts', 1)
+            ->where('counts.active_custom_lut_drafts', 1));
+});
+
 test('custom LUT order creation snapshots the immutable package and is idempotent', function (): void {
     $user = User::factory()->verified()->create();
     [, $build, $file] = customLutCommerceBuild($user);
@@ -348,6 +443,14 @@ test('completed payment fulfills one custom LUT entitlement and streams repeat d
     $this->actingAs($user)
         ->get(route('account.custom-luts.download', $entitlement))
         ->assertOk();
+
+    $this->actingAs($user)
+        ->get(route('account.orders.show', $order))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Account/Orders/Show')
+            ->where('order.item.kind', DigitalAssetKind::CustomLutBuild->value)
+            ->where('order.download_url', route('account.custom-luts.download', $entitlement)));
 });
 
 test('project deletion preserves an order-referenced custom LUT build and package', function (): void {
@@ -399,4 +502,14 @@ test('stale and unsafe custom LUT builds cannot be purchased', function (): void
         ->and($eligibility->check($draftDocuments, $user)->state)->toBe('unavailable')
         ->and($eligibility->check($superseded, $user)->state)->toBe('stale_build')
         ->and($eligibility->check($expired, $user)->state)->toBe('unavailable');
+});
+
+test('custom LUT commerce environment placeholders are documented without secrets', function (): void {
+    $contents = file_get_contents(base_path('.env.example'));
+
+    expect($contents)->toContain('CUSTOM_LUT_COMMERCE_ENABLED=false')
+        ->and($contents)->toContain('CUSTOM_LUT_SUPPORT_EMAIL=')
+        ->and($contents)->toContain('CUSTOM_LUT_VERIFY_PACKAGE_HASH_ON_FULFILLMENT=true')
+        ->and($contents)->toContain('CUSTOM_LUT_MAX_ACTIVE_UNPAID_ORDERS=5')
+        ->and($contents)->not->toContain('CUSTOM_LUT_PRICE=');
 });

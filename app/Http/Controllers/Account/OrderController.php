@@ -54,7 +54,9 @@ class OrderController extends Controller
                 'paypal_reference' => $order->payment?->paypal_capture_id
                     ? Str::mask($order->payment->paypal_capture_id, '*', 4, max(strlen($order->payment->paypal_capture_id) - 8, 0))
                     : null,
-                'download_url' => $order->entitlement?->isActive() === true ? route('account.luts.download', $order->entitlement) : null,
+                'item' => $this->item($order),
+                'download_url' => $this->downloadUrl($order),
+                'capture_url' => route('account.orders.paypal.capture', $order),
                 'polling' => in_array($order->payment_status, [PaymentStatus::Created, PaymentStatus::Approved, PaymentStatus::Pending], true),
             ],
         ]);
@@ -81,9 +83,13 @@ class OrderController extends Controller
         return [
             'id' => $order->id,
             'number' => $order->number,
-            'product_name' => $order->item?->product_name,
+            'kind' => $order->item?->digital_asset_kind->value,
+            'kind_label' => $order->item?->digital_asset_kind->label() ?? 'Digital product',
+            'name' => $order->item?->displayName() ?? 'Purchased LUT',
+            'version' => $order->item?->versionLabel(),
+            'product_name' => $order->item?->displayName(),
             'product_type' => $order->item?->product_type,
-            'product_version' => $order->item?->product_version,
+            'product_version' => $order->item?->versionLabel(),
             'created_at' => $order->created_at?->toISOString(),
             'amount' => 'EUR '.EurMoney::formatCents($order->total_cents),
             'currency' => $order->currency,
@@ -95,5 +101,39 @@ class OrderController extends Controller
             'fulfillment_status_label' => $order->fulfillment_status->label(),
             'url' => route('account.orders.show', $order),
         ];
+    }
+
+    /**
+     * @return array<string, string|null>|null
+     */
+    private function item(Order $order): ?array
+    {
+        $item = $order->item;
+
+        if ($item === null) {
+            return null;
+        }
+
+        return [
+            'kind' => $item->digital_asset_kind->value,
+            'kind_label' => $item->digital_asset_kind->label(),
+            'name' => $item->displayName(),
+            'version' => $item->versionLabel(),
+        ];
+    }
+
+    private function downloadUrl(Order $order): ?string
+    {
+        $entitlement = $order->entitlement;
+
+        if ($entitlement?->isActive() !== true) {
+            return null;
+        }
+
+        if ($order->item?->isCustomLutBuild()) {
+            return route('account.custom-luts.download', $entitlement);
+        }
+
+        return route('account.luts.download', $entitlement);
     }
 }

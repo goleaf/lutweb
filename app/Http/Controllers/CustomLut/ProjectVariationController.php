@@ -77,7 +77,7 @@ class ProjectVariationController extends Controller
                 ->map(fn (WizardProjectVariant $variant): array => $presenter->variant($variant, $project->parameters_hash))
                 ->values()
                 ->all(),
-            'build' => $project->latestBuild === null ? null : $presenter->build($project->latestBuild),
+            'build' => $project->latestBuild === null ? null : $presenter->build($project->latestBuild, $project, $user),
         ]);
     }
 }

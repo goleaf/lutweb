@@ -12,11 +12,11 @@ class LocalDemoUserSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    public const AdminEmail = 'admin@example.test';
+    public const AdminEmail = 'demo-admin@example.test';
 
-    public const CustomerEmail = 'demo@example.test';
+    public const CustomerEmail = 'demo-customer@example.test';
 
-    public const Password = 'password';
+    public const Password = 'local-demo-passphrase';
 
     /**
      * Run the database seeds.

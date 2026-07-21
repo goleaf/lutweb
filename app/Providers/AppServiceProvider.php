@@ -121,6 +121,23 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('lut-wizard-preview', fn (Request $request): Limit => Limit::perMinute((int) config('lut-wizard.private_preview_rate_limit', 180))
             ->by((string) ($request->user()?->getAuthIdentifier() ?: $request->ip())));
 
+        RateLimiter::for('custom-lut-build', function (Request $request): array {
+            $userKey = (string) ($request->user()?->getAuthIdentifier() ?: $request->ip());
+            $project = $request->route('wizardProject');
+            $projectKey = is_object($project) && method_exists($project, 'getKey') ? (string) $project->getKey() : 'unknown';
+
+            return [
+                Limit::perHour((int) config('custom-lut-builds.maximum_builds_per_project_per_hour', 5))->by($userKey.'|'.$projectKey),
+                Limit::perDay((int) config('custom-lut-builds.maximum_builds_per_user_per_day', 20))->by($userKey),
+            ];
+        });
+
+        RateLimiter::for('custom-lut-build-status', fn (Request $request): Limit => Limit::perMinute(120)
+            ->by((string) ($request->user()?->getAuthIdentifier() ?: $request->ip())));
+
+        RateLimiter::for('custom-lut-build-delete', fn (Request $request): Limit => Limit::perMinute(20)
+            ->by((string) ($request->user()?->getAuthIdentifier() ?: $request->ip())));
+
         RateLimiter::for('checkout-create', function (Request $request): array {
             $userKey = (string) ($request->user()?->getAuthIdentifier() ?: 'guest');
 

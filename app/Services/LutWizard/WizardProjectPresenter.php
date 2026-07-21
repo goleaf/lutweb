@@ -2,6 +2,9 @@
 
 namespace App\Services\LutWizard;
 
+use App\Enums\CustomLutBuildFileKind;
+use App\Models\CustomLutBuild;
+use App\Models\CustomLutBuildFile;
 use App\Models\WizardProject;
 use App\Models\WizardProjectPhoto;
 use App\Models\WizardProjectVariant;
@@ -21,12 +24,14 @@ class WizardProjectPresenter
         $project->loadMissing([
             'photos' => fn ($query) => $query->orderBy('sort_order'),
             'variants' => fn ($query) => $query->orderBy('position'),
+            'latestBuild.files' => fn ($query) => $query->orderBy('sort_order'),
         ]);
 
         return [
             'project' => $this->project($project),
             'photos' => $project->photos->map(fn (WizardProjectPhoto $photo): array => $this->photo($project, $photo))->values()->all(),
             'variants' => $project->variants->map(fn (WizardProjectVariant $variant): array => $this->variant($variant, $project->parameters_hash))->values()->all(),
+            'build' => $project->latestBuild instanceof CustomLutBuild ? $this->build($project->latestBuild) : null,
             'styles' => WizardStyle::query()
                 ->where('is_active', true)
                 ->orderByDesc('is_featured')
@@ -69,6 +74,57 @@ class WizardProjectPresenter
             'updated_at' => $project->updated_at?->toISOString(),
             'expires_at' => $project->expires_at->toISOString(),
             'maximum_photo_count' => min(3, (int) config('lut-wizard.maximum_photos_per_project', 3)),
+            'links' => [
+                'prepare_build' => route('custom-lut.builds.store', $project),
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function build(CustomLutBuild $build): array
+    {
+        $build->loadMissing('files');
+        $packageFile = $build->files->first(fn (CustomLutBuildFile $file): bool => $file->kind === CustomLutBuildFileKind::PackageZip);
+
+        return [
+            'id' => $build->id,
+            'status' => $build->isExpired() ? 'expired' : $build->status->value,
+            'project_revision' => $build->project_revision,
+            'project_name_snapshot' => $build->project_name_snapshot,
+            'package_stem' => $build->package_stem,
+            'parameters_hash' => $build->parameters_hash,
+            'transform_version' => $build->transform_version,
+            'generator_version' => $build->generator_version,
+            'sale_ready' => $build->sale_ready,
+            'contains_draft_documents' => $build->contains_draft_documents,
+            'parity_metrics' => [
+                'mean_millionths' => $build->parity_mean_error_millionths,
+                'p95_millionths' => $build->parity_p95_error_millionths,
+                'p99_millionths' => $build->parity_p99_error_millionths,
+                'max_millionths' => $build->parity_max_error_millionths,
+            ],
+            'created_at' => $build->created_at?->toISOString(),
+            'started_at' => $build->started_at?->toISOString(),
+            'completed_at' => $build->completed_at?->toISOString(),
+            'expires_at' => $build->expires_at?->toISOString(),
+            'failure_message' => $build->failure_message,
+            'package_size_bytes' => $packageFile instanceof CustomLutBuildFile ? $packageFile->size_bytes : $build->zip_size_bytes,
+            'files' => $build->files
+                ->sortBy('sort_order')
+                ->map(fn (CustomLutBuildFile $file): array => [
+                    'kind' => $file->kind->value,
+                    'display_name' => $file->safe_download_name ?? $file->original_name,
+                    'size_bytes' => $file->size_bytes,
+                    'short_checksum' => $file->sha256 === null ? null : substr($file->sha256, 0, 12),
+                ])
+                ->values()
+                ->all(),
+            'links' => [
+                'status' => route('custom-lut.builds.show', [$build->wizard_project_id, $build]),
+                'delete' => route('custom-lut.builds.destroy', [$build->wizard_project_id, $build]),
+            ],
         ];
     }
 
@@ -139,8 +195,11 @@ class WizardProjectPresenter
                     'updated_at' => $project->updated_at?->toISOString(),
                     'expires_at' => $project->expires_at->toISOString(),
                     'active_photo_count' => $project->photos_count,
+                    'revision' => $project->revision,
                     'parameters_hash' => $project->parameters_hash,
+                    'latest_build' => $project->latestBuild instanceof CustomLutBuild ? $this->build($project->latestBuild) : null,
                     'continue_url' => route('custom-lut.show', $project),
+                    'prepare_build_url' => route('custom-lut.builds.store', $project),
                     'duplicate_url' => route('custom-lut.duplicate', $project),
                     'delete_url' => route('custom-lut.destroy', $project),
                 ])

@@ -10,6 +10,7 @@
         "format:check": "prettier --check resources/",
         "lint": "eslint . --fix",
         "lint:check": "eslint .",
+        "test:lut-transform": "tsc -p tsconfig.lut-transform.json && node node_modules/.cache/lut-transform-test/tests/ts/lut-transform-v1-conformance.js",
         "types:check": "vue-tsc --noEmit"
     },
     "devDependencies": {

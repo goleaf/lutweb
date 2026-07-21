@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             CustomLutCommerceSettingsSeeder::class,
             CatalogSeeder::class,
             WizardStyleSeeder::class,
+            PackageDocumentTemplateSeeder::class,
         ]);
     }
 }

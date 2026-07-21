@@ -22,6 +22,13 @@ class WizardProjectPolicy
             : Response::denyAsNotFound();
     }
 
+    public function build(User $user, WizardProject $wizardProject): Response
+    {
+        return $wizardProject->mayBeEditedBy($user) && $user->hasVerifiedEmail()
+            ? Response::allow()
+            : Response::denyAsNotFound();
+    }
+
     public function delete(User $user, WizardProject $wizardProject): Response
     {
         return $wizardProject->mayBeEditedBy($user)

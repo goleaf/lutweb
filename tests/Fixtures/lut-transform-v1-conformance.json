@@ -1,0 +1,1958 @@
+{
+    "tolerance": 1.0e-9,
+    "identity_tolerance": 1.0e-12,
+    "cases": [
+        {
+            "name": "neutral / black",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0,
+                "green": 0,
+                "blue": 0
+            },
+            "expected": {
+                "red": 0,
+                "green": 0,
+                "blue": 0
+            },
+            "identity": true
+        },
+        {
+            "name": "neutral / white",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 1,
+                "green": 1,
+                "blue": 1
+            },
+            "expected": {
+                "red": 1,
+                "green": 1,
+                "blue": 1
+            },
+            "identity": true
+        },
+        {
+            "name": "neutral / red",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 1,
+                "green": 0,
+                "blue": 0
+            },
+            "expected": {
+                "red": 1,
+                "green": 0,
+                "blue": 0
+            },
+            "identity": true
+        },
+        {
+            "name": "neutral / green",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0,
+                "green": 1,
+                "blue": 0
+            },
+            "expected": {
+                "red": 0,
+                "green": 1,
+                "blue": 0
+            },
+            "identity": true
+        },
+        {
+            "name": "neutral / blue",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0,
+                "green": 0,
+                "blue": 1
+            },
+            "expected": {
+                "red": 0,
+                "green": 0,
+                "blue": 1
+            },
+            "identity": true
+        },
+        {
+            "name": "neutral / gray25",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.25,
+                "green": 0.25,
+                "blue": 0.25
+            },
+            "expected": {
+                "red": 0.25,
+                "green": 0.25,
+                "blue": 0.25
+            },
+            "identity": true
+        },
+        {
+            "name": "neutral / gray50",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.5,
+                "green": 0.5,
+                "blue": 0.5
+            },
+            "expected": {
+                "red": 0.5,
+                "green": 0.5,
+                "blue": 0.5
+            },
+            "identity": true
+        },
+        {
+            "name": "neutral / gray75",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.75,
+                "green": 0.75,
+                "blue": 0.75
+            },
+            "expected": {
+                "red": 0.75,
+                "green": 0.75,
+                "blue": 0.75
+            },
+            "identity": true
+        },
+        {
+            "name": "neutral / near black",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.015,
+                "green": 0.02,
+                "blue": 0.03
+            },
+            "expected": {
+                "red": 0.015,
+                "green": 0.02,
+                "blue": 0.03
+            },
+            "identity": true
+        },
+        {
+            "name": "neutral / near white",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.95,
+                "green": 0.97,
+                "blue": 0.99
+            },
+            "expected": {
+                "red": 0.95,
+                "green": 0.97,
+                "blue": 0.99
+            },
+            "identity": true
+        },
+        {
+            "name": "neutral / mixed a",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "expected": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "identity": true
+        },
+        {
+            "name": "neutral / mixed b",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.82,
+                "green": 0.37,
+                "blue": 0.14
+            },
+            "expected": {
+                "red": 0.82,
+                "green": 0.37,
+                "blue": 0.14
+            },
+            "identity": true
+        },
+        {
+            "name": "intensity zero warm / mixed a",
+            "parameters": {
+                "intensity": 0,
+                "exposure": 0,
+                "contrast": 300,
+                "temperature": 500,
+                "tint": 0,
+                "saturation": 200,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 200
+            },
+            "input": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "expected": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "identity": true
+        },
+        {
+            "name": "intensity zero warm / red",
+            "parameters": {
+                "intensity": 0,
+                "exposure": 0,
+                "contrast": 300,
+                "temperature": 500,
+                "tint": 0,
+                "saturation": 200,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 200
+            },
+            "input": {
+                "red": 1,
+                "green": 0,
+                "blue": 0
+            },
+            "expected": {
+                "red": 1,
+                "green": 0,
+                "blue": 0
+            },
+            "identity": true
+        },
+        {
+            "name": "intensity zero warm / near white",
+            "parameters": {
+                "intensity": 0,
+                "exposure": 0,
+                "contrast": 300,
+                "temperature": 500,
+                "tint": 0,
+                "saturation": 200,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 200
+            },
+            "input": {
+                "red": 0.95,
+                "green": 0.97,
+                "blue": 0.99
+            },
+            "expected": {
+                "red": 0.95,
+                "green": 0.97,
+                "blue": 0.99
+            },
+            "identity": true
+        },
+        {
+            "name": "intensity half cinematic / mixed a",
+            "parameters": {
+                "intensity": 500,
+                "exposure": 0,
+                "contrast": 260,
+                "temperature": 220,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": -180,
+                "shadows": 120,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 90,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 420,
+                "highlight_strength": 120
+            },
+            "input": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "expected": {
+                "red": 0.104942483106,
+                "green": 0.418652622388,
+                "blue": 0.825641331938
+            },
+            "identity": false
+        },
+        {
+            "name": "intensity half cinematic / gray50",
+            "parameters": {
+                "intensity": 500,
+                "exposure": 0,
+                "contrast": 260,
+                "temperature": 220,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": -180,
+                "shadows": 120,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 90,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 420,
+                "highlight_strength": 120
+            },
+            "input": {
+                "red": 0.5,
+                "green": 0.5,
+                "blue": 0.5
+            },
+            "expected": {
+                "red": 0.511206829306,
+                "green": 0.499094881809,
+                "blue": 0.486469677319
+            },
+            "identity": false
+        },
+        {
+            "name": "positive exposure / mixed a",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 125,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "expected": {
+                "red": 0.309193849901,
+                "green": 0.998933976602,
+                "blue": 1
+            },
+            "identity": false
+        },
+        {
+            "name": "positive exposure / gray25",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 125,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.25,
+                "green": 0.25,
+                "blue": 0.25
+            },
+            "expected": {
+                "red": 0.594603557501,
+                "green": 0.594603557501,
+                "blue": 0.594603557501
+            },
+            "identity": false
+        },
+        {
+            "name": "negative exposure / mixed b",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": -150,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.82,
+                "green": 0.37,
+                "blue": 0.14
+            },
+            "expected": {
+                "red": 0.289913780286,
+                "green": 0.13081475452,
+                "blue": 0.049497474683
+            },
+            "identity": false
+        },
+        {
+            "name": "negative exposure / gray75",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": -150,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.75,
+                "green": 0.75,
+                "blue": 0.75
+            },
+            "expected": {
+                "red": 0.265165042945,
+                "green": 0.265165042945,
+                "blue": 0.265165042945
+            },
+            "identity": false
+        },
+        {
+            "name": "positive contrast / mixed a",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 700,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "expected": {
+                "red": 0,
+                "green": 0.370039616583,
+                "blue": 1
+            },
+            "identity": false
+        },
+        {
+            "name": "positive contrast / gray50",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 700,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.5,
+                "green": 0.5,
+                "blue": 0.5
+            },
+            "expected": {
+                "red": 0.5,
+                "green": 0.5,
+                "blue": 0.5
+            },
+            "identity": false
+        },
+        {
+            "name": "negative contrast / mixed b",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": -650,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.82,
+                "green": 0.37,
+                "blue": 0.14
+            },
+            "expected": {
+                "red": 0.703929700371,
+                "green": 0.417153559224,
+                "blue": 0.270579087083
+            },
+            "identity": false
+        },
+        {
+            "name": "negative contrast / gray25",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": -650,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.25,
+                "green": 0.25,
+                "blue": 0.25
+            },
+            "expected": {
+                "red": 0.340679921585,
+                "green": 0.340679921585,
+                "blue": 0.340679921585
+            },
+            "identity": false
+        },
+        {
+            "name": "cool green tint / mixed a",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": -700,
+                "tint": -450,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "expected": {
+                "red": 0.111865,
+                "green": 0.4389,
+                "blue": 0.901125
+            },
+            "identity": false
+        },
+        {
+            "name": "cool green tint / white",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": -700,
+                "tint": -450,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 1,
+                "green": 1,
+                "blue": 1
+            },
+            "expected": {
+                "red": 0.8605,
+                "green": 1,
+                "blue": 1
+            },
+            "identity": false
+        },
+        {
+            "name": "warm magenta tint / mixed b",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 650,
+                "tint": 500,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.82,
+                "green": 0.37,
+                "blue": 0.14
+            },
+            "expected": {
+                "red": 0.92824,
+                "green": 0.3515,
+                "blue": 0.12572
+            },
+            "identity": false
+        },
+        {
+            "name": "warm magenta tint / white",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 650,
+                "tint": 500,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 1,
+                "green": 1,
+                "blue": 1
+            },
+            "expected": {
+                "red": 1,
+                "green": 0.95,
+                "blue": 0.898
+            },
+            "identity": false
+        },
+        {
+            "name": "saturation max / mixed a",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 1000,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "expected": {
+                "red": 0,
+                "green": 0.453496,
+                "blue": 1
+            },
+            "identity": false
+        },
+        {
+            "name": "saturation max / mixed b",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 1000,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.82,
+                "green": 0.37,
+                "blue": 0.14
+            },
+            "expected": {
+                "red": 1,
+                "green": 0.290936,
+                "blue": 0
+            },
+            "identity": false
+        },
+        {
+            "name": "saturation min / mixed a",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": -1000,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "expected": {
+                "red": 0.386504,
+                "green": 0.386504,
+                "blue": 0.386504
+            },
+            "identity": false
+        },
+        {
+            "name": "saturation min / red",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": -1000,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 1,
+                "green": 0,
+                "blue": 0
+            },
+            "expected": {
+                "red": 0.2126,
+                "green": 0.2126,
+                "blue": 0.2126
+            },
+            "identity": false
+        },
+        {
+            "name": "vibrance max / mixed a",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 1000,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "expected": {
+                "red": 0.06843904,
+                "green": 0.42803904,
+                "blue": 0.91163904
+            },
+            "identity": false
+        },
+        {
+            "name": "vibrance max / gray50",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 1000,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.5,
+                "green": 0.5,
+                "blue": 0.5
+            },
+            "expected": {
+                "red": 0.5,
+                "green": 0.5,
+                "blue": 0.5
+            },
+            "identity": false
+        },
+        {
+            "name": "vibrance min / mixed a",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": -1000,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "expected": {
+                "red": 0.19156096,
+                "green": 0.41196096,
+                "blue": 0.70836096
+            },
+            "identity": false
+        },
+        {
+            "name": "vibrance min / mixed b",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": -1000,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.82,
+                "green": 0.37,
+                "blue": 0.14
+            },
+            "expected": {
+                "red": 0.73097536,
+                "green": 0.38897536,
+                "blue": 0.21417536
+            },
+            "identity": false
+        },
+        {
+            "name": "tone controls / near black",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 350,
+                "shadows": -300,
+                "whites": 220,
+                "blacks": -260,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.015,
+                "green": 0.02,
+                "blue": 0.03
+            },
+            "expected": {
+                "red": 0,
+                "green": 0,
+                "blue": 0
+            },
+            "identity": false
+        },
+        {
+            "name": "tone controls / near white",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 350,
+                "shadows": -300,
+                "whites": 220,
+                "blacks": -260,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.95,
+                "green": 0.97,
+                "blue": 0.99
+            },
+            "expected": {
+                "red": 1,
+                "green": 1,
+                "blue": 1
+            },
+            "identity": false
+        },
+        {
+            "name": "tone controls / gray50",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 350,
+                "shadows": -300,
+                "whites": 220,
+                "blacks": -260,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.5,
+                "green": 0.5,
+                "blue": 0.5
+            },
+            "expected": {
+                "red": 0.501144,
+                "green": 0.501144,
+                "blue": 0.501144
+            },
+            "identity": false
+        },
+        {
+            "name": "fade / mixed a",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 650,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "expected": {
+                "red": 0.15886,
+                "green": 0.42624,
+                "blue": 0.78582
+            },
+            "identity": false
+        },
+        {
+            "name": "fade / black",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 650,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0,
+                "green": 0,
+                "blue": 0
+            },
+            "expected": {
+                "red": 0.039,
+                "green": 0.039,
+                "blue": 0.039
+            },
+            "identity": false
+        },
+        {
+            "name": "shadow split tone / near black",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2400,
+                "shadow_strength": 700,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.015,
+                "green": 0.02,
+                "blue": 0.03
+            },
+            "expected": {
+                "red": 0.004892,
+                "green": 0.009892,
+                "blue": 0.159892
+            },
+            "identity": false
+        },
+        {
+            "name": "shadow split tone / gray25",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2400,
+                "shadow_strength": 700,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.25,
+                "green": 0.25,
+                "blue": 0.25
+            },
+            "expected": {
+                "red": 0.242075328,
+                "green": 0.242075328,
+                "blue": 0.351835328
+            },
+            "identity": false
+        },
+        {
+            "name": "highlight split tone / near white",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 500,
+                "highlight_strength": 700
+            },
+            "input": {
+                "red": 0.95,
+                "green": 0.97,
+                "blue": 0.99
+            },
+            "expected": {
+                "red": 0.976796,
+                "green": 0.973462666667,
+                "blue": 0.876796
+            },
+            "identity": false
+        },
+        {
+            "name": "highlight split tone / gray75",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 0,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 0,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 500,
+                "highlight_strength": 700
+            },
+            "input": {
+                "red": 0.75,
+                "green": 0.75,
+                "blue": 0.75
+            },
+            "expected": {
+                "red": 0.771008064,
+                "green": 0.752714730667,
+                "blue": 0.661248064
+            },
+            "identity": false
+        },
+        {
+            "name": "combined look / mixed a",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 35,
+                "contrast": 280,
+                "temperature": 180,
+                "tint": -90,
+                "saturation": -120,
+                "vibrance": 240,
+                "highlights": -160,
+                "shadows": 140,
+                "whites": 60,
+                "blacks": -120,
+                "fade": 160,
+                "shadow_hue": 2200,
+                "shadow_strength": 140,
+                "highlight_hue": 450,
+                "highlight_strength": 180
+            },
+            "input": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "expected": {
+                "red": 0.144863415508,
+                "green": 0.543215384178,
+                "blue": 1
+            },
+            "identity": false
+        },
+        {
+            "name": "combined look / mixed b",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 35,
+                "contrast": 280,
+                "temperature": 180,
+                "tint": -90,
+                "saturation": -120,
+                "vibrance": 240,
+                "highlights": -160,
+                "shadows": 140,
+                "whites": 60,
+                "blacks": -120,
+                "fade": 160,
+                "shadow_hue": 2200,
+                "shadow_strength": 140,
+                "highlight_hue": 450,
+                "highlight_strength": 180
+            },
+            "input": {
+                "red": 0.82,
+                "green": 0.37,
+                "blue": 0.14
+            },
+            "expected": {
+                "red": 1,
+                "green": 0.471897043495,
+                "blue": 0.138495963612
+            },
+            "identity": false
+        },
+        {
+            "name": "combined look / gray50",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 35,
+                "contrast": 280,
+                "temperature": 180,
+                "tint": -90,
+                "saturation": -120,
+                "vibrance": 240,
+                "highlights": -160,
+                "shadows": 140,
+                "whites": 60,
+                "blacks": -120,
+                "fade": 160,
+                "shadow_hue": 2200,
+                "shadow_strength": 140,
+                "highlight_hue": 450,
+                "highlight_strength": 180
+            },
+            "input": {
+                "red": 0.5,
+                "green": 0.5,
+                "blue": 0.5
+            },
+            "expected": {
+                "red": 0.671247426842,
+                "green": 0.650503279988,
+                "blue": 0.602362429813
+            },
+            "identity": false
+        },
+        {
+            "name": "clean portrait base / skin-ish",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 80,
+                "temperature": 60,
+                "tint": 20,
+                "saturation": 0,
+                "vibrance": 50,
+                "highlights": -60,
+                "shadows": 60,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.82,
+                "green": 0.37,
+                "blue": 0.14
+            },
+            "expected": {
+                "red": 0.85477540197,
+                "green": 0.363533049455,
+                "blue": 0.117224265447
+            },
+            "identity": false
+        },
+        {
+            "name": "clean portrait base / blue scene",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 80,
+                "temperature": 60,
+                "tint": 20,
+                "saturation": 0,
+                "vibrance": 50,
+                "highlights": -60,
+                "shadows": 60,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "expected": {
+                "red": 0.112985923024,
+                "green": 0.420391054021,
+                "blue": 0.829203824573
+            },
+            "identity": false
+        },
+        {
+            "name": "warm cinematic base / mixed a",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 180,
+                "temperature": 180,
+                "tint": 0,
+                "saturation": -40,
+                "vibrance": 0,
+                "highlights": -120,
+                "shadows": 80,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 420,
+                "highlight_strength": 80
+            },
+            "input": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "expected": {
+                "red": 0.104723121968,
+                "green": 0.415537156987,
+                "blue": 0.811146735143
+            },
+            "identity": false
+        },
+        {
+            "name": "warm cinematic base / near white",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": 180,
+                "temperature": 180,
+                "tint": 0,
+                "saturation": -40,
+                "vibrance": 0,
+                "highlights": -120,
+                "shadows": 80,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 420,
+                "highlight_strength": 80
+            },
+            "input": {
+                "red": 0.95,
+                "green": 0.97,
+                "blue": 0.99
+            },
+            "expected": {
+                "red": 1,
+                "green": 1,
+                "blue": 0.981245869671
+            },
+            "identity": false
+        },
+        {
+            "name": "dark moody base / mixed a",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": -20,
+                "contrast": 260,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": -160,
+                "vibrance": 0,
+                "highlights": -80,
+                "shadows": -100,
+                "whites": 0,
+                "blacks": -160,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "expected": {
+                "red": 0.065574262091,
+                "green": 0.319518921432,
+                "blue": 0.661030704684
+            },
+            "identity": false
+        },
+        {
+            "name": "dark moody base / near black",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": -20,
+                "contrast": 260,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": -160,
+                "vibrance": 0,
+                "highlights": -80,
+                "shadows": -100,
+                "whites": 0,
+                "blacks": -160,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.015,
+                "green": 0.02,
+                "blue": 0.03
+            },
+            "expected": {
+                "red": 0,
+                "green": 0,
+                "blue": 0
+            },
+            "identity": false
+        },
+        {
+            "name": "soft pastel base / mixed b",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": -160,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": -100,
+                "vibrance": 80,
+                "highlights": -80,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 160,
+                "fade": 180,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.82,
+                "green": 0.37,
+                "blue": 0.14
+            },
+            "expected": {
+                "red": 0.755311812835,
+                "green": 0.390781109133,
+                "blue": 0.204465416129
+            },
+            "identity": false
+        },
+        {
+            "name": "soft pastel base / gray25",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": -160,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": -100,
+                "vibrance": 80,
+                "highlights": -80,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 160,
+                "fade": 180,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.25,
+                "green": 0.25,
+                "blue": 0.25
+            },
+            "expected": {
+                "red": 0.281076867651,
+                "green": 0.281076867651,
+                "blue": 0.281076867651
+            },
+            "identity": false
+        },
+        {
+            "name": "vintage film base / mixed a",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": -60,
+                "temperature": 120,
+                "tint": 0,
+                "saturation": -180,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 240,
+                "shadow_hue": 2150,
+                "shadow_strength": 60,
+                "highlight_hue": 480,
+                "highlight_strength": 100
+            },
+            "input": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "expected": {
+                "red": 0.198696507483,
+                "green": 0.419946726356,
+                "blue": 0.707111222703
+            },
+            "identity": false
+        },
+        {
+            "name": "vintage film base / gray75",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 0,
+                "contrast": -60,
+                "temperature": 120,
+                "tint": 0,
+                "saturation": -180,
+                "vibrance": 0,
+                "highlights": 0,
+                "shadows": 0,
+                "whites": 0,
+                "blacks": 0,
+                "fade": 240,
+                "shadow_hue": 2150,
+                "shadow_strength": 60,
+                "highlight_hue": 480,
+                "highlight_strength": 100
+            },
+            "input": {
+                "red": 0.75,
+                "green": 0.75,
+                "blue": 0.75
+            },
+            "expected": {
+                "red": 0.748874764974,
+                "green": 0.733517898386,
+                "blue": 0.709218042218
+            },
+            "identity": false
+        },
+        {
+            "name": "bright travel base / mixed a",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 15,
+                "contrast": 100,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 60,
+                "vibrance": 180,
+                "highlights": -100,
+                "shadows": 140,
+                "whites": 80,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.13,
+                "green": 0.42,
+                "blue": 0.81
+            },
+            "expected": {
+                "red": 0.102813148369,
+                "green": 0.475423687817,
+                "blue": 0.976520620179
+            },
+            "identity": false
+        },
+        {
+            "name": "bright travel base / near white",
+            "parameters": {
+                "intensity": 1000,
+                "exposure": 15,
+                "contrast": 100,
+                "temperature": 0,
+                "tint": 0,
+                "saturation": 60,
+                "vibrance": 180,
+                "highlights": -100,
+                "shadows": 140,
+                "whites": 80,
+                "blacks": 0,
+                "fade": 0,
+                "shadow_hue": 2100,
+                "shadow_strength": 0,
+                "highlight_hue": 400,
+                "highlight_strength": 0
+            },
+            "input": {
+                "red": 0.95,
+                "green": 0.97,
+                "blue": 0.99
+            },
+            "expected": {
+                "red": 1,
+                "green": 1,
+                "blue": 1
+            },
+            "identity": false
+        }
+    ]
+}

@@ -23,8 +23,8 @@ return [
     'private_disk' => env('CUSTOM_LUT_PRIVATE_DISK', 'private'),
     'build_prefix' => trim((string) env('CUSTOM_LUT_BUILD_PREFIX', 'custom-lut-builds'), '/'),
     'supported_transform_versions' => ['lut_transform_v1', 'v1'],
-    'supported_generator_versions' => ['v1'],
-    'supported_package_schema_versions' => ['v1'],
+    'supported_generator_versions' => ['cube_generator_v1', 'v1'],
+    'supported_package_schema_versions' => ['lut-web-custom-package-v1', 'v1'],
     'doctor_requirements' => [
         'final_legal_versions' => true,
         'private_disk' => true,

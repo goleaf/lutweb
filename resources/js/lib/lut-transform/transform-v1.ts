@@ -1,4 +1,4 @@
-import type { CanonicalLutParameters } from '@/types/lut-wizard';
+import type { CanonicalLutParameters } from '../../types/lut-wizard.js';
 
 export interface Rgb {
     red: number;

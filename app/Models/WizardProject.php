@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CustomLutBuildStatus;
 use App\Enums\LutTransformVersion;
 use App\Enums\WizardPhotoStatus;
 use App\Enums\WizardProjectStatus;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property string $id
@@ -117,6 +119,33 @@ class WizardProject extends Model
     public function customLutBuilds(): HasMany
     {
         return $this->hasMany(CustomLutBuild::class);
+    }
+
+    /**
+     * @return HasMany<CustomLutBuild, $this>
+     */
+    public function builds(): HasMany
+    {
+        return $this->customLutBuilds();
+    }
+
+    /**
+     * @return HasOne<CustomLutBuild, $this>
+     */
+    public function latestBuild(): HasOne
+    {
+        return $this->hasOne(CustomLutBuild::class)->latestOfMany();
+    }
+
+    /**
+     * @return HasOne<CustomLutBuild, $this>
+     */
+    public function currentReadyBuild(): HasOne
+    {
+        return $this->hasOne(CustomLutBuild::class)
+            ->where('status', CustomLutBuildStatus::Ready->value)
+            ->where('is_current', true)
+            ->latestOfMany();
     }
 
     /**

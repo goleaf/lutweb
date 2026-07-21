@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\CubeGeneratorVersion;
 use App\Enums\CustomLutBuildStatus;
 use App\Enums\LutTransformVersion;
 use App\Models\CustomLutBuild;
@@ -34,11 +35,14 @@ class CustomLutBuildFactory extends Factory
             'style_name_snapshot' => null,
             'package_stem' => 'custom-lut-'.$buildId,
             'project_revision' => 1,
+            'parameters' => $parameters->toArray(),
             'parameters_hash' => $parameters->hash(),
             'build_fingerprint' => hash('sha256', 'build-'.$buildId),
+            'build_request_id' => fake()->uuid(),
+            'disk' => 'private',
             'transform_version' => LutTransformVersion::V1->value,
-            'generator_version' => 'v1',
-            'package_schema_version' => 'v1',
+            'generator_version' => CubeGeneratorVersion::V1->value,
+            'package_schema_version' => 'lut-web-custom-package-v1',
             'status' => CustomLutBuildStatus::Ready,
             'sale_ready' => true,
             'contains_draft_documents' => false,
@@ -46,10 +50,42 @@ class CustomLutBuildFactory extends Factory
             'zip_validation_completed' => true,
             'parity_validation_passed' => true,
             'ffmpeg_validation_passed' => true,
+            'parity_mean_error_millionths' => 0,
+            'parity_p95_error_millionths' => 0,
+            'parity_p99_error_millionths' => 0,
+            'parity_max_error_millionths' => 0,
             'license_version' => 'license-v1',
             'license_template_hash' => hash('sha256', 'license-v1'),
             'guide_version' => 'guide-v1',
             'guide_template_hash' => hash('sha256', 'guide-v1'),
+            'zip_size_bytes' => 1024,
+            'zip_sha256' => hash('sha256', 'zip-'.$buildId),
+            'uncompressed_size_bytes' => 2048,
+            'failure_code' => null,
+            'failure_message' => null,
+            'license_document_snapshot' => [
+                'id' => (string) Str::ulid(),
+                'kind' => 'license',
+                'status' => 'active',
+                'version' => 'license-v1',
+                'title' => 'License',
+                'body' => 'Final license terms.',
+                'is_current' => true,
+                'content_hash' => hash('sha256', 'license-v1'),
+            ],
+            'guide_document_snapshot' => [
+                'id' => (string) Str::ulid(),
+                'kind' => 'installation_guide',
+                'status' => 'active',
+                'version' => 'guide-v1',
+                'title' => 'Installation Guide',
+                'body' => 'Install the CUBE file in your supported host application.',
+                'is_current' => true,
+                'content_hash' => hash('sha256', 'guide-v1'),
+            ],
+            'started_at' => now(),
+            'completed_at' => now(),
+            'superseded_at' => null,
             'prepared_at' => now(),
             'expires_at' => now()->addDays(30),
             'locked_at' => null,
@@ -68,6 +104,38 @@ class CustomLutBuildFactory extends Factory
             'zip_validation_completed' => true,
             'parity_validation_passed' => true,
             'ffmpeg_validation_passed' => true,
+        ]);
+    }
+
+    public function queued(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'status' => CustomLutBuildStatus::Queued,
+            'sale_ready' => false,
+            'is_current' => false,
+            'prepared_at' => null,
+            'completed_at' => null,
+        ]);
+    }
+
+    public function processing(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'status' => CustomLutBuildStatus::Processing,
+            'sale_ready' => false,
+            'is_current' => false,
+            'started_at' => now(),
+            'completed_at' => null,
+        ]);
+    }
+
+    public function draftDocuments(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'contains_draft_documents' => true,
+            'sale_ready' => false,
+            'license_version' => 'draft-license-v1',
+            'guide_version' => 'draft-guide-v1',
         ]);
     }
 }

@@ -5,6 +5,7 @@ import AppIcon from '@/components/AppIcon.vue';
 import EmptyState from '@/components/ui/EmptyState.vue';
 import SectionHeading from '@/components/ui/SectionHeading.vue';
 import AccountLayout from '@/layouts/AccountLayout.vue';
+import type { CustomLutBuild, CustomLutBuildRequest } from '@/types/lut-wizard';
 
 interface AccountProject {
     id: string;
@@ -13,8 +14,11 @@ interface AccountProject {
     updated_at: string | null;
     expires_at: string;
     active_photo_count: number;
+    revision: number;
     parameters_hash: string;
+    latest_build: CustomLutBuild | null;
     continue_url: string;
+    prepare_build_url: string;
     duplicate_url: string;
     delete_url: string;
 }
@@ -43,6 +47,42 @@ const csrf =
 
 function post(url: string): void {
     router.post(url);
+}
+
+async function prepare(project: AccountProject): Promise<void> {
+    const request: CustomLutBuildRequest = {
+        expected_revision: project.revision,
+        expected_parameters_hash: project.parameters_hash,
+        build_request_id: crypto.randomUUID(),
+    };
+
+    await fetch(project.prepare_build_url, {
+        method: 'POST',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrf,
+        },
+        body: JSON.stringify(request),
+    });
+
+    router.reload({ only: ['projects'] });
+}
+
+function formatBuildStatus(build: CustomLutBuild | null): string {
+    if (build === null) {
+        return 'Not prepared';
+    }
+
+    if (build.status === 'ready' && build.sale_ready) {
+        return 'Technically ready';
+    }
+
+    if (build.status === 'ready') {
+        return 'Review build';
+    }
+
+    return build.status.replace('_', ' ');
 }
 
 async function remove(project: AccountProject): Promise<void> {
@@ -148,6 +188,31 @@ async function remove(project: AccountProject): Promise<void> {
                                     {{ project.parameters_hash.slice(0, 12) }}
                                 </dd>
                             </div>
+                            <div>
+                                <dt class="inline font-medium text-stone-900">
+                                    Build:
+                                </dt>
+                                <dd class="inline">
+                                    {{
+                                        formatBuildStatus(project.latest_build)
+                                    }}
+                                </dd>
+                            </div>
+                            <div v-if="project.latest_build">
+                                <dt class="inline font-medium text-stone-900">
+                                    Build expires:
+                                </dt>
+                                <dd class="inline">
+                                    {{
+                                        project.latest_build.expires_at
+                                            ? new Date(
+                                                  project.latest_build
+                                                      .expires_at,
+                                              ).toLocaleDateString()
+                                            : 'Not set'
+                                    }}
+                                </dd>
+                            </div>
                         </dl>
                     </div>
                     <div class="flex flex-wrap gap-2">
@@ -158,6 +223,21 @@ async function remove(project: AccountProject): Promise<void> {
                             <AppIcon name="edit" class="size-4" />
                             Continue Editing
                         </Link>
+                        <button
+                            type="button"
+                            class="inline-flex items-center gap-2 rounded-md border border-teal-200 px-3 py-2 text-sm font-semibold text-teal-800 hover:bg-teal-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                            @click="prepare(project)"
+                        >
+                            <AppIcon name="package" class="size-4" />
+                            {{
+                                project.latest_build === null ||
+                                project.latest_build.status === 'failed' ||
+                                project.latest_build.status === 'expired' ||
+                                project.latest_build.status === 'superseded'
+                                    ? 'Prepare Package'
+                                    : 'Regenerate'
+                            }}
+                        </button>
                         <button
                             type="button"
                             class="inline-flex items-center gap-2 rounded-md border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"

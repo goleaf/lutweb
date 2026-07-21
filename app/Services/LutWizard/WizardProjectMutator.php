@@ -4,12 +4,15 @@ namespace App\Services\LutWizard;
 
 use App\Models\User;
 use App\Models\WizardProject;
+use App\Services\CustomLutBuilds\SupersedeCustomLutBuilds;
 use Closure;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
 
 class WizardProjectMutator
 {
+    public function __construct(private readonly SupersedeCustomLutBuilds $supersedeBuilds) {}
+
     /**
      * @param  Closure(WizardProject): void  $callback
      */
@@ -48,7 +51,13 @@ class WizardProjectMutator
                 ], 409));
             }
 
+            $originalName = $lockedProject->name;
+            $originalParametersHash = $lockedProject->parameters_hash;
+
             $callback($lockedProject);
+
+            $packageOutputChanged = $lockedProject->name !== $originalName
+                || $lockedProject->parameters_hash !== $originalParametersHash;
 
             $lockedProject->revision++;
             $lockedProject->last_mutation_id = $mutationId;
@@ -59,6 +68,10 @@ class WizardProjectMutator
 
             $lockedProject->extendExpiration();
             $lockedProject->save();
+
+            if ($packageOutputChanged) {
+                $this->supersedeBuilds->handle($lockedProject);
+            }
 
             return $lockedProject;
         });

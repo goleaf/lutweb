@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @property string $id
@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CustomLutBuildFileKind $kind
  * @property string $disk
  * @property string $path
+ * @property string|null $relative_package_path
+ * @property string|null $safe_download_name
  * @property string $original_name
  * @property string|null $mime_type
  * @property int $size_bytes
@@ -29,6 +32,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'kind',
     'disk',
     'path',
+    'relative_package_path',
+    'safe_download_name',
     'original_name',
     'mime_type',
     'size_bytes',
@@ -59,6 +64,17 @@ class CustomLutBuildFile extends Model
     public function isPackageZip(): bool
     {
         return $this->kind === CustomLutBuildFileKind::PackageZip;
+    }
+
+    public function isPackage(): bool
+    {
+        return $this->isPackageZip();
+    }
+
+    public function existsOnPrivateStorage(): bool
+    {
+        return $this->disk === (string) config('custom-lut-builds.private_disk', 'private')
+            && Storage::disk($this->disk)->exists($this->path);
     }
 
     /**

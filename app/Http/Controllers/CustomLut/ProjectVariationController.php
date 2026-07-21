@@ -66,7 +66,10 @@ class ProjectVariationController extends Controller
             (string) $request->validated('mutation_id'),
         );
 
-        $project->load(['variants' => fn ($query) => $query->orderBy('position')]);
+        $project->load([
+            'variants' => fn ($query) => $query->orderBy('position'),
+            'latestBuild.files' => fn ($query) => $query->orderBy('sort_order'),
+        ]);
 
         return response()->json([
             'project' => $presenter->project($project),
@@ -74,6 +77,7 @@ class ProjectVariationController extends Controller
                 ->map(fn (WizardProjectVariant $variant): array => $presenter->variant($variant, $project->parameters_hash))
                 ->values()
                 ->all(),
+            'build' => $project->latestBuild === null ? null : $presenter->build($project->latestBuild),
         ]);
     }
 }

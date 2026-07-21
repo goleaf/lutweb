@@ -24,9 +24,11 @@ class ProjectMutationController extends Controller
         abort_unless($user instanceof User, 403);
 
         $project = $updateProject->handle($wizardProject, $user, $request->validated());
+        $project->load(['latestBuild.files' => fn ($query) => $query->orderBy('sort_order')]);
 
         return response()->json([
             'project' => $presenter->project($project),
+            'build' => $project->latestBuild === null ? null : $presenter->build($project->latestBuild),
         ]);
     }
 }

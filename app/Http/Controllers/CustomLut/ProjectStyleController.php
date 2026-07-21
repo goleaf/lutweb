@@ -30,10 +30,12 @@ class ProjectStyleController extends Controller
             (string) $request->validated('mutation_id'),
             $request->validated('style_id'),
         );
+        $project->load(['latestBuild.files' => fn ($query) => $query->orderBy('sort_order')]);
 
         return response()->json([
             'project' => $presenter->project($project),
             'variants' => [],
+            'build' => $project->latestBuild === null ? null : $presenter->build($project->latestBuild),
         ]);
     }
 }

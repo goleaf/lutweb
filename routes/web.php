@@ -11,6 +11,7 @@ use App\Http\Controllers\Account\OrderController;
 use App\Http\Controllers\Checkout\ClaimFreeProductController;
 use App\Http\Controllers\Checkout\ShowCheckoutController;
 use App\Http\Controllers\Checkout\StorePayPalOrderController;
+use App\Http\Controllers\CustomLut\ProjectBuildController;
 use App\Http\Controllers\CustomLut\ProjectController as CustomLutProjectController;
 use App\Http\Controllers\CustomLut\ProjectMutationController;
 use App\Http\Controllers\CustomLut\ProjectPhotoController;
@@ -83,6 +84,15 @@ Route::middleware([$authMiddleware, 'verified', 'not_suspended'])->group(functio
             ->middleware('throttle:lut-wizard-create')
             ->name('store');
         Route::get('/{wizardProject}', [CustomLutProjectController::class, 'show'])->name('show');
+        Route::post('/{wizardProject}/builds', [ProjectBuildController::class, 'store'])
+            ->middleware('throttle:custom-lut-build')
+            ->name('builds.store');
+        Route::get('/{wizardProject}/builds/{customLutBuild}', [ProjectBuildController::class, 'show'])
+            ->middleware('throttle:custom-lut-build-status')
+            ->name('builds.show');
+        Route::delete('/{wizardProject}/builds/{customLutBuild}', [ProjectBuildController::class, 'destroy'])
+            ->middleware('throttle:custom-lut-build-delete')
+            ->name('builds.destroy');
         Route::get('/{wizardProject}/builds/{customLutBuild}/checkout', [CustomLutCheckoutController::class, 'show'])
             ->middleware('throttle:custom-lut-checkout-page')
             ->name('checkout.show');

@@ -23,6 +23,7 @@ class CustomLutController extends Controller
                 'name',
                 'status',
                 'style_name_snapshot',
+                'revision',
                 'parameters_hash',
                 'expires_at',
                 'created_at',
@@ -34,6 +35,9 @@ class CustomLutController extends Controller
                 'photos' => fn ($query) => $query
                     ->where('expires_at', '>', now())
                     ->whereNot('status', 'expired'),
+            ])
+            ->with([
+                'latestBuild.files' => fn ($query) => $query->orderBy('sort_order'),
             ])
             ->latest('updated_at')
             ->paginate(10)

@@ -58,6 +58,9 @@ export interface WizardProject {
     updated_at: string | null;
     expires_at: string;
     maximum_photo_count: number;
+    links: {
+        prepare_build: string;
+    };
 }
 
 export interface WizardProjectPhoto {
@@ -148,3 +151,67 @@ export type LutWorkerResponse =
 
 export type WebGlRendererState =
     'idle' | 'ready' | 'unsupported' | 'context-lost' | 'failed';
+
+export type CustomLutBuildStatus =
+    'queued' | 'processing' | 'ready' | 'failed' | 'superseded' | 'expired';
+
+export interface CustomLutBuildParityMetrics {
+    mean_millionths: number | null;
+    p95_millionths: number | null;
+    p99_millionths: number | null;
+    max_millionths: number | null;
+}
+
+export interface CustomLutBuildFileSummary {
+    kind:
+        | 'cube_17'
+        | 'cube_33'
+        | 'cube_65'
+        | 'license_pdf'
+        | 'guide_pdf'
+        | 'readme'
+        | 'manifest'
+        | 'checksums'
+        | 'package_zip';
+    display_name: string;
+    size_bytes: number;
+    short_checksum: string | null;
+}
+
+export interface CustomLutBuildReadiness {
+    sale_ready: boolean;
+    contains_draft_documents: boolean;
+}
+
+export interface CustomLutBuildFailure {
+    failure_message: string | null;
+}
+
+export interface CustomLutBuild
+    extends CustomLutBuildReadiness, CustomLutBuildFailure {
+    id: string;
+    status: CustomLutBuildStatus;
+    project_revision: number;
+    project_name_snapshot: string;
+    package_stem: string;
+    parameters_hash: string;
+    transform_version: string;
+    generator_version: string;
+    parity_metrics: CustomLutBuildParityMetrics;
+    created_at: string | null;
+    started_at: string | null;
+    completed_at: string | null;
+    expires_at: string | null;
+    package_size_bytes: number | null;
+    files: CustomLutBuildFileSummary[];
+    links: {
+        status: string;
+        delete: string;
+    };
+}
+
+export interface CustomLutBuildRequest {
+    expected_revision: number;
+    expected_parameters_hash: string;
+    build_request_id: string;
+}

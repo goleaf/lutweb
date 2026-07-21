@@ -24,6 +24,8 @@ class CustomLutBuildFileFactory extends Factory
             'kind' => CustomLutBuildFileKind::PackageZip,
             'disk' => 'private',
             'path' => 'custom-lut-builds/'.fake()->uuid().'/package.zip',
+            'relative_package_path' => 'package.zip',
+            'safe_download_name' => 'package.zip',
             'original_name' => 'package.zip',
             'mime_type' => 'application/zip',
             'size_bytes' => fake()->numberBetween(1024, 1024 * 1024),

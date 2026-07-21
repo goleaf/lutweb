@@ -12,6 +12,8 @@ import WizardVariationGrid from '@/components/custom-lut/WizardVariationGrid.vue
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import type {
     CanonicalLutParameters,
+    CustomLutBuild,
+    CustomLutBuildRequest,
     LutParameterDefinition,
     LutWizardConfig,
     WizardAutosaveState,
@@ -25,6 +27,7 @@ const props = defineProps<{
     project: WizardProject;
     photos: WizardProjectPhoto[];
     variants: WizardProjectVariant[];
+    build: CustomLutBuild | null;
     styles: WizardStyle[];
     schema: LutParameterDefinition[];
     config: LutWizardConfig;
@@ -36,6 +39,7 @@ const csrf =
 const project = ref<WizardProject>({ ...props.project });
 const photos = ref<WizardProjectPhoto[]>([...props.photos]);
 const variants = ref<WizardProjectVariant[]>([...props.variants]);
+const build = ref<CustomLutBuild | null>(props.build);
 const parameters = ref<CanonicalLutParameters>({ ...props.project.parameters });
 const previewVariant = ref<WizardProjectVariant | null>(null);
 const selectedPhotoId = ref<string | null>(
@@ -52,6 +56,8 @@ const pendingSaveAfterCurrent = ref(false);
 type WizardSection = 'photos' | 'style' | 'variations' | 'fine-tune' | 'review';
 const section = ref<WizardSection>('photos');
 const pollTimer = ref<number | null>(null);
+const buildBusy = ref(false);
+const buildError = ref<string | null>(null);
 const sections: WizardSection[] = [
     'photos',
     'style',
@@ -79,6 +85,14 @@ const currentStyle = computed(
 const unsupportedVersion = computed(
     () => project.value.transform_version !== 'lut_transform_v1',
 );
+const buildIsStale = computed(
+    () =>
+        build.value !== null &&
+        (build.value.status === 'superseded' ||
+            build.value.project_revision !== project.value.revision ||
+            build.value.parameters_hash !== project.value.parameters_hash ||
+            build.value.project_name_snapshot !== project.value.name),
+);
 
 function isConflictState(state: WizardAutosaveState): boolean {
     return state === 'conflict';
@@ -88,6 +102,14 @@ watch(
     () => props.photos,
     (next) => {
         photos.value = [...next];
+        syncPolling();
+    },
+);
+
+watch(
+    () => props.build,
+    (next) => {
+        build.value = next;
         syncPolling();
     },
 );
@@ -250,16 +272,15 @@ async function saveNow(): Promise<void> {
     const requestedParameters = cloneParameters(parameters.value);
 
     try {
-        const payload = await jsonRequest<{ project: WizardProject }>(
-            `/custom-lut/${project.value.id}`,
-            'PATCH',
-            {
-                expected_revision: project.value.revision,
-                mutation_id: crypto.randomUUID(),
-                name: project.value.name,
-                parameters: parameters.value,
-            },
-        );
+        const payload = await jsonRequest<{
+            project: WizardProject;
+            build: CustomLutBuild | null;
+        }>(`/custom-lut/${project.value.id}`, 'PATCH', {
+            expected_revision: project.value.revision,
+            mutation_id: crypto.randomUUID(),
+            name: project.value.name,
+            parameters: parameters.value,
+        });
 
         const localName = project.value.name;
         const localParameters = cloneParameters(parameters.value);
@@ -269,6 +290,7 @@ async function saveNow(): Promise<void> {
             !sameParameters(localParameters, requestedParameters);
 
         project.value = payload.project;
+        build.value = payload.build;
         autosaveState.value = 'saved';
         savedAt.value = payload.project.updated_at;
 
@@ -325,6 +347,7 @@ async function selectStyle(style: WizardStyle | null): Promise<void> {
     const payload = await jsonRequest<{
         project: WizardProject;
         variants: WizardProjectVariant[];
+        build: CustomLutBuild | null;
     }>(`/custom-lut/${project.value.id}/style`, 'POST', {
         expected_revision: project.value.revision,
         mutation_id: crypto.randomUUID(),
@@ -332,6 +355,7 @@ async function selectStyle(style: WizardStyle | null): Promise<void> {
     });
 
     project.value = payload.project;
+    build.value = payload.build;
     parameters.value = cloneParameters(payload.project.parameters);
     variants.value = payload.variants;
     previewVariant.value = null;
@@ -370,6 +394,7 @@ async function useVariant(variant: WizardProjectVariant): Promise<void> {
     const payload = await jsonRequest<{
         project: WizardProject;
         variants: WizardProjectVariant[];
+        build: CustomLutBuild | null;
     }>(
         `/custom-lut/${project.value.id}/variations/${variant.id}/select`,
         'POST',
@@ -380,6 +405,7 @@ async function useVariant(variant: WizardProjectVariant): Promise<void> {
     );
 
     project.value = payload.project;
+    build.value = payload.build;
     parameters.value = cloneParameters(payload.project.parameters);
     variants.value = payload.variants;
     previewVariant.value = null;
@@ -388,9 +414,13 @@ async function useVariant(variant: WizardProjectVariant): Promise<void> {
 }
 
 function syncPolling(): void {
-    const shouldPoll = photos.value.some(
+    const shouldPollPhotos = photos.value.some(
         (photo) => photo.status === 'queued' || photo.status === 'processing',
     );
+    const shouldPollBuild =
+        build.value?.status === 'queued' ||
+        build.value?.status === 'processing';
+    const shouldPoll = shouldPollPhotos || shouldPollBuild;
 
     if (!shouldPoll && pollTimer.value !== null) {
         window.clearInterval(pollTimer.value);
@@ -400,10 +430,128 @@ function syncPolling(): void {
     }
 
     if (shouldPoll && pollTimer.value === null) {
-        pollTimer.value = window.setInterval(() => {
-            router.reload({ only: ['photos'] });
-        }, 5_000);
+        pollTimer.value = window.setInterval(
+            () => {
+                router.reload({ only: ['photos', 'build'] });
+            },
+            shouldPollBuild ? 3_000 : 5_000,
+        );
     }
+}
+
+async function prepareBuild(): Promise<void> {
+    buildError.value = null;
+    await flushSave();
+
+    if (autosaveState.value !== 'saved') {
+        buildError.value =
+            'Save the current project before preparing a package.';
+
+        return;
+    }
+
+    buildBusy.value = true;
+
+    try {
+        const request = {
+            expected_revision: project.value.revision,
+            expected_parameters_hash: project.value.parameters_hash,
+            build_request_id: crypto.randomUUID(),
+        } satisfies CustomLutBuildRequest;
+        const payload = await jsonRequest<{ build: CustomLutBuild }>(
+            project.value.links.prepare_build,
+            'POST',
+            request,
+        );
+
+        build.value = payload.build;
+        syncPolling();
+    } catch {
+        buildError.value = 'We could not start package preparation.';
+    } finally {
+        buildBusy.value = false;
+    }
+}
+
+async function removeBuild(): Promise<void> {
+    if (
+        build.value === null ||
+        !window.confirm('Remove this prepared package?')
+    ) {
+        return;
+    }
+
+    buildBusy.value = true;
+    buildError.value = null;
+
+    try {
+        await jsonRequest<{ deleted: boolean }>(
+            build.value.links.delete,
+            'DELETE',
+        );
+        build.value = null;
+    } catch {
+        buildError.value = 'We could not remove this prepared package.';
+    } finally {
+        buildBusy.value = false;
+    }
+}
+
+function formatBytes(value: number | null): string {
+    if (value === null || value <= 0) {
+        return 'Not available';
+    }
+
+    const units = ['B', 'KB', 'MB', 'GB'];
+    let size = value;
+    let unitIndex = 0;
+
+    while (size >= 1024 && unitIndex < units.length - 1) {
+        size /= 1024;
+        unitIndex += 1;
+    }
+
+    return `${size.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
+}
+
+function metric(value: number | null): string {
+    if (value === null) {
+        return 'Not measured';
+    }
+
+    return `${(value / 1_000_000).toFixed(3)} levels`;
+}
+
+function buildStatusMessage(current: CustomLutBuild | null): string {
+    if (current === null) {
+        return 'No package has been prepared yet.';
+    }
+
+    if (current.status === 'queued') {
+        return 'Your LUT package is queued.';
+    }
+
+    if (current.status === 'processing') {
+        return 'Preparing CUBE files and package documents.';
+    }
+
+    if (current.status === 'ready' && current.sale_ready) {
+        return 'Your LUT package is technically ready for purchase.';
+    }
+
+    if (current.status === 'ready') {
+        return 'The package passed technical generation, but final sale documents are not active yet.';
+    }
+
+    if (current.status === 'superseded') {
+        return 'Your LUT changed after this package was prepared.';
+    }
+
+    if (current.status === 'expired') {
+        return 'This prepared package expired.';
+    }
+
+    return current.failure_message ?? 'We could not prepare this LUT package.';
 }
 
 function handleShortcut(event: KeyboardEvent): void {
@@ -629,7 +777,8 @@ onBeforeUnmount(() => {
                             </h2>
                             <p class="mt-1 text-sm text-stone-600">
                                 Photos expire independently from saved project
-                                parameters.
+                                parameters. Package preparation uses only the
+                                saved LUT parameters and project name.
                             </p>
                         </div>
                         <dl class="grid gap-2 text-sm">
@@ -671,6 +820,217 @@ onBeforeUnmount(() => {
                                 </dd>
                             </div>
                         </dl>
+                        <div
+                            class="rounded-md border border-stone-200 bg-stone-50 p-3"
+                            aria-live="polite"
+                        >
+                            <div
+                                class="flex flex-wrap items-start justify-between gap-3"
+                            >
+                                <div>
+                                    <h3
+                                        class="text-sm font-semibold text-stone-950"
+                                    >
+                                        Package build
+                                    </h3>
+                                    <p class="mt-1 text-sm text-stone-600">
+                                        {{ buildStatusMessage(build) }}
+                                    </p>
+                                    <p
+                                        v-if="buildError"
+                                        class="mt-2 text-sm font-medium text-red-700"
+                                    >
+                                        {{ buildError }}
+                                    </p>
+                                </div>
+                                <span
+                                    v-if="build"
+                                    class="rounded-full border px-2.5 py-1 text-xs font-semibold tracking-wide uppercase"
+                                    :class="
+                                        build.sale_ready
+                                            ? 'border-teal-200 bg-teal-50 text-teal-800'
+                                            : 'border-amber-200 bg-amber-50 text-amber-800'
+                                    "
+                                >
+                                    {{
+                                        build.sale_ready
+                                            ? 'Sale-ready'
+                                            : 'Review build'
+                                    }}
+                                </span>
+                            </div>
+
+                            <dl
+                                v-if="build"
+                                class="mt-3 grid gap-x-5 gap-y-2 text-sm text-stone-600 sm:grid-cols-2"
+                            >
+                                <div>
+                                    <dt
+                                        class="inline font-medium text-stone-900"
+                                    >
+                                        Package:
+                                    </dt>
+                                    <dd class="inline">
+                                        {{ build.package_stem }}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt
+                                        class="inline font-medium text-stone-900"
+                                    >
+                                        Size:
+                                    </dt>
+                                    <dd class="inline">
+                                        {{
+                                            formatBytes(
+                                                build.package_size_bytes,
+                                            )
+                                        }}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt
+                                        class="inline font-medium text-stone-900"
+                                    >
+                                        Expires:
+                                    </dt>
+                                    <dd class="inline">
+                                        {{
+                                            build.expires_at
+                                                ? new Date(
+                                                      build.expires_at,
+                                                  ).toLocaleDateString()
+                                                : 'Not set'
+                                        }}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt
+                                        class="inline font-medium text-stone-900"
+                                    >
+                                        Mean parity:
+                                    </dt>
+                                    <dd class="inline">
+                                        {{
+                                            metric(
+                                                build.parity_metrics
+                                                    .mean_millionths,
+                                            )
+                                        }}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt
+                                        class="inline font-medium text-stone-900"
+                                    >
+                                        P99 parity:
+                                    </dt>
+                                    <dd class="inline">
+                                        {{
+                                            metric(
+                                                build.parity_metrics
+                                                    .p99_millionths,
+                                            )
+                                        }}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt
+                                        class="inline font-medium text-stone-900"
+                                    >
+                                        Max parity:
+                                    </dt>
+                                    <dd class="inline">
+                                        {{
+                                            metric(
+                                                build.parity_metrics
+                                                    .max_millionths,
+                                            )
+                                        }}
+                                    </dd>
+                                </div>
+                            </dl>
+
+                            <div v-if="build?.files.length" class="mt-3">
+                                <h4
+                                    class="text-xs font-semibold tracking-wide text-stone-500 uppercase"
+                                >
+                                    Generated contents
+                                </h4>
+                                <ul class="mt-2 grid gap-1 text-sm">
+                                    <li
+                                        v-for="file in build.files"
+                                        :key="`${file.kind}-${file.display_name}`"
+                                        class="flex flex-wrap justify-between gap-2"
+                                    >
+                                        <span
+                                            class="font-medium text-stone-800"
+                                        >
+                                            {{ file.display_name }}
+                                        </span>
+                                        <span class="text-stone-500">
+                                            {{ formatBytes(file.size_bytes) }}
+                                            <span v-if="file.short_checksum">
+                                                - {{ file.short_checksum }}
+                                            </span>
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <p
+                                v-if="build?.contains_draft_documents"
+                                class="mt-3 text-sm text-amber-800"
+                            >
+                                Draft package documents are included, so this
+                                build is not ready for sale.
+                            </p>
+                            <p v-if="build" class="mt-2 text-sm text-stone-600">
+                                Preview parity metrics compare the browser
+                                preview path with the server transform. Small
+                                RGBA8 preview differences are expected.
+                            </p>
+                        </div>
+                        <div class="grid gap-2">
+                            <button
+                                type="button"
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-stone-950 px-3 py-2.5 text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:bg-stone-300"
+                                :disabled="
+                                    buildBusy || autosaveState === 'conflict'
+                                "
+                                @click="prepareBuild"
+                            >
+                                <AppIcon
+                                    name="package"
+                                    class="size-4"
+                                    :class="
+                                        build?.status === 'processing'
+                                            ? 'motion-safe:animate-pulse'
+                                            : ''
+                                    "
+                                />
+                                {{
+                                    build === null
+                                        ? 'Prepare Package'
+                                        : buildIsStale ||
+                                            build.status === 'failed' ||
+                                            build.status === 'expired' ||
+                                            build.status === 'superseded'
+                                          ? 'Prepare Updated Package'
+                                          : 'Regenerate Package'
+                                }}
+                            </button>
+                            <button
+                                v-if="build && build.status !== 'processing'"
+                                type="button"
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-md border border-stone-300 px-3 py-2.5 text-sm font-semibold text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:cursor-not-allowed disabled:text-stone-400"
+                                :disabled="buildBusy"
+                                @click="removeBuild"
+                            >
+                                <AppIcon name="trash" class="size-4" />
+                                Remove Prepared Package
+                            </button>
+                        </div>
                         <button
                             type="button"
                             disabled

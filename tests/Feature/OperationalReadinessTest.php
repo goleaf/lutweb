@@ -211,6 +211,31 @@ test('production deployment template documents every checkout launch setting wit
         ->toContain('LEGAL_DIGITAL_DELIVERY_CONSENT_VERSION=draft-1');
 });
 
+test('project environment example documents every custom configuration setting', function (): void {
+    $environment = File::get(base_path('.env.example'));
+    $environmentKeys = collect(preg_split('/\R/', $environment))
+        ->filter(fn (string $line): bool => preg_match('/^[A-Z0-9_]+=/', $line) === 1)
+        ->map(fn (string $line): string => Str::before($line, '='));
+    $requiredKeys = collect([
+        config_path('checkout.php'),
+        config_path('custom-lut-builds.php'),
+        config_path('custom-lut-commerce.php'),
+        config_path('legal.php'),
+        config_path('lut-tester.php'),
+        config_path('lut-wizard.php'),
+        config_path('paypal.php'),
+        config_path('security.php'),
+        config_path('seo.php'),
+        config_path('storefront-media.php'),
+    ])->flatMap(function (string $path): array {
+        preg_match_all("/env\\('([A-Z0-9_]+)'/", File::get($path), $matches);
+
+        return $matches[1];
+    })->unique();
+
+    expect($requiredKeys->diff($environmentKeys)->values()->all())->toBe([]);
+});
+
 test('notification dispatch action is idempotent', function (): void {
     Notification::fake();
 

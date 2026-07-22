@@ -50,3 +50,53 @@ test('preview catalog defines sale-ready content for every LUT', function (): vo
             ->and($values['shadow_strength'] + $values['highlight_strength'])->toBeGreaterThanOrEqual(250);
     }
 });
+
+test('every preview source has complete reusable Wikimedia Commons attribution', function (): void {
+    $projectRoot = dirname(__DIR__, 2);
+    $attributionPath = $projectRoot.'/database/seeders/assets/storefront-preview/attribution.json';
+    $attributions = json_decode(
+        file_get_contents($attributionPath) ?: '',
+        true,
+        flags: JSON_THROW_ON_ERROR,
+    );
+    $catalogKeys = collect((new StorefrontPreviewCatalog)->entries())
+        ->map(fn (array $entry): string => preg_replace(
+            '#^database/seeders/assets/storefront-preview/(.+)\.jpg$#',
+            '$1',
+            $entry['source_asset'],
+        ))
+        ->sort()
+        ->values()
+        ->all();
+
+    expect($attributions)->toBeArray()
+        ->and($attributions)->toHaveCount(300)
+        ->and(array_keys($attributions))->toBe($catalogKeys)
+        ->and(array_unique(array_column($attributions, 'source_sha1')))->toHaveCount(300)
+        ->and(array_unique(array_column($attributions, 'local_sha256')))->toHaveCount(300);
+
+    foreach ($attributions as $key => $attribution) {
+        $assetPath = $projectRoot.'/database/seeders/assets/storefront-preview/'.$key.'.jpg';
+        $dimensions = getimagesize($assetPath);
+
+        expect($attribution['title'])->toStartWith('File:')
+            ->and($attribution['creator'])->not->toBeEmpty()
+            ->and($attribution['license'])->toMatch('/^(?:CC0|Public domain|CC BY(?:-SA)? (?:1\.0|2\.0|2\.5|3\.0|4\.0))$/')
+            ->and($attribution['license_url'])->toStartWith('https://')
+            ->and($attribution['source_page'])->toStartWith('https://commons.wikimedia.org/wiki/File')
+            ->and($attribution['original_url'])->toStartWith('https://upload.wikimedia.org/')
+            ->and($attribution['download_url'])->toStartWith('https://upload.wikimedia.org/')
+            ->and($attribution['source_sha1'])->toMatch('/^[a-f0-9]{40}$/')
+            ->and($attribution['local_sha256'])->toBe(hash_file('sha256', $assetPath))
+            ->and($attribution['modification'])->toBe('Cropped and resized to 1600×1200; color unchanged.')
+            ->and($attribution['restrictions'])->toBe([])
+            ->and($attribution['reuse_notice'])->not->toBeEmpty()
+            ->and($attribution['share_alike_required'])->toBe(
+                str_starts_with($attribution['license'], 'CC BY-SA'),
+            )
+            ->and($dimensions)->toBeArray()
+            ->and($dimensions[0])->toBe(1600)
+            ->and($dimensions[1])->toBe(1200)
+            ->and($dimensions['mime'])->toBe('image/jpeg');
+    }
+});

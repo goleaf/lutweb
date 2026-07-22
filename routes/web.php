@@ -26,6 +26,7 @@ use App\Http\Controllers\Seo\SitemapController;
 use App\Http\Controllers\Storefront\CategoryController;
 use App\Http\Controllers\Storefront\FaqController;
 use App\Http\Controllers\Storefront\HomeController;
+use App\Http\Controllers\Storefront\LicenseController;
 use App\Http\Controllers\Storefront\LutTesterController;
 use App\Http\Controllers\Storefront\LutTestImageController;
 use App\Http\Controllers\Storefront\ProductController;
@@ -135,7 +136,7 @@ Route::middleware([$authMiddleware, 'verified', 'not_suspended'])->group(functio
 Route::inertia('/terms', 'Legal/Terms')->name('terms');
 Route::inertia('/privacy', 'Legal/Privacy')->name('privacy');
 Route::inertia('/terms-of-sale', 'Legal/TermsOfSale')->name('terms-of-sale');
-Route::inertia('/license', 'Legal/License')->name('license');
+Route::get('/license', LicenseController::class)->name('license');
 Route::inertia('/refund-policy', 'Legal/RefundPolicy')->name('refund-policy');
 
 Route::post('/webhooks/paypal', PayPalWebhookController::class)->name('webhooks.paypal');

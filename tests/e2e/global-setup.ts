@@ -27,6 +27,9 @@ export default async function globalSetup(): Promise<void> {
 
     run('php', ['artisan', 'migrate:fresh', '--seed', '--no-interaction']);
 
-    run('php', ['artisan', 'storage:link', '--relative', '--force']);
+    if (!existsSync(path.resolve('public', 'storage'))) {
+        run('php', ['artisan', 'storage:link', '--force']);
+    }
+
     run('php', ['artisan', 'e2e:prepare', `--output=${statePath}`]);
 }

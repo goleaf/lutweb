@@ -22,6 +22,19 @@ const STOREFRONT_PREVIEW_PRODUCT_SLUGS = [
     'nordic-air-travel-lut',
 ];
 
+const STOREFRONT_PREVIEW_PRIMARY_CATEGORIES = [
+    'cinematic' => 'CINEMATIC',
+    'portrait' => 'PORTRAIT',
+    'travel' => 'TRAVEL',
+    'street' => 'STREET',
+    'wedding' => 'WEDDING',
+    'warm' => 'WARM',
+    'cool' => 'COOL',
+    'moody' => 'MOODY',
+    'vintage' => 'VINTAGE',
+    'pastel' => 'PASTEL',
+];
+
 function seedStorefrontPreview(): void
 {
     test()->artisan('db:seed', [
@@ -31,20 +44,21 @@ function seedStorefrontPreview(): void
     ])->assertSuccessful();
 }
 
-test('storefront preview seeder creates an idempotent travel catalog without accounts or assets', function (): void {
+test('storefront preview seeder creates thirty products per primary category without operational data', function (): void {
     seedStorefrontPreview();
 
-    $travelCategory = Category::query()->where('slug', 'travel')->firstOrFail();
     $initialProductIds = Product::query()
-        ->whereIn('slug', STOREFRONT_PREVIEW_PRODUCT_SLUGS)
-        ->orderBy('slug')
+        ->where('sku', 'like', 'PREVIEW-%')
+        ->orderBy('sku')
         ->pluck('id')
         ->all();
 
-    expect($initialProductIds)->toHaveCount(6)
-        ->and(Product::query()->count())->toBe(6)
-        ->and(Product::query()->where('status', ProductStatus::Published)->count())->toBe(6)
-        ->and($travelCategory->products()->count())->toBe(6)
+    expect($initialProductIds)->toHaveCount(300)
+        ->and(Product::query()->count())->toBe(300)
+        ->and(Product::query()->where('status', ProductStatus::Published)->count())->toBe(300)
+        ->and(Product::query()->distinct()->count('sku'))->toBe(300)
+        ->and(Product::query()->distinct()->count('slug'))->toBe(300)
+        ->and(Product::query()->distinct()->count('name'))->toBe(300)
         ->and(User::query()->count())->toBe(0)
         ->and(Order::query()->count())->toBe(0)
         ->and(Payment::query()->count())->toBe(0)
@@ -54,22 +68,37 @@ test('storefront preview seeder creates an idempotent travel catalog without acc
         ->and(ProductMedia::query()->count())->toBe(0)
         ->and(ProductExample::query()->count())->toBe(0);
 
+    foreach (STOREFRONT_PREVIEW_PRIMARY_CATEGORIES as $categorySlug => $skuSegment) {
+        $category = Category::query()->where('slug', $categorySlug)->firstOrFail();
+        $primaryProductCount = $category->products()
+            ->where('sku', 'like', "PREVIEW-{$skuSegment}-%")
+            ->count();
+
+        expect($primaryProductCount)->toBe(30)
+            ->and($category->products()->count())->toBeBetween(30, 50);
+    }
+
+    expect(Product::query()->whereIn('slug', STOREFRONT_PREVIEW_PRODUCT_SLUGS)->count())->toBe(6)
+        ->and(Product::query()->where('slug', 'alpine-morning-travel-lut')->firstOrFail()->categories()->pluck('slug')->sort()->values()->all())
+        ->toBe(['bright-clean', 'cool', 'travel'])
+        ->and(Product::query()->where('slug', 'golden-city-travel-lut')->firstOrFail()->categories()->pluck('slug')->sort()->values()->all())
+        ->toBe(['cinematic', 'street', 'travel', 'warm']);
+
     seedStorefrontPreview();
 
     $reseededProductIds = Product::query()
-        ->whereIn('slug', STOREFRONT_PREVIEW_PRODUCT_SLUGS)
-        ->orderBy('slug')
+        ->where('sku', 'like', 'PREVIEW-%')
+        ->orderBy('sku')
         ->pluck('id')
         ->all();
 
     expect($reseededProductIds)->toBe($initialProductIds)
-        ->and(Product::query()->count())->toBe(6)
-        ->and($travelCategory->products()->count())->toBe(6);
+        ->and(Product::query()->count())->toBe(300);
 
     $this->get(route('categories.show', 'travel'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Categories/Show')
-            ->where('resultCount', 6)
-            ->has('products.data', 6));
+            ->where('resultCount', 30)
+            ->has('products.data', 12));
 });

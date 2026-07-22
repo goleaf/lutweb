@@ -46,7 +46,7 @@ const headingClass = computed(() => {
     <div>
         <p
             v-if="eyebrow"
-            class="inline-flex items-center gap-2 text-sm font-semibold text-teal-800"
+            class="flex w-fit items-center gap-2 text-sm font-semibold text-teal-800"
         >
             <AppIcon v-if="icon" :name="icon" class="size-4" />
             {{ eyebrow }}
@@ -55,7 +55,7 @@ const headingClass = computed(() => {
             :is="as"
             :id="headingId"
             :class="[
-                'inline-flex items-center gap-2 tracking-normal',
+                'flex w-fit items-center gap-2 tracking-normal',
                 eyebrow ? 'mt-3' : '',
                 headingClass,
             ]"

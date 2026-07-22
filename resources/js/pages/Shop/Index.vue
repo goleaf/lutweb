@@ -65,15 +65,41 @@ function resetFilters(): void {
         <StorefrontSeoHead :seo="seo" />
 
         <section class="border-b border-stone-200 bg-white">
-            <div class="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+            <div
+                class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-9 lg:px-8"
+            >
                 <SectionHeading
                     as="h1"
-                    size="page"
+                    size="section"
                     icon="shop"
                     eyebrow="Shop"
                     title="Browse professional LUTs"
-                    description="Filter the published catalog by style, software, type, and price. Checkout actions are marked coming soon in this milestone."
-                />
+                    description="Find a look for films, portraits, weddings, travel, and everyday stories. Filter the catalog by style, software, format, or price."
+                >
+                    <div
+                        class="flex flex-wrap gap-2 text-xs font-medium text-stone-700"
+                        aria-label="Shop highlights"
+                    >
+                        <span
+                            class="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5"
+                        >
+                            <AppIcon
+                                name="package"
+                                class="size-4 text-teal-800"
+                            />
+                            {{ resultCount }} published LUTs
+                        </span>
+                        <span
+                            class="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5"
+                        >
+                            <AppIcon
+                                name="sliders"
+                                class="size-4 text-teal-800"
+                            />
+                            Flexible catalog filters
+                        </span>
+                    </div>
+                </SectionHeading>
             </div>
         </section>
 

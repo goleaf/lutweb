@@ -625,25 +625,25 @@ git commit -m "feat: validate PayPal payment recipient"
 **Interfaces:**
 - Produces: 300 published products, 300 Ready current versions, 1,500 product-file records, 300 Ready covers, 300 Ready examples, and 300 tester-eligible products.
 
-**Execution note:** A strict temporary-storage regeneration was started and safely stopped after measurement showed that it would repeat roughly two hours of FFmpeg work. These checkboxes remain open because that exact isolated run was not completed. The stronger backed-up production rollout in Task 10 ran the same media seeder twice and verified the stated database, file, hash, eligibility, and doctor invariants.
+**Execution note (completed 2026-07-23):** The rehearsal used a `mktemp` SQLite database and storage root, with no production database or storage access. To use the four available CPU cores, the initial real FFmpeg generation was partitioned into four non-overlapping 75-product ranges against the same isolated database and storage, using the same cover, package, and example actions as the seeder. The unmodified `StorefrontPreviewMediaSeeder` was then run end-to-end twice. Both complete passes processed 300/300 entries without regeneration; the SHA-256 manifest for all 8,700 referenced files remained `27ae3bdfe677f9c0dd35b5da708dbdbff9cd7be950f49bb9318a01905ef90aaa` before, between, and after the passes.
 
-- [ ] **Step 1: Create isolated environment paths**
+- [x] **Step 1: Create isolated environment paths**
 
 Use `mktemp -d` for a temporary database and storage root. Never point destructive seeding commands at the production database during rehearsal.
 
-- [ ] **Step 2: Migrate and run the media seeder twice**
+- [x] **Step 2: Migrate and run the media seeder twice**
 
 Run `StorefrontPreviewMediaSeeder` with the temporary SQLite connection and private/public roots. The second run must be idempotent.
 
-- [ ] **Step 3: Verify database and filesystem invariants**
+- [x] **Step 3: Verify database and filesystem invariants**
 
 Assert exact counts: 300 products, 300 current Ready versions, 1,500 `ProductFile` rows, 300 package ZIPs, 900 CUBE files, 300 README files, 300 Ready covers, 300 Ready examples, and zero users/orders/payments/entitlements/webhook/download events. Verify every referenced private/public file exists and every package hash matches.
 
-- [ ] **Step 4: Verify all public actions**
+- [x] **Step 4: Verify all public actions**
 
 For every product, call `ProductLutTestEligibility::canTest()` and `ProductPurchaseEligibility::resolvePackage()`. Both must resolve. Paid checkout may remain unavailable until the PayPal credential gate, but it must fail only for checkout readiness—not package readiness.
 
-- [ ] **Step 5: Run doctor commands**
+- [x] **Step 5: Run doctor commands**
 
 ```bash
 php artisan storefront-media:doctor --no-interaction
@@ -653,6 +653,8 @@ php artisan production:doctor --no-interaction
 ```
 
 Expected: no package/media/LUT FAIL. PayPal credential warnings are allowed until Task 10’s external credential gate.
+
+Observed: 300 published products, 300 current Ready versions, 1,500 private product files (300 ZIP, 900 CUBE, 300 README), 300 Ready covers, 300 Ready examples, and 7,200 public image variants. All 8,700 referenced files matched their recorded sizes and SHA-256 hashes. All 300 products were tester-eligible and resolved a purchasable package. Commerce/event/queue tables remained empty, SQLite integrity and foreign-key checks passed, and all four doctor commands completed without `FAIL`; only the expected disabled/missing PayPal credential warnings remain.
 
 ---
 

@@ -122,6 +122,8 @@
         "resources/js/**/*.d.ts",
         "resources/js/**/*.tsx", 
         "resources/js/**/*.vue",
-        "tests/ts/**/*.ts"
+        "tests/ts/**/*.ts",
+        "playwright.config.ts",
+        "tests/e2e/**/*.ts"
     ]
 }

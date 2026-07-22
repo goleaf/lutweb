@@ -21,6 +21,7 @@ class LocalDemoApplicationSeeder extends Seeder
             CustomLutCommerceSettingsSeeder::class,
             CatalogSeeder::class,
             WizardStyleSeeder::class,
+            PackageDocumentTemplateSeeder::class,
             LocalDemoUserSeeder::class,
             LocalDemoProductSeeder::class,
             LocalDemoCommerceSeeder::class,

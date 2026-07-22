@@ -4,9 +4,9 @@ This is a controlled-launch checklist for LUT Web. It contains placeholders only
 
 ## Platform Requirements
 
-- PHP: use the version allowed by `composer.json` (`^8.3`) and supported by the host.
+- PHP: use PHP 8.5, matching `composer.json`, the lock file, CI, and the production target documented in `AGENTS.md`.
 - Required PHP extensions: PDO driver for the selected database, Fileinfo, OpenSSL, Mbstring, Tokenizer, XML, Ctype, JSON, Curl, BCMath where enabled, EXIF, and either GD or Imagick with JPEG, PNG, and WebP support.
-- FFmpeg must be installed by the operator and include the `lut3d` filter with `tetrahedral` interpolation.
+- FFmpeg 6.1 is installed at `/www/server/ffmpeg/ffmpeg-6.1/ffmpeg`. Set both `LUT_TESTER_FFMPEG_BINARY` and `CUSTOM_LUT_FFMPEG_BINARY` to this absolute path in `.env`; application code must read the path only through Laravel configuration. The binary must include the `lut3d` filter with `tetrahedral` interpolation.
 - Database: PostgreSQL or MySQL/MariaDB is recommended for production. SQLite is only acceptable when explicitly approved for a tiny launch.
 - Cache/session/queue: use Redis or another durable production service. Do not use array cache/session or sync queue for live traffic.
 

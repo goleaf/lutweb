@@ -6,9 +6,11 @@ use App\Http\Middleware\EnforceTrustedHosts;
 use App\Http\Resources\Storefront\ProductMediaResource;
 use App\Models\AuditEvent;
 use App\Models\Category;
+use App\Models\Entitlement;
 use App\Models\NotificationDispatch;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductFile;
 use App\Models\ProductMedia;
 use App\Models\User;
 use App\Notifications\OrderPaymentConfirmed;
@@ -16,6 +18,7 @@ use App\Services\StorefrontMedia\GenerateStorefrontImageVariants;
 use App\Services\StorefrontMedia\NormalizeStorefrontSource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -162,6 +165,23 @@ test('health endpoints return generic operational JSON', function (): void {
         ->assertExactJson(['status' => 'ok']);
 });
 
+test('ffmpeg consumers are configured through deployment environment templates', function (): void {
+    $ffmpegBinary = '/www/server/ffmpeg/ffmpeg-6.1/ffmpeg';
+
+    foreach ([base_path('.env.example'), base_path('deploy/.env.production.example')] as $environmentPath) {
+        $environment = File::get($environmentPath);
+
+        expect($environment)
+            ->toContain("LUT_TESTER_FFMPEG_BINARY={$ffmpegBinary}")
+            ->toContain("CUSTOM_LUT_FFMPEG_BINARY={$ffmpegBinary}");
+    }
+
+    expect(File::get(config_path('lut-tester.php')))
+        ->toContain("env('LUT_TESTER_FFMPEG_BINARY'")
+        ->and(File::get(config_path('custom-lut-builds.php')))
+        ->toContain("env('CUSTOM_LUT_FFMPEG_BINARY'");
+});
+
 test('notification dispatch action is idempotent', function (): void {
     Notification::fake();
 
@@ -195,6 +215,72 @@ test('users set admin creates a sensitive audit event without default credential
         ->and($event)->not->toBeNull()
         ->and($event->target_user_id)->toBe($user->id)
         ->and(json_encode($event->metadata, JSON_THROW_ON_ERROR))->not->toContain('password');
+});
+
+test('e2e prepare refuses production environment', function (): void {
+    $this->app->detectEnvironment(fn (): string => 'production');
+
+    $this->artisan('e2e:prepare', [
+        '--output' => storage_path('framework/testing/e2e-production.json'),
+    ])->assertFailed();
+});
+
+test('e2e prepare creates randomized browser fixtures without exposing private paths', function (): void {
+    if (! function_exists('imagejpeg') || ! function_exists('imagewebp')) {
+        $this->markTestSkipped('GD JPEG/WebP support is unavailable.');
+    }
+
+    Storage::fake('private');
+    Storage::fake('public');
+
+    $output = storage_path('framework/testing/e2e-state-test.json');
+    File::delete($output);
+
+    $this->artisan('e2e:prepare', [
+        '--output' => $output,
+    ])->assertSuccessful();
+
+    $state = json_decode(File::get($output), associative: true, flags: JSON_THROW_ON_ERROR);
+    $stateJson = json_encode($state, JSON_THROW_ON_ERROR);
+
+    expect($state['users']['admin']['password'])->not->toBe('password')
+        ->and($state['users']['customer']['password'])->not->toBe('password')
+        ->and($state['users']['shopper']['password'])->not->toBe('password')
+        ->and($stateJson)->not->toContain('catalog/product-files')
+        ->not->toContain('storefront-sources')
+        ->not->toContain('storage/app')
+        ->not->toContain('/private/')
+        ->and(User::query()->where('email', $state['users']['admin']['email'])->where('is_admin', true)->exists())->toBeTrue()
+        ->and(User::query()->where('email', $state['users']['customer']['email'])->where('is_admin', false)->exists())->toBeTrue()
+        ->and(User::query()->where('email', $state['users']['shopper']['email'])->where('is_admin', false)->exists())->toBeTrue()
+        ->and(Product::query()->where('slug', $state['product']['slug'])->exists())->toBeTrue()
+        ->and(ProductFile::query()->where('kind', 'package_zip')->where('disk', 'private')->exists())->toBeTrue()
+        ->and(ProductFile::query()->where('kind', 'cube_33')->where('disk', 'private')->exists())->toBeTrue()
+        ->and(Entitlement::query()->whereKey($state['entitlement']['id'])->where('status', 'active')->exists())->toBeTrue();
+
+    $package = ProductFile::query()->where('kind', 'package_zip')->firstOrFail();
+    $cube = ProductFile::query()->where('kind', 'cube_33')->firstOrFail();
+
+    expect(Storage::disk('private')->exists($package->path))->toBeTrue()
+        ->and(Storage::disk('private')->exists($cube->path))->toBeTrue()
+        ->and(Storage::disk('public')->allFiles('storefront/e2e'))->not->toBeEmpty();
+});
+
+test('e2e browser runner isolates its destructive database reset', function (): void {
+    $playwrightConfig = File::get(base_path('playwright.config.ts'));
+    $globalSetup = File::get(base_path('tests/e2e/global-setup.ts'));
+    $environment = File::get(base_path('tests/e2e/environment.ts'));
+
+    expect($playwrightConfig)
+        ->toContain("process.env.PLAYWRIGHT_START_SERVER !== 'false'")
+        ->toContain('env: e2eEnvironment')
+        ->and($globalSetup)
+        ->toContain("'migrate:fresh', '--seed', '--no-interaction'")
+        ->not->toContain("path.join('database', 'database.sqlite')")
+        ->and($environment)
+        ->toContain("path.join(e2eTestingRoot, 'e2e.sqlite')")
+        ->toContain('DB_DATABASE: e2eDatabasePath')
+        ->toContain('must be inside storage/framework/testing');
 });
 
 test('storefront source normalization accepts still raster images and stores masters privately', function (): void {

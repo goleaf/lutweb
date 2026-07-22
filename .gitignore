@@ -5,11 +5,14 @@
 /public/fonts-manifest.dev.json
 /public/hot
 /public/storage
+/playwright-report
 /resources/js/actions
 /resources/js/routes
 /resources/js/wayfinder
 /storage/*.key
+/storage/framework/testing/e2e-*.json
 /storage/pail
+/test-results
 /vendor
 .env
 .env.backup

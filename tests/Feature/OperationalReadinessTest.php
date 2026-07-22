@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Notifications\DispatchNotificationOnce;
+use App\Enums\StorefrontImageStatus;
 use App\Enums\StorefrontImageVariantRole;
 use App\Http\Middleware\EnforceTrustedHosts;
 use App\Http\Resources\Storefront\ProductMediaResource;
@@ -10,6 +11,7 @@ use App\Models\Entitlement;
 use App\Models\NotificationDispatch;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductExample;
 use App\Models\ProductFile;
 use App\Models\ProductMedia;
 use App\Models\User;
@@ -253,6 +255,7 @@ test('e2e prepare creates randomized browser fixtures without exposing private p
         ->and(User::query()->where('email', $state['users']['customer']['email'])->where('is_admin', false)->exists())->toBeTrue()
         ->and(User::query()->where('email', $state['users']['shopper']['email'])->where('is_admin', false)->exists())->toBeTrue()
         ->and(Product::query()->where('slug', $state['product']['slug'])->exists())->toBeTrue()
+        ->and(ProductExample::query()->where('product_id', $state['product']['id'])->where('processing_status', StorefrontImageStatus::Ready)->exists())->toBeTrue()
         ->and(ProductFile::query()->where('kind', 'package_zip')->where('disk', 'private')->exists())->toBeTrue()
         ->and(ProductFile::query()->where('kind', 'cube_33')->where('disk', 'private')->exists())->toBeTrue()
         ->and(Entitlement::query()->whereKey($state['entitlement']['id'])->where('status', 'active')->exists())->toBeTrue();

@@ -343,7 +343,12 @@ class E2ePrepare extends Command
 
         $before = $this->storeVariants($example, StorefrontImageVariantRole::Before, 'before', [68, 64, 60], $suffix);
         $after = $this->storeVariants($example, StorefrontImageVariantRole::After, 'after', [109, 82, 54], $suffix);
-        $example->forceFill(['before_path' => $before, 'after_path' => $after])->save();
+        $example->forceFill([
+            'before_path' => $before,
+            'after_path' => $after,
+            'processing_status' => StorefrontImageStatus::Ready,
+            'processed_at' => now(),
+        ])->save();
     }
 
     private function createCompletedOrder(User $customer): Order

@@ -17,7 +17,7 @@ export type E2eState = {
         shopper: E2eUser;
     };
     product: {
-        id: string;
+        id: number;
         slug: string;
         url: string;
         checkout_url: string;
@@ -52,6 +52,19 @@ function stringAt(record: Record<string, unknown>, key: string): string {
     }
 
     return value;
+}
+
+function positiveIntegerAt(
+    record: Record<string, unknown>,
+    key: string,
+): number {
+    const value = record[key];
+
+    if (!Number.isInteger(value) || Number(value) < 1) {
+        throw new Error(`Invalid E2E state key: ${key}`);
+    }
+
+    return Number(value);
 }
 
 function userAt(record: Record<string, unknown>, key: string): E2eUser {
@@ -99,7 +112,7 @@ export function readE2eState(): E2eState {
             shopper: userAt(users, 'shopper'),
         },
         product: {
-            id: stringAt(product, 'id'),
+            id: positiveIntegerAt(product, 'id'),
             slug: stringAt(product, 'slug'),
             url: stringAt(product, 'url'),
             checkout_url: stringAt(product, 'checkout_url'),
@@ -149,6 +162,16 @@ export function attachReleaseGuards(
 
     page.on('console', (message) => {
         const text = message.text();
+        const isReportOnlyDiagnostic =
+            text.includes(
+                "directive 'frame-ancestors' is ignored when delivered in a report-only policy",
+            ) ||
+            (text.includes('was delivered in report-only mode') &&
+                text.includes("does not specify a 'report-to'"));
+
+        if (isReportOnlyDiagnostic) {
+            return;
+        }
 
         if (
             message.type() === 'error' ||

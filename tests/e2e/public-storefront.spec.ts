@@ -25,7 +25,7 @@ test('home and shop render across the release smoke matrix', async ({
         'Professional LUTs',
     );
     await expect(
-        page.getByRole('link', { name: 'Shop' }).first(),
+        page.getByRole('link', { name: 'Explore LUTs' }),
     ).toBeVisible();
     await expectNoDocumentOverflow(page);
     await expectNoPrivatePaths(page);

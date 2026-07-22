@@ -13,8 +13,8 @@
 - Tasks 1–7 are implemented and committed: the deterministic 300-product catalog, stronger transforms/tags/copy, sale-ready private packages, tester eligibility, consolidated FAQ, and PayPal recipient checks are in place.
 - Task 2 now uses 300 distinct 1600×1200 Wikimedia Commons photographs. `attribution.json` retains source, creator, license, modification, reuse, and hash metadata, and `/license` publishes all 300 credits.
 - Production catalog/media regeneration completed twice as `www` after a verified SQLite backup. Current invariants are 300 products, 300 Ready current versions, 1,500 product files, 300 Ready covers, 300 Ready examples, zero stale/failed media, and unchanged user/order/payment data.
-- PHPStan, 318 Pest tests, LUT Transform V1, ESLint, Vue type checks, Prettier, Vite build, and the populated-category Chromium E2E test pass. Playwright CLI additionally verified `/shop`, `/luts/travel`, and `/license` at 375 px and 1440 px with no overflow, broken images, or console warnings.
-- The remaining external gate is PayPal sandbox/live credentials, verified Business recipient identity, webhook ID, and final legal approval. Checkout remains fail-closed. The complete Firefox/WebKit E2E matrix and any real-money transaction also remain intentionally open.
+- PHPStan, 318 Pest tests, LUT Transform V1, ESLint, Vue type checks, Prettier, Vite build, and all 20 storefront E2E checks pass across Chromium, Firefox, WebKit, and mobile Chromium. Playwright CLI additionally verified `/shop`, `/luts/travel`, and `/license` at 375 px and 1440 px with no overflow, broken images, or console warnings.
+- The remaining external gate is PayPal sandbox/live credentials, verified Business recipient identity, webhook ID, and final legal approval. Checkout remains fail-closed, and no real-money transaction was attempted.
 
 ## Global Constraints
 
@@ -625,6 +625,8 @@ git commit -m "feat: validate PayPal payment recipient"
 **Interfaces:**
 - Produces: 300 published products, 300 Ready current versions, 1,500 product-file records, 300 Ready covers, 300 Ready examples, and 300 tester-eligible products.
 
+**Execution note:** A strict temporary-storage regeneration was started and safely stopped after measurement showed that it would repeat roughly two hours of FFmpeg work. These checkboxes remain open because that exact isolated run was not completed. The stronger backed-up production rollout in Task 10 ran the same media seeder twice and verified the stated database, file, hash, eligibility, and doctor invariants.
+
 - [ ] **Step 1: Create isolated environment paths**
 
 Use `mktemp -d` for a temporary database and storage root. Never point destructive seeding commands at the production database during rehearsal.
@@ -688,7 +690,7 @@ npm run build
 
 Expected: all commands exit 0 and Vite emits a production manifest.
 
-- [ ] **Step 4: Run full E2E coverage**
+- [x] **Step 4: Run full E2E coverage**
 
 ```bash
 npm run test:e2e
@@ -767,7 +769,7 @@ Set the supplied credentials, merchant/webhook IDs, seller country, and approved
 
 Verify the checkout page loads the live SDK host, the recipient/merchant doctor checks pass, the webhook URL is live HTTPS, and create-order remains server-side. A real-money transaction requires a separate explicit user instruction because it creates an external financial charge.
 
-- [ ] **Step 8: Final evidence report**
+- [x] **Step 8: Final evidence report**
 
 Report counts, test/build results, backup path/hash, doctor status, storefront/FAQ/tester URLs resolved with Laravel Boost `get-absolute-url`, and whether the remaining state is sandbox-ready or live-ready. Do not claim live selling is active unless all external values are configured and freshly verified.
 

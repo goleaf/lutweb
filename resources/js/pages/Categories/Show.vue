@@ -99,30 +99,37 @@ function resetFilters(): void {
                 >
                     {{ category.description }}
                 </p>
-                <p
-                    class="mt-3 inline-flex items-center gap-2 text-sm text-stone-600"
-                >
-                    <AppIcon name="package" class="size-4 text-teal-800" />
-                    {{ category.products_count ?? 0 }} published product{{
-                        category.products_count === 1 ? '' : 's'
-                    }}
-                    in this category.
-                </p>
-                <p
-                    class="mt-2 inline-flex items-center gap-2 text-sm text-stone-600"
+                <div
+                    class="mt-4 flex flex-wrap gap-2 text-sm text-stone-600"
                     aria-live="polite"
                 >
-                    <AppIcon name="search" class="size-4 text-teal-800" />
-                    {{ resultCount }} result{{ resultCount === 1 ? '' : 's' }}
-                    shown with the current filters.
-                </p>
+                    <p
+                        class="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5"
+                    >
+                        <AppIcon name="package" class="size-4 text-teal-800" />
+                        {{ category.products_count ?? 0 }} published product{{
+                            category.products_count === 1 ? '' : 's'
+                        }}
+                    </p>
+                    <p
+                        class="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5"
+                    >
+                        <AppIcon name="search" class="size-4 text-teal-800" />
+                        {{ resultCount }} result{{
+                            resultCount === 1 ? '' : 's'
+                        }}
+                        shown
+                    </p>
+                </div>
             </div>
         </section>
 
         <section
-            class="mx-auto grid w-full max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[18rem_minmax(0,1fr)] lg:px-8"
+            class="mx-auto grid w-full max-w-7xl items-start gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[18rem_minmax(0,1fr)] lg:px-8"
         >
-            <aside>
+            <aside
+                :class="productItems.length === 0 ? 'order-2 lg:order-1' : ''"
+            >
                 <StorefrontFilterPanel
                     :filters="filters"
                     :options="filterOptions"
@@ -133,7 +140,12 @@ function resetFilters(): void {
                 />
             </aside>
 
-            <div class="grid gap-6">
+            <div
+                :class="[
+                    'grid min-w-0 content-start gap-6',
+                    productItems.length === 0 ? 'order-1 lg:order-2' : '',
+                ]"
+            >
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <h2
                         class="inline-flex items-center gap-2 text-lg font-semibold text-stone-950"

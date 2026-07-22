@@ -24,11 +24,19 @@
 - [x] Нормализованы 727 случайных изменений прав файлов из ZIP.
 - [x] E2E-контур включён в TypeScript/ESLint, изолирован от production SQLite и проверен через список 16 браузерных сценариев.
 - [x] Composer lock, PHPUnit memory limit, PHPStan, Pest, frontend lint/type/format/conformance и production build проверены.
-- [ ] Создать проверенный commit и отправить `main` в `origin`.
-- [ ] Создать резервную копию, выполнить production reseed и проверить baseline.
-- [ ] Завершить runtime-проверки и зафиксировать итоговый статус.
+- [x] Создать проверенный commit и отправить `main` в `origin`.
+- [x] Создать резервную копию, выполнить production reseed и проверить baseline.
+- [x] Завершить runtime-проверки и зафиксировать итоговый статус.
 
 Внешние launch-ограничения, которые не заполняются фиктивными данными: production SMTP, PayPal credentials и включение checkout, финальное юридическое/налоговое подтверждение, реальный опубликованный каталог. SQLite используется намеренно для текущего малонагруженного запуска и остаётся единственным FAIL строгого production doctor.
+
+### Итог выполнения
+
+- Опубликованный commit реализации: `66dda909b4b214757a6f07368419839a621b3517` (`main == origin/main`).
+- Резервная копия до reseed: `/www/backup/lutweb/database/database-before-reseed-20260722_151923.sqlite`.
+- SHA-256 резервной копии: `84236b591d9f8696b7d589c395e87061e8636432c73f6205ad81369b5df47579`; `integrity_check=ok`.
+- Production baseline: 14 категорий, 15 тегов, 5 приложений, 6 Wizard Styles, 2 шаблона документов и 1 commerce-setting; users/products/orders/payments/entitlements — 0.
+- Все четыре systemd-службы включены и активны; HTTP перенаправляет на HTTPS, `/`, `/up`, `/health/live`, `/health/ready` и production asset возвращают 200.
 
 ---
 
@@ -44,7 +52,7 @@
 - Использует: `env('LUT_TESTER_FFMPEG_BINARY')`, `env('CUSTOM_LUT_FFMPEG_BINARY')`.
 - Создаёт: стабильные значения `lut-tester.ffmpeg_binary` и `custom-lut-builds.ffmpeg_binary` для web и queue процессов.
 
-- [ ] **Шаг 1: Добавить падающий тест шаблонов конфигурации**
+- [x] **Шаг 1: Добавить падающий тест шаблонов конфигурации**
 
 ```php
 test('ffmpeg consumers use the project environment binary', function (): void {
@@ -65,13 +73,13 @@ test('ffmpeg consumers use the project environment binary', function (): void {
 });
 ```
 
-- [ ] **Шаг 2: Запустить тест и подтвердить ожидаемое падение**
+- [x] **Шаг 2: Запустить тест и подтвердить ожидаемое падение**
 
 Команда: `php artisan test --compact tests/Feature/OperationalReadinessTest.php --filter='ffmpeg consumers'`
 
 Ожидается: FAIL, потому что `.env.example` содержит `ffmpeg`, а production-шаблон не содержит обоих ключей.
 
-- [ ] **Шаг 3: Настроить env-файлы**
+- [x] **Шаг 3: Настроить env-файлы**
 
 Добавить одинаковые значения:
 
@@ -80,7 +88,7 @@ LUT_TESTER_FFMPEG_BINARY=/www/server/ffmpeg/ffmpeg-6.1/ffmpeg
 CUSTOM_LUT_FFMPEG_BINARY=/www/server/ffmpeg/ffmpeg-6.1/ffmpeg
 ```
 
-- [ ] **Шаг 4: Пересобрать config cache и проверить тест**
+- [x] **Шаг 4: Пересобрать config cache и проверить тест**
 
 Команды:
 
@@ -104,7 +112,7 @@ php artisan custom-lut:doctor --self-test --no-interaction
 - Использует: production reference seeders и существующие LocalDemo seeders.
 - Создаёт: тестовый seed-граф, покрывающий каждый класс из `app/Models` без ослабления production-защиты.
 
-- [ ] **Шаг 1: Расширить падающий тест полного model graph**
+- [x] **Шаг 1: Расширить падающий тест полного model graph**
 
 Добавить в список проверяемых моделей:
 
@@ -119,13 +127,13 @@ WizardStyle::class,
 
 Также сравнить отсортированный список классов с файлами `app/Models/*.php`, чтобы будущая модель без seed-а делала тест красным.
 
-- [ ] **Шаг 2: Подтвердить падение**
+- [x] **Шаг 2: Подтвердить падение**
 
 Команда: `php artisan test --compact tests/Feature/LocalDemoSeedersTest.php`
 
 Ожидается: FAIL для `PackageDocumentTemplate`, потому что `LocalDemoApplicationSeeder` ещё не вызывает его seeder.
 
-- [ ] **Шаг 3: Добавить production-safe reference seeder в demo aggregate**
+- [x] **Шаг 3: Добавить production-safe reference seeder в demo aggregate**
 
 В `LocalDemoApplicationSeeder::run()` после `WizardStyleSeeder::class` добавить:
 
@@ -133,7 +141,7 @@ WizardStyle::class,
 PackageDocumentTemplateSeeder::class,
 ```
 
-- [ ] **Шаг 4: Проверить полный seed-граф и production guard**
+- [x] **Шаг 4: Проверить полный seed-граф и production guard**
 
 Команды:
 
@@ -155,11 +163,11 @@ php artisan test --compact tests/Feature/UserSeederTest.php tests/Feature/Catalo
 - Использует: текущий Git diff и doctor-команды.
 - Создаёт: точный список publishable файлов и список внешних launch-ограничений.
 
-- [ ] **Шаг 1: Нормализовать только случайные mode changes**
+- [x] **Шаг 1: Нормализовать только случайные mode changes**
 
 Для каждого пути из `git diff --summary`, отмеченного `mode change 100644 => 100755`, выполнить `chmod 0644` и повторно проверить `git diff --summary`.
 
-- [ ] **Шаг 2: Документировать production FFmpeg env**
+- [x] **Шаг 2: Документировать production FFmpeg env**
 
 В `docs/production-deployment.md` рядом с требованием `lut3d` указать, что этот deployment задаёт оба env-ключа абсолютным путём:
 
@@ -168,7 +176,7 @@ LUT_TESTER_FFMPEG_BINARY=/www/server/ffmpeg/ffmpeg-6.1/ffmpeg
 CUSTOM_LUT_FFMPEG_BINARY=/www/server/ffmpeg/ffmpeg-6.1/ffmpeg
 ```
 
-- [ ] **Шаг 3: Проверить каждый содержательный diff и новый файл**
+- [x] **Шаг 3: Проверить каждый содержательный diff и новый файл**
 
 Команды:
 
@@ -180,7 +188,7 @@ git status --short
 
 Ожидается: server/runtime-файлы исключены; исходники e2e, конфигурация, тесты, seeders и документация не содержат секретов.
 
-- [ ] **Шаг 4: Запустить проверки спецификации**
+- [x] **Шаг 4: Запустить проверки спецификации**
 
 Команды:
 
@@ -206,13 +214,13 @@ rg -n 'TODO|FIXME|TBD|not implemented|not yet' docs app database routes tests
 - Использует: изменения задач 1–3.
 - Создаёт: доказательство готовности коммита.
 
-- [ ] **Шаг 1: Форматировать изменённый PHP**
+- [x] **Шаг 1: Форматировать изменённый PHP**
 
 Команда: `vendor/bin/pint --dirty --format agent`
 
 Ожидается: exit 0.
 
-- [ ] **Шаг 2: Запустить backend и frontend проверки**
+- [x] **Шаг 2: Запустить backend и frontend проверки**
 
 Команды:
 
@@ -241,7 +249,7 @@ runuser -u www -- php artisan optimize
 - Использует: проверенный diff задачи 4.
 - Создаёт: commit в `main` и обновлённый `origin/main`.
 
-- [ ] **Шаг 1: Синхронизировать удалённую ветку без перезаписи локальной работы**
+- [x] **Шаг 1: Синхронизировать удалённую ветку без перезаписи локальной работы**
 
 Команды:
 
@@ -251,7 +259,7 @@ git status --short --branch
 git log --oneline --left-right HEAD...origin/main
 ```
 
-- [ ] **Шаг 2: Явно проиндексировать только утверждённые файлы и проверить staged diff**
+- [x] **Шаг 2: Явно проиндексировать только утверждённые файлы и проверить staged diff**
 
 Команды:
 
@@ -279,7 +287,7 @@ git diff --cached --check
 git diff --cached --stat
 ```
 
-- [ ] **Шаг 3: Создать commit и отправить main**
+- [x] **Шаг 3: Создать commit и отправить main**
 
 ```bash
 git commit -m "Configure FFmpeg and complete seed coverage"
@@ -298,7 +306,7 @@ git push origin main
 - Использует: опубликованный и проверенный seed-код.
 - Создаёт: чистую production SQLite с baseline reference data.
 
-- [ ] **Шаг 1: Проверить точный target и остановить workers**
+- [x] **Шаг 1: Проверить точный target и остановить workers**
 
 Команды:
 
@@ -308,7 +316,7 @@ php artisan config:show database.connections.sqlite.database
 systemctl stop lutweb-default.service lutweb-images.service lutweb-payments.service lutweb-scheduler.service
 ```
 
-- [ ] **Шаг 2: Создать и проверить резервную копию**
+- [x] **Шаг 2: Создать и проверить резервную копию**
 
 ```bash
 reseed_stamp=$(date +%Y%m%d_%H%M%S)
@@ -320,7 +328,7 @@ cmp -s database/database.sqlite "$reseed_backup"
 
 Ожидается: одинаковые SHA-256 и `cmp` exit 0.
 
-- [ ] **Шаг 3: Выполнить полный reseed и восстановить права**
+- [x] **Шаг 3: Выполнить полный reseed и восстановить права**
 
 ```bash
 runuser -u www -- php artisan migrate:fresh --seed --force --no-interaction
@@ -329,7 +337,7 @@ chmod 775 database
 chmod 664 database/database.sqlite
 ```
 
-- [ ] **Шаг 4: Запустить сервисы и проверить baseline counts**
+- [x] **Шаг 4: Запустить сервисы и проверить baseline counts**
 
 Команды:
 
@@ -350,7 +358,7 @@ php artisan production:doctor --no-interaction
 - Использует: production seed и опубликованный commit.
 - Создаёт: итоговый отчёт с проверенными результатами и внешними ограничениями.
 
-- [ ] **Шаг 1: Проверить FFmpeg и сервисы**
+- [x] **Шаг 1: Проверить FFmpeg и сервисы**
 
 ```bash
 php artisan lut:doctor --no-interaction
@@ -359,7 +367,7 @@ systemctl is-enabled lutweb-default.service lutweb-images.service lutweb-payment
 systemctl is-active lutweb-default.service lutweb-images.service lutweb-payments.service lutweb-scheduler.service
 ```
 
-- [ ] **Шаг 2: Проверить публичный runtime**
+- [x] **Шаг 2: Проверить публичный runtime**
 
 ```bash
 curl -sS -o /dev/null -w '%{http_code} %{redirect_url}\n' http://luts.miniserver.fun/
@@ -369,6 +377,6 @@ curl -sS --fail-with-body -o /dev/null -w '%{http_code}\n' https://luts.miniserv
 
 Ожидается: HTTP перенаправляет на HTTPS; `/`, `/up` и Vite asset возвращают 200.
 
-- [ ] **Шаг 3: Сверить Git и резервную копию**
+- [x] **Шаг 3: Сверить Git и резервную копию**
 
 Ожидается: `HEAD == origin/main`; в рабочем дереве остаются только намеренно исключённые server/runtime-файлы; путь и checksum резервной копии зафиксированы в итоговом отчёте.

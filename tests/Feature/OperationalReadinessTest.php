@@ -183,6 +183,34 @@ test('ffmpeg consumers are configured through deployment environment templates',
         ->toContain("env('CUSTOM_LUT_FFMPEG_BINARY'");
 });
 
+test('production deployment template documents every checkout launch setting with fail closed defaults', function (): void {
+    $environment = File::get(base_path('deploy/.env.production.example'));
+    $environmentKeys = collect(preg_split('/\R/', $environment))
+        ->filter(fn (string $line): bool => preg_match('/^[A-Z0-9_]+=/', $line) === 1)
+        ->map(fn (string $line): string => Str::before($line, '='));
+    $requiredKeys = collect([
+        config_path('checkout.php'),
+        config_path('legal.php'),
+        config_path('paypal.php'),
+    ])->flatMap(function (string $path): array {
+        preg_match_all("/env\\('([A-Z0-9_]+)'/", File::get($path), $matches);
+
+        return $matches[1];
+    })->unique();
+
+    expect($requiredKeys->diff($environmentKeys)->values()->all())->toBe([])
+        ->and($environment)
+        ->toContain('PAYPAL_ENABLED=false')
+        ->toContain('PAYPAL_MODE=sandbox')
+        ->toContain('CHECKOUT_ENABLED=false')
+        ->toContain('CHECKOUT_TAX_READY=false')
+        ->toContain('CHECKOUT_LIVE_PAYMENTS_ALLOWED=false')
+        ->toContain('LEGAL_TERMS_OF_SALE_VERSION=draft-1')
+        ->toContain('LEGAL_LICENSE_VERSION=draft-1')
+        ->toContain('LEGAL_REFUND_POLICY_VERSION=draft-1')
+        ->toContain('LEGAL_DIGITAL_DELIVERY_CONSENT_VERSION=draft-1');
+});
+
 test('notification dispatch action is idempotent', function (): void {
     Notification::fake();
 

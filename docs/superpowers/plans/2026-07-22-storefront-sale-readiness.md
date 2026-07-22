@@ -13,7 +13,8 @@
 - Tasks 1–7 are implemented and committed: the deterministic 300-product catalog, stronger transforms/tags/copy, sale-ready private packages, tester eligibility, consolidated FAQ, and PayPal recipient checks are in place.
 - Task 2 now uses 300 distinct 1600×1200 Wikimedia Commons photographs. `attribution.json` retains source, creator, license, modification, reuse, and hash metadata, and `/license` publishes all 300 credits.
 - Production catalog/media regeneration completed twice as `www` after a verified SQLite backup. Current invariants are 300 products, 300 Ready current versions, 1,500 product files, 300 Ready covers, 300 Ready examples, zero stale/failed media, and unchanged user/order/payment data.
-- PHPStan, 318 Pest tests, LUT Transform V1, ESLint, Vue type checks, Prettier, Vite build, and all 20 storefront E2E checks pass across Chromium, Firefox, WebKit, and mobile Chromium. Playwright CLI additionally verified `/shop`, `/luts/travel`, and `/license` at 375 px and 1440 px with no overflow, broken images, or console warnings.
+- PHPStan, 319 Pest tests, LUT Transform V1, ESLint, Vue type checks, Prettier, Vite build, and all 20 storefront E2E checks pass across Chromium, Firefox, WebKit, and mobile Chromium. Playwright CLI additionally verified `/shop`, `/luts/travel`, and `/license` at 375 px and 1440 px with no overflow, broken images, or console warnings.
+- The July 23 launch audit added an executable contract proving that `deploy/.env.production.example` documents every environment variable consumed by the PayPal, checkout, and legal configuration, with secrets empty and all payment gates fail-closed by default.
 - The remaining external gate is PayPal sandbox/live credentials, verified Business recipient identity, webhook ID, and final legal approval. Checkout remains fail-closed, and no real-money transaction was attempted.
 
 ## Global Constraints
@@ -721,6 +722,8 @@ Expected: no whitespace errors, no secret values, and unrelated `.user.ini`/`.we
 
 **Interfaces:**
 - Required external values: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MERCHANT_ID`, `PAYPAL_WEBHOOK_ID`, verified `PAYPAL_PAYEE_EMAIL=goleaf@gmail.com`, `CHECKOUT_SELLER_COUNTRY_CODE`, confirmed `CHECKOUT_TAX_READY`, and final legal version identifiers.
+
+**Local pre-credential audit (completed 2026-07-23):** The production environment template now mirrors every key consumed by `config/paypal.php`, `config/checkout.php`, and `config/legal.php`. Credentials remain empty, `PAYPAL_MODE=sandbox`, and `PAYPAL_ENABLED`, `CHECKOUT_ENABLED`, `CHECKOUT_TAX_READY`, and `CHECKOUT_LIVE_PAYMENTS_ALLOWED` remain `false`. A Pest contract prevents future configuration drift.
 
 - [x] **Step 1: Create and verify a dated database backup**
 

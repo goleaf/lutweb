@@ -63,7 +63,7 @@ test('CatalogSeeder is idempotent', function () {
     $this->seed(CatalogSeeder::class);
 
     expect(Category::query()->count())->toBe(14)
-        ->and(Tag::query()->count())->toBe(15)
+        ->and(Tag::query()->count())->toBe(43)
         ->and(CompatibleSoftware::query()->count())->toBe(5);
 });
 

@@ -14,8 +14,21 @@ This is a controlled-launch checklist for LUT Web. It contains placeholders only
 
 - Public derivatives are stored on the configured public disk and may be cached when filenames are content-hashed.
 - Private ProductFiles, purchased Custom LUT builds, customer photos, storefront source masters, and normalized private masters must remain on private disks.
+- Generated catalog preview packages are content-addressed under `products/storefront-preview/<sku>/<fingerprint>/` on the private disk. Back up this prefix together with the matching `product_versions` and `product_files` rows.
 - Run `php artisan storage:link` only for the public disk when local public storage is used.
 - Never symlink `storage/app/private` or any private disk root into `public/`.
+
+## Storefront Preview Catalog
+
+`StorefrontPreviewSeeder` creates catalog rows only. `StorefrontPreviewMediaSeeder` additionally generates responsive covers, validated CUBE 17/33/65 files, private ZIP packages, and Before/After examples for all 300 preview products.
+
+Before running the media seeder in production, create and verify a database backup, confirm both FFmpeg variables point to `/www/server/ffmpeg/ffmpeg-6.1/ffmpeg`, place the application in a controlled maintenance window, and verify sufficient private-disk space. The first run is CPU- and storage-intensive; repeat the command once to prove idempotence:
+
+```bash
+php artisan db:seed --class=Database\\Seeders\\StorefrontPreviewMediaSeeder --force --no-interaction
+```
+
+Keep checkout, PayPal, and Custom LUT commerce disabled until SMTP, merchant credentials, tax readiness, and approved legal documents are complete. Preview packages make the catalog and photo tester technically usable; they do not authorize live sales.
 
 ## Build And Release
 
@@ -81,4 +94,4 @@ Code rollback is straightforward when migrations are additive. Database rollback
 
 ## Final Smoke Test
 
-Confirm: admin login, product cover generation, product example Before/After generation, PayPal sandbox checkout, secure account download, robots, sitemap, queued email, audit event creation, and private-file denial without entitlement.
+Confirm: admin login, product cover generation, package contents, `Try on Your Photo`, product example Before/After generation, PayPal sandbox checkout, secure account download, robots, sitemap, queued email, audit event creation, and private-file denial without entitlement.

@@ -11,6 +11,7 @@ use App\Models\ProductFile;
 use App\Models\ProductMedia;
 use App\Models\ProductVersion;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
 const STOREFRONT_PREVIEW_PRODUCT_SLUGS = [
@@ -52,6 +53,7 @@ test('storefront preview seeder creates thirty products per primary category wit
         ->orderBy('sku')
         ->pluck('id')
         ->all();
+    $initialTagPivotCount = DB::table('product_tag')->count();
 
     expect($initialProductIds)->toHaveCount(300)
         ->and(Product::query()->count())->toBe(300)
@@ -67,6 +69,14 @@ test('storefront preview seeder creates thirty products per primary category wit
         ->and(ProductFile::query()->count())->toBe(0)
         ->and(ProductMedia::query()->count())->toBe(0)
         ->and(ProductExample::query()->count())->toBe(0);
+
+    Product::query()
+        ->where('sku', 'like', 'PREVIEW-%')
+        ->withCount('tags')
+        ->each(function (Product $product): void {
+            expect($product->is_testable)->toBeTrue()
+                ->and($product->tags_count)->toBeBetween(8, 12);
+        });
 
     foreach (STOREFRONT_PREVIEW_PRIMARY_CATEGORIES as $categorySlug => $skuSegment) {
         $category = Category::query()->where('slug', $categorySlug)->firstOrFail();
@@ -93,7 +103,8 @@ test('storefront preview seeder creates thirty products per primary category wit
         ->all();
 
     expect($reseededProductIds)->toBe($initialProductIds)
-        ->and(Product::query()->count())->toBe(300);
+        ->and(Product::query()->count())->toBe(300)
+        ->and(DB::table('product_tag')->count())->toBe($initialTagPivotCount);
 
     $this->get(route('categories.show', 'travel'))
         ->assertOk()

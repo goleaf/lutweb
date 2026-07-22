@@ -29,7 +29,6 @@ test('real FFmpeg can apply an identity 3D CUBE with tetrahedral interpolation',
         $image = imagecreatetruecolor(8, 8);
         imagefill($image, 0, 0, imagecolorallocate($image, 80, 120, 160));
         imagepng($image, $workDir.'/input.png');
-        imagedestroy($image);
 
         file_put_contents($workDir.'/lut.cube', <<<'CUBE'
 TITLE "Identity"

@@ -56,6 +56,10 @@ class CheckoutReadiness
                 $problems[] = 'PayPal merchant ID is missing.';
             }
 
+            if (! $this->validPayeeEmail()) {
+                $problems[] = 'PayPal payee email is missing or invalid.';
+            }
+
             if (blank(config('paypal.webhook_id'))) {
                 $problems[] = 'PayPal webhook ID is missing.';
             }
@@ -134,5 +138,12 @@ class CheckoutReadiness
         $country = config('checkout.seller_country_code');
 
         return is_string($country) && preg_match('/^[A-Z]{2}$/', $country) === 1;
+    }
+
+    private function validPayeeEmail(): bool
+    {
+        $email = config('paypal.payee_email');
+
+        return is_string($email) && filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
     }
 }

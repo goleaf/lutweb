@@ -3,7 +3,15 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 import AppIcon from '@/components/AppIcon.vue';
-import { dashboard, home, login, privacy, register, terms } from '@/routes';
+import {
+    dashboard,
+    faq,
+    home,
+    login,
+    privacy,
+    register,
+    terms,
+} from '@/routes';
 import { index as shopIndex } from '@/routes/shop';
 import type { Auth } from '@/types/auth';
 
@@ -76,6 +84,16 @@ function isCurrent(path: string): boolean {
                     >
                         <AppIcon name="wand" class="size-4" />
                         Create Your LUT
+                    </Link>
+                    <Link
+                        :href="faq()"
+                        :aria-current="
+                            isCurrent(faq.url()) ? 'page' : undefined
+                        "
+                        class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 aria-[current=page]:bg-stone-100 aria-[current=page]:text-stone-950"
+                    >
+                        <AppIcon name="receipt" class="size-4" />
+                        FAQ
                     </Link>
                 </div>
 
@@ -152,6 +170,14 @@ function isCurrent(path: string): boolean {
                         Create Your LUT
                     </Link>
                     <Link
+                        :href="faq()"
+                        class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-stone-800 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                        @click="mobileMenuOpen = false"
+                    >
+                        <AppIcon name="receipt" class="size-4" />
+                        FAQ
+                    </Link>
+                    <Link
                         v-if="user"
                         :href="dashboard()"
                         class="inline-flex items-center gap-2 rounded-md bg-stone-950 px-3 py-2 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
@@ -206,6 +232,13 @@ function isCurrent(path: string): boolean {
                     aria-label="Footer navigation"
                     class="flex flex-wrap items-center gap-x-4 gap-y-2 md:justify-end"
                 >
+                    <Link
+                        :href="faq()"
+                        class="inline-flex items-center gap-1.5 rounded-sm underline-offset-4 hover:text-stone-950 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
+                    >
+                        <AppIcon name="receipt" class="size-3.5" />
+                        FAQ
+                    </Link>
                     <Link
                         :href="terms()"
                         class="inline-flex items-center gap-1.5 rounded-sm underline-offset-4 hover:text-stone-950 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"

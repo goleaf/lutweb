@@ -86,17 +86,13 @@ class ValidateCubeWithFfmpeg
             throw new RuntimeException('Unable to create FFmpeg validation image.');
         }
 
-        try {
-            imagesetpixel($image, 0, 0, $this->color($image, 0, 0, 0));
-            imagesetpixel($image, 1, 0, $this->color($image, 255, 0, 0));
-            imagesetpixel($image, 0, 1, $this->color($image, 0, 255, 0));
-            imagesetpixel($image, 1, 1, $this->color($image, 0, 0, 255));
+        imagesetpixel($image, 0, 0, $this->color($image, 0, 0, 0));
+        imagesetpixel($image, 1, 0, $this->color($image, 255, 0, 0));
+        imagesetpixel($image, 0, 1, $this->color($image, 0, 255, 0));
+        imagesetpixel($image, 1, 1, $this->color($image, 0, 0, 255));
 
-            if (! imagepng($image, $path)) {
-                throw new RuntimeException('Unable to write FFmpeg validation image.');
-            }
-        } finally {
-            imagedestroy($image);
+        if (! imagepng($image, $path)) {
+            throw new RuntimeException('Unable to write FFmpeg validation image.');
         }
     }
 

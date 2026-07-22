@@ -15,7 +15,6 @@ use App\Services\StorefrontMedia\DeleteStorefrontImageVariants;
 use App\Services\StorefrontMedia\GenerateStorefrontImageVariants;
 use App\ValueObjects\LutTransformParameters;
 use Illuminate\Process\Exceptions\ProcessTimedOutException;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
@@ -70,10 +69,18 @@ class GenerateStorefrontPreviewExample
         $expectedVariantCountPerRole = $this->expectedVariantCountPerRole($dimensions[0]);
 
         if ($example instanceof ProductExample
-            && $example->processing_status === StorefrontImageStatus::Ready
             && $example->processing_fingerprint === $fingerprint
             && $this->hasExpectedVariants($example, $expectedVariantCountPerRole)) {
-            return $example;
+            if ($example->processing_status !== StorefrontImageStatus::Ready || $example->stale_at !== null) {
+                $example->forceFill([
+                    'processing_status' => StorefrontImageStatus::Ready,
+                    'failure_code' => null,
+                    'failure_message' => null,
+                    'stale_at' => null,
+                ])->save();
+            }
+
+            return $example->refresh()->load('variants');
         }
 
         $example ??= new ProductExample;
@@ -119,9 +126,6 @@ class GenerateStorefrontPreviewExample
             'app/private/'.trim((string) config('storefront-media.temporary_work_prefix', 'storefront-work'), '/')
             .'/preview-example-'.$example->id.'-'.bin2hex(random_bytes(6)),
         );
-        $existingVariants = $example->variants()->get();
-        $newVariants = collect();
-
         try {
             File::ensureDirectoryExists($workDirectory);
 
@@ -144,6 +148,7 @@ class GenerateStorefrontPreviewExample
             $this->watermark->apply($workDirectory.'/input.jpg', $beforeWatermarked);
             $this->watermark->apply($workDirectory.'/graded.png', $afterWatermarked);
 
+            $this->deleteVariants->deleteFor($example);
             $newVariants = $this->generateVariants
                 ->handle($example, StorefrontImageVariantRole::Before, $beforeWatermarked)
                 ->merge($this->generateVariants->handle(
@@ -166,16 +171,12 @@ class GenerateStorefrontPreviewExample
                 'stale_at' => null,
             ])->save();
 
-            $this->deleteReplacedVariants($existingVariants, $newVariants);
-
             return $example->refresh()->load('variants');
         } catch (ProcessTimedOutException $exception) {
-            $this->discardNewVariants($newVariants, $existingVariants);
             $this->markFailed($example, $exception);
 
             throw new RuntimeException('FFmpeg storefront preview generation timed out.', previous: $exception);
         } catch (Throwable $exception) {
-            $this->discardNewVariants($newVariants, $existingVariants);
             $this->markFailed($example, $exception);
 
             throw $exception;
@@ -268,42 +269,9 @@ class GenerateStorefrontPreviewExample
                 && Storage::disk($variant->disk)->exists($variant->path));
     }
 
-    /**
-     * @param  Collection<int, StorefrontImageVariant>  $existingVariants
-     * @param  Collection<int, StorefrontImageVariant>  $newVariants
-     */
-    private function deleteReplacedVariants(Collection $existingVariants, Collection $newVariants): void
-    {
-        $newPaths = $newVariants->pluck('path')->all();
-        $obsoleteVariants = $existingVariants
-            ->reject(fn (StorefrontImageVariant $variant): bool => in_array($variant->path, $newPaths, true))
-            ->values();
-        $sharedPathVariants = $existingVariants
-            ->filter(fn (StorefrontImageVariant $variant): bool => in_array($variant->path, $newPaths, true));
-
-        $this->deleteVariants->delete($obsoleteVariants);
-        $sharedPathVariants->each->delete();
-    }
-
-    /**
-     * @param  Collection<int, StorefrontImageVariant>  $newVariants
-     * @param  Collection<int, StorefrontImageVariant>  $existingVariants
-     */
-    private function discardNewVariants(Collection $newVariants, Collection $existingVariants): void
-    {
-        $existingPaths = $existingVariants->pluck('path')->all();
-        $disposableVariants = $newVariants
-            ->reject(fn (StorefrontImageVariant $variant): bool => in_array($variant->path, $existingPaths, true))
-            ->values();
-        $sharedPathVariants = $newVariants
-            ->filter(fn (StorefrontImageVariant $variant): bool => in_array($variant->path, $existingPaths, true));
-
-        $this->deleteVariants->delete($disposableVariants);
-        $sharedPathVariants->each->delete();
-    }
-
     private function markFailed(ProductExample $example, Throwable $exception): void
     {
+        $this->deleteVariants->deleteFor($example);
         $example->forceFill([
             'processing_status' => StorefrontImageStatus::Failed,
             'processing_fingerprint' => null,

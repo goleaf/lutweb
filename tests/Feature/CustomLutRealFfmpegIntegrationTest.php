@@ -61,17 +61,13 @@ function writeRealFfmpegRgbTestImage(string $path): void
         throw new RuntimeException('Unable to create real FFmpeg test image.');
     }
 
-    try {
-        writeRealFfmpegPixel($image, 0, 0, 0, 0, 0);
-        writeRealFfmpegPixel($image, 1, 0, 255, 0, 0);
-        writeRealFfmpegPixel($image, 2, 0, 0, 255, 0);
-        writeRealFfmpegPixel($image, 3, 0, 0, 0, 255);
+    writeRealFfmpegPixel($image, 0, 0, 0, 0, 0);
+    writeRealFfmpegPixel($image, 1, 0, 255, 0, 0);
+    writeRealFfmpegPixel($image, 2, 0, 0, 255, 0);
+    writeRealFfmpegPixel($image, 3, 0, 0, 0, 255);
 
-        if (! imagepng($image, $path)) {
-            throw new RuntimeException('Unable to write real FFmpeg test image.');
-        }
-    } finally {
-        imagedestroy($image);
+    if (! imagepng($image, $path)) {
+        throw new RuntimeException('Unable to write real FFmpeg test image.');
     }
 }
 
@@ -110,20 +106,15 @@ function assertRealFfmpegOutputMatchesInput(string $inputPath, string $outputPat
         throw new RuntimeException('Unable to decode real FFmpeg output image.');
     }
 
-    try {
-        expect(imagesx($output))->toBe(imagesx($input))
-            ->and(imagesy($output))->toBe(imagesy($input));
+    expect(imagesx($output))->toBe(imagesx($input))
+        ->and(imagesy($output))->toBe(imagesy($input));
 
-        for ($x = 0; $x < imagesx($input); $x++) {
-            assertRealFfmpegChannelsClose(
-                readRealFfmpegPixel($input, $x, 0),
-                readRealFfmpegPixel($output, $x, 0),
-                $tolerance,
-            );
-        }
-    } finally {
-        imagedestroy($input);
-        imagedestroy($output);
+    for ($x = 0; $x < imagesx($input); $x++) {
+        assertRealFfmpegChannelsClose(
+            readRealFfmpegPixel($input, $x, 0),
+            readRealFfmpegPixel($output, $x, 0),
+            $tolerance,
+        );
     }
 }
 

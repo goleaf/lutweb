@@ -24,8 +24,10 @@ use App\Models\ProductVersion;
 use App\Models\User;
 use App\Notifications\LutReadyForDownload;
 use App\Notifications\OrderPaymentConfirmed;
+use App\Services\Checkout\CheckoutReadiness;
 use App\Services\Checkout\ProductPurchaseEligibility;
 use App\Services\PayPal\PayPalAccessTokenProvider;
+use App\Services\PayPal\ValidatePayPalCapture;
 use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -60,6 +62,7 @@ function paypalMilestoneEnableCheckout(array $overrides = []): void
         'paypal.client_secret' => 'sandbox-client-secret',
         'paypal.webhook_id' => 'sandbox-webhook-id',
         'paypal.merchant_id' => 'MERCHANT-123',
+        'paypal.payee_email' => 'goleaf@gmail.com',
         ...$overrides,
     ]);
 }
@@ -294,6 +297,9 @@ test('PayPal order creation uses server-side price snapshots and is idempotent',
         ->and($paypalPayload['purchase_units'][0]['items'][0]['category'])->toBe('DIGITAL_GOODS')
         ->and($paypalPayload['purchase_units'][0]['custom_id'])->toBe($order->id)
         ->and($paypalPayload['purchase_units'][0]['invoice_id'])->toBe($order->number)
+        ->and($paypalPayload['purchase_units'][0]['payee'])->toBe([
+            'email_address' => 'goleaf@gmail.com',
+        ])
         ->and($paypalPayload['payment_source']['paypal']['experience_context']['shipping_preference'])->toBe('NO_SHIPPING')
         ->and(json_encode($paypalPayload, JSON_THROW_ON_ERROR))->not->toContain($file->path);
 });
@@ -387,13 +393,19 @@ test('completed PayPal capture fulfills once and sends safe notifications', func
             'purchase_units' => [[
                 'custom_id' => $order->id,
                 'invoice_id' => $order->number,
-                'payee' => ['merchant_id' => 'MERCHANT-123'],
+                'payee' => [
+                    'merchant_id' => 'MERCHANT-123',
+                    'email_address' => 'goleaf@gmail.com',
+                ],
                 'payments' => [
                     'captures' => [[
                         'id' => 'CAPTURE-123',
                         'status' => 'COMPLETED',
                         'amount' => ['currency_code' => 'EUR', 'value' => '19.99'],
-                        'payee' => ['merchant_id' => 'MERCHANT-123'],
+                        'payee' => [
+                            'merchant_id' => 'MERCHANT-123',
+                            'email_address' => 'goleaf@gmail.com',
+                        ],
                         'seller_receivable_breakdown' => [
                             'paypal_fee' => ['currency_code' => 'EUR', 'value' => '0.99'],
                             'net_amount' => ['currency_code' => 'EUR', 'value' => '19.00'],
@@ -426,14 +438,84 @@ test('completed PayPal capture fulfills once and sends safe notifications', func
     Notification::assertSentTo($user, LutReadyForDownload::class);
 });
 
+test('capture validation rejects a different recipient and accepts a case-insensitive match', function () {
+    paypalMilestoneEnableCheckout([
+        'paypal.mode' => 'live',
+        'checkout.tax_ready' => true,
+        'checkout.live_payments_allowed' => true,
+        'legal.terms_of_sale_version' => 'terms-v1',
+        'legal.license_version' => 'license-v1',
+        'legal.refund_policy_version' => 'refund-v1',
+        'legal.digital_delivery_consent_version' => 'delivery-v1',
+    ]);
+    $user = User::factory()->verified()->create();
+    [$product, $version, $file] = paypalMilestoneProduct();
+    [$order, $payment] = paypalMilestonePaidOrder($user, $product, $version, $file);
+    $response = [
+        'id' => 'PAYPAL-ORDER-123',
+        'status' => 'COMPLETED',
+        'purchase_units' => [[
+            'custom_id' => $order->id,
+            'invoice_id' => $order->number,
+            'payee' => [
+                'merchant_id' => 'MERCHANT-123',
+                'email_address' => 'other@example.com',
+            ],
+            'payments' => [
+                'captures' => [[
+                    'id' => 'CAPTURE-RECIPIENT',
+                    'status' => 'COMPLETED',
+                    'amount' => ['currency_code' => 'EUR', 'value' => '19.99'],
+                ]],
+            ],
+        ]],
+    ];
+    $validator = app(ValidatePayPalCapture::class);
+
+    $mismatch = $validator->validate($order, $payment, $response);
+
+    expect($mismatch->valid)->toBeFalse()
+        ->and($mismatch->failureCode)->toBe('payee_email_mismatch');
+
+    $response['purchase_units'][0]['payee']['email_address'] = 'GOLEAF@GMAIL.COM';
+    $matching = $validator->validate($order, $payment, $response);
+
+    expect($matching->valid)->toBeTrue()
+        ->and($matching->failureCode)->toBeNull();
+});
+
+test('live checkout readiness requires a valid PayPal recipient email', function (mixed $payeeEmail) {
+    paypalMilestoneEnableCheckout([
+        'paypal.mode' => 'live',
+        'checkout.tax_ready' => true,
+        'checkout.live_payments_allowed' => true,
+        'paypal.payee_email' => $payeeEmail,
+        'legal.terms_of_sale_version' => 'terms-v1',
+        'legal.license_version' => 'license-v1',
+        'legal.refund_policy_version' => 'refund-v1',
+        'legal.digital_delivery_consent_version' => 'delivery-v1',
+    ]);
+
+    expect(app(CheckoutReadiness::class)->paidCheckoutProblems())
+        ->toContain('PayPal payee email is missing or invalid.');
+})->with([
+    'missing' => [null],
+    'invalid' => ['not-an-email'],
+]);
+
 test('secure download streams from private storage and records history', function () {
     paypalMilestoneEnableCheckout(['paypal.enabled' => false]);
     $user = User::factory()->verified()->create();
-    [$product] = paypalMilestoneProduct([
-        'type' => ProductType::FreeLut,
-        'price_cents' => 0,
-        'slug' => 'downloadable-'.Str::lower(Str::random(6)),
-    ]);
+    $slug = 'downloadable-'.Str::lower(Str::random(6));
+    [$product] = paypalMilestoneProduct(
+        [
+            'type' => ProductType::FreeLut,
+            'price_cents' => 0,
+            'slug' => $slug,
+        ],
+        [],
+        ['path' => 'products/storefront-preview/'.$slug.'/release/package.zip'],
+    );
 
     $this->actingAs($user)->post(route('checkout.free.claim', $product->slug), [
         'checkout_idempotency_key' => (string) Str::uuid(),
@@ -460,6 +542,34 @@ test('secure download streams from private storage and records history', functio
         ->and(DB::table('download_events')->where('status', 'completed')->count())->toBe(1);
 
     $this->actingAs(User::factory()->verified()->create())
+        ->get(route('account.luts.download', $entitlement))
+        ->assertNotFound();
+});
+
+test('secure download rejects a lookalike storefront package prefix', function () {
+    paypalMilestoneEnableCheckout(['paypal.enabled' => false]);
+    $user = User::factory()->verified()->create();
+    $slug = 'unsafe-prefix-'.Str::lower(Str::random(6));
+    [$product] = paypalMilestoneProduct(
+        [
+            'type' => ProductType::FreeLut,
+            'price_cents' => 0,
+            'slug' => $slug,
+        ],
+        [],
+        ['path' => 'products/storefront-preview-lookalike/'.$slug.'/package.zip'],
+    );
+
+    $this->actingAs($user)->post(route('checkout.free.claim', $product->slug), [
+        'checkout_idempotency_key' => (string) Str::uuid(),
+        'terms_of_sale_accepted' => true,
+        'license_accepted' => true,
+        'digital_delivery_consent_accepted' => true,
+    ]);
+
+    $entitlement = Entitlement::query()->firstOrFail();
+
+    $this->actingAs($user)
         ->get(route('account.luts.download', $entitlement))
         ->assertNotFound();
 });
@@ -594,8 +704,14 @@ test('doctor reports disabled or unsafe live checkout without printing secrets',
     expect($exitCode)->toBeGreaterThan(0)
         ->and($output)->toContain('FAIL')
         ->and($output)->toContain('PayPal enabled state: false')
+        ->and($output)->toContain('PayPal recipient email: configured')
+        ->and($output)->not->toContain('goleaf@gmail.com')
         ->and($output)->not->toContain('never-print-this-secret')
         ->and($output)->not->toContain('access_token');
+
+    Artisan::call('paypal:doctor', ['--show-recipient' => true]);
+
+    expect(Artisan::output())->toContain('PayPal recipient email: goleaf@gmail.com');
 });
 
 test('sold package ZIPs and purchased versions are immutable', function () {

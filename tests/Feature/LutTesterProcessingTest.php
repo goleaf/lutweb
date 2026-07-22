@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Storefront\GenerateStorefrontPreviewPackage;
 use App\Enums\LutTestStatus;
 use App\Enums\ProductFileKind;
 use App\Jobs\ProcessLutTestUpload;
@@ -14,8 +15,12 @@ use App\Services\LutTester\InspectCubeFile;
 use App\Services\LutTester\NormalizedPhoto;
 use App\Services\LutTester\NormalizeUploadedPhoto;
 use App\Services\LutTester\ResolvedPreviewLut;
+use App\Support\Storefront\StorefrontPreviewCatalog;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function (): void {
     Storage::fake('private');
@@ -68,6 +73,82 @@ function lutTesterProcessingUpload(array $overrides = []): LutTestUpload
             ...$overrides,
         ]);
 }
+
+function generatedPackagePhoto(): UploadedFile
+{
+    $path = tempnam(sys_get_temp_dir(), 'generated-lut-photo-').'.jpg';
+    $image = imagecreatetruecolor(960, 720);
+    $background = imagecolorallocate($image, 164, 126, 92);
+    $accent = imagecolorallocate($image, 42, 92, 118);
+    imagefill($image, 0, 0, $background);
+    imagefilledrectangle($image, 80, 80, 880, 640, $accent);
+    imagejpeg($image, $path, 90);
+    imagedestroy($image);
+
+    return new UploadedFile($path, 'customer-photo.jpg', 'image/jpeg', null, true);
+}
+
+test('a generated storefront Cube33 processes a customer photo into signed previews', function (): void {
+    $ffmpeg = (string) config('lut-tester.ffmpeg_binary', 'ffmpeg');
+
+    if (Process::timeout(5)->run([$ffmpeg, '-version'])->failed()) {
+        $this->markTestSkipped('The configured FFmpeg binary is not available.');
+    }
+
+    $this->artisan('db:seed', [
+        '--class' => 'Database\\Seeders\\StorefrontPreviewSeeder',
+        '--force' => true,
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    $product = Product::query()->where('sku', 'PREVIEW-TRAVEL-001')->firstOrFail();
+    $entry = collect((new StorefrontPreviewCatalog)->entries())
+        ->first(fn (array $entry): bool => $entry['attributes']['sku'] === $product->sku);
+
+    expect($entry)->toBeArray();
+
+    app(GenerateStorefrontPreviewPackage::class)->handle($product, $entry);
+    $user = User::factory()->verified()->create();
+    Queue::fake();
+
+    $this->actingAs($user)
+        ->post(route('shop.tester.store', $product->slug), [
+            'photo' => generatedPackagePhoto(),
+        ])
+        ->assertRedirect();
+
+    $upload = LutTestUpload::query()->firstOrFail();
+
+    expect($upload->status)->toBe(LutTestStatus::Queued)
+        ->and($upload->expires_at)->not->toBeNull();
+    Queue::assertPushed(ProcessLutTestUpload::class);
+
+    (new ProcessLutTestUpload($upload))->handle(
+        app(NormalizeUploadedPhoto::class),
+        app(InspectCubeFile::class),
+        app(ApplyCubeLutWithFfmpeg::class),
+    );
+
+    $upload->refresh();
+
+    expect($upload->status)->toBe(LutTestStatus::Ready)
+        ->and($upload->completed_at)->not->toBeNull()
+        ->and($upload->before_preview_path)->not->toBeNull()
+        ->and($upload->after_preview_path)->not->toBeNull();
+
+    Storage::disk('private')->assertExists($upload->before_preview_path);
+    Storage::disk('private')->assertExists($upload->after_preview_path);
+
+    $this->actingAs($user)
+        ->get(route('shop.tester.show', [$product->slug, $upload]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Shop/Try')
+            ->where('test.status', LutTestStatus::Ready->value)
+            ->where('test.id', $upload->id)
+            ->where('test.before_url', fn (mixed $url): bool => is_string($url) && str_contains($url, 'signature='))
+            ->where('test.after_url', fn (mixed $url): bool => is_string($url) && str_contains($url, 'signature=')));
+});
 
 test('the processing job transitions to ready and records completed_at', function () {
     $upload = lutTesterProcessingUpload();
@@ -158,7 +239,6 @@ test('FFmpeg is invoked with an argument array in a controlled work directory', 
     $png = imagecreatetruecolor(640, 640);
     $localPng = tempnam(sys_get_temp_dir(), 'lut-source-').'.png';
     imagepng($png, $localPng);
-    imagedestroy($png);
     Storage::disk('private')->put($upload->normalized_path, file_get_contents($localPng));
 
     $file = ProductFile::query()->findOrFail($upload->product_file_id);

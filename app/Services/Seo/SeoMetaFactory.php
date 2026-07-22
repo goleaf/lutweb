@@ -61,6 +61,31 @@ class SeoMetaFactory
         );
     }
 
+    /**
+     * @param  list<array{question: string, answer: string}>  $questions
+     */
+    public function faq(array $questions): SeoData
+    {
+        return $this->make(
+            title: 'LUT questions and answers',
+            description: 'Answers about choosing, installing, testing, purchasing, downloading, licensing, and troubleshooting LUTs from LUT Web.',
+            canonicalPath: route('faq', absolute: false),
+            robots: $this->publicRobots(),
+            jsonLd: [
+                '@context' => 'https://schema.org',
+                '@type' => 'FAQPage',
+                'mainEntity' => array_map(static fn (array $question): array => [
+                    '@type' => 'Question',
+                    'name' => $question['question'],
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => $question['answer'],
+                    ],
+                ], $questions),
+            ],
+        );
+    }
+
     public function privatePage(string $title): SeoData
     {
         return $this->make(

@@ -68,8 +68,6 @@ function lutTesterUploadedRaster(string $name = 'photo.jpg', int $width = 640, i
         default => imagejpeg($image, $path, 82),
     };
 
-    imagedestroy($image);
-
     $mime = match ($extension) {
         'png' => 'image/png',
         'webp' => 'image/webp',

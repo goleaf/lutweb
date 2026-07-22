@@ -59,6 +59,15 @@ class ValidatePayPalCapture
             return new PayPalCaptureValidationResult(false, $captureStatus, $captureId, $capture, 'merchant_mismatch');
         }
 
+        $configuredPayeeEmail = config('paypal.payee_email');
+        $responsePayeeEmail = $purchaseUnit['payee']['email_address'] ?? $capture['payee']['email_address'] ?? null;
+
+        if (is_string($configuredPayeeEmail)
+            && $configuredPayeeEmail !== ''
+            && (! is_string($responsePayeeEmail) || strcasecmp($responsePayeeEmail, $configuredPayeeEmail) !== 0)) {
+            return new PayPalCaptureValidationResult(false, $captureStatus, $captureId, $capture, 'payee_email_mismatch');
+        }
+
         return new PayPalCaptureValidationResult(true, $captureStatus, $captureId, $capture);
     }
 }

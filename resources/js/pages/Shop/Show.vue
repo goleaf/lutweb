@@ -6,7 +6,6 @@ import AppIcon from '@/components/AppIcon.vue';
 import BeforeAfterComparison from '@/components/storefront/BeforeAfterComparison.vue';
 import PackageContentsList from '@/components/storefront/PackageContentsList.vue';
 import ProductBundleContents from '@/components/storefront/ProductBundleContents.vue';
-import ProductFaq from '@/components/storefront/ProductFaq.vue';
 import ProductGallery from '@/components/storefront/ProductGallery.vue';
 import ProductMetaPanels from '@/components/storefront/ProductMetaPanels.vue';
 import ProductPurchasePanel from '@/components/storefront/ProductPurchasePanel.vue';
@@ -194,8 +193,6 @@ const purchaseMessage = computed(() => {
                             the store owner.
                         </p>
                     </section>
-
-                    <ProductFaq />
                 </div>
 
                 <aside class="grid h-fit gap-5 lg:sticky lg:top-6">

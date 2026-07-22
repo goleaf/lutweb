@@ -6,6 +6,7 @@ This document describes what must be protected before a controlled production la
 
 - Database: application tables, migrations, orders, payments, entitlements, package-document records, audit events, and notification dispatch records.
 - Private ProductFiles: ZIP packages, CUBE files, guides, licenses, and readme files.
+- Content-addressed storefront preview packages under the private `products/storefront-preview` prefix, together with their `product_versions` and `product_files` rows.
 - Purchased Custom LUT builds and their private delivery artifacts.
 - Private storefront source masters under the configured storefront source prefix.
 - Public storefront derivatives. These can be regenerated, but backing them up speeds restore and avoids a cold image queue.
@@ -43,6 +44,7 @@ This document describes what must be protected before a controlled production la
 
 - Confirm no known default users exist.
 - Confirm private ProductFiles and Custom LUT ZIP files are not publicly reachable.
+- Confirm every restored Ready storefront preview version has exactly five physical files and that recorded SHA-256 values match storage.
 - Confirm purchased entitlements can download through authenticated routes.
 - Confirm health readiness returns 200 only when queue and scheduler heartbeats are current.
 - Confirm PayPal webhook processing is idempotent after replay.

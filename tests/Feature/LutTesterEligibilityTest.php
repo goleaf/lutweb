@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Storefront\GenerateStorefrontPreviewPackage;
 use App\Enums\ProductFileKind;
 use App\Enums\ProductStatus;
 use App\Enums\ProductType;
@@ -7,9 +8,12 @@ use App\Enums\ProductVersionStatus;
 use App\Models\Product;
 use App\Models\ProductFile;
 use App\Models\ProductVersion;
+use App\Models\User;
 use App\Services\LutTester\ProductLutTestEligibility;
 use App\Services\LutTester\ResolveProductPreviewLut;
+use App\Support\Storefront\StorefrontPreviewCatalog;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Testing\AssertableInertia as Assert;
 
 function lutTesterIdentityCube(): string
 {
@@ -78,6 +82,41 @@ test('a published single LUT with a current ready version and valid Cube33 file 
     lutTesterCubeFile($version, ProductFileKind::Cube33);
 
     expect(app(ProductLutTestEligibility::class)->canTest($product->refresh()))->toBeTrue();
+});
+
+test('a generated storefront release enables the tester route and product link', function () {
+    $this->artisan('db:seed', [
+        '--class' => 'Database\\Seeders\\StorefrontPreviewSeeder',
+        '--force' => true,
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    $product = Product::query()->where('sku', 'PREVIEW-TRAVEL-001')->firstOrFail();
+    $entry = collect((new StorefrontPreviewCatalog)->entries())
+        ->first(fn (array $entry): bool => $entry['attributes']['sku'] === $product->sku);
+
+    expect($entry)->toBeArray();
+
+    app(GenerateStorefrontPreviewPackage::class)->handle($product, $entry);
+    $product->refresh();
+
+    expect(app(ProductLutTestEligibility::class)->canTest($product))->toBeTrue();
+
+    $user = User::factory()->verified()->create();
+
+    $this->actingAs($user)
+        ->get(route('shop.tester.create', $product->slug))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Shop/Try')
+            ->where('product.slug', $product->slug)
+            ->where('product.try_url', route('shop.tester.create', $product->slug)));
+
+    $this->get(route('shop.show', $product->slug))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Shop/Show')
+            ->where('product.try_url', route('shop.tester.create', $product->slug)));
 });
 
 test('is_testable false makes a product unavailable', function () {

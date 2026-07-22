@@ -588,8 +588,6 @@ class E2ePrepare extends Command
         $text = imagecolorallocate($image, 255, 255, 255);
 
         if ($background === false || $accent === false || $text === false) {
-            imagedestroy($image);
-
             throw new RuntimeException('Unable to allocate E2E image colors.');
         }
 
@@ -606,7 +604,6 @@ class E2ePrepare extends Command
         };
 
         $bytes = (string) ob_get_clean();
-        imagedestroy($image);
 
         if ($bytes === '') {
             throw new RuntimeException('Unable to encode E2E image.');

@@ -28,42 +28,46 @@ class CreatePayPalOrder
         $cancelUrl = $item->isCustomLutBuild() && $item->wizard_project_id !== null && $item->custom_lut_build_id !== null
             ? route('custom-lut.checkout.show', [$item->wizard_project_id, $item->custom_lut_build_id])
             : route('shop.show', $item->product_slug);
-
-        return $this->client->post('/v2/checkout/orders', [
-            'intent' => 'CAPTURE',
-            'purchase_units' => [
-                [
-                    'reference_id' => $order->number,
-                    'custom_id' => $order->id,
-                    'invoice_id' => $order->number,
-                    'amount' => [
+        $purchaseUnit = [
+            'reference_id' => $order->number,
+            'custom_id' => $order->id,
+            'invoice_id' => $order->number,
+            'amount' => [
+                'currency_code' => 'EUR',
+                'value' => EurMoney::formatCents($order->total_cents),
+                'breakdown' => [
+                    'item_total' => [
                         'currency_code' => 'EUR',
-                        'value' => EurMoney::formatCents($order->total_cents),
-                        'breakdown' => [
-                            'item_total' => [
-                                'currency_code' => 'EUR',
-                                'value' => EurMoney::formatCents($order->subtotal_cents),
-                            ],
-                            'tax_total' => [
-                                'currency_code' => 'EUR',
-                                'value' => EurMoney::formatCents($order->tax_cents),
-                            ],
-                        ],
+                        'value' => EurMoney::formatCents($order->subtotal_cents),
                     ],
-                    'items' => [
-                        [
-                            'name' => Str::limit($item->displayName(), 120, ''),
-                            'sku' => $item->product_sku ?: $item->product_slug,
-                            'unit_amount' => [
-                                'currency_code' => 'EUR',
-                                'value' => EurMoney::formatCents($item->unit_price_cents),
-                            ],
-                            'quantity' => '1',
-                            'category' => 'DIGITAL_GOODS',
-                        ],
+                    'tax_total' => [
+                        'currency_code' => 'EUR',
+                        'value' => EurMoney::formatCents($order->tax_cents),
                     ],
                 ],
             ],
+            'items' => [
+                [
+                    'name' => Str::limit($item->displayName(), 120, ''),
+                    'sku' => $item->product_sku ?: $item->product_slug,
+                    'unit_amount' => [
+                        'currency_code' => 'EUR',
+                        'value' => EurMoney::formatCents($item->unit_price_cents),
+                    ],
+                    'quantity' => '1',
+                    'category' => 'DIGITAL_GOODS',
+                ],
+            ],
+        ];
+        $payeeEmail = config('paypal.payee_email');
+
+        if (is_string($payeeEmail) && filter_var($payeeEmail, FILTER_VALIDATE_EMAIL) !== false) {
+            $purchaseUnit['payee'] = ['email_address' => $payeeEmail];
+        }
+
+        return $this->client->post('/v2/checkout/orders', [
+            'intent' => 'CAPTURE',
+            'purchase_units' => [$purchaseUnit],
             'payment_source' => [
                 'paypal' => [
                     'experience_context' => [

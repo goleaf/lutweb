@@ -9,6 +9,7 @@ return [
     'client_secret' => env('PAYPAL_CLIENT_SECRET'),
     'webhook_id' => env('PAYPAL_WEBHOOK_ID'),
     'merchant_id' => env('PAYPAL_MERCHANT_ID'),
+    'payee_email' => env('PAYPAL_PAYEE_EMAIL'),
     'connect_timeout' => (int) env('PAYPAL_CONNECT_TIMEOUT', 5),
     'timeout' => (int) env('PAYPAL_TIMEOUT', 20),
     'oauth_cache_safety_margin' => 60,

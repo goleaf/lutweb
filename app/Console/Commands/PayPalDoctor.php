@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-#[Signature('paypal:doctor {--remote : Perform safe read-only PayPal API checks} {--show-webhook-url : Print the recommended webhook URL}')]
+#[Signature('paypal:doctor {--remote : Perform safe read-only PayPal API checks} {--show-webhook-url : Print the recommended webhook URL} {--show-recipient : Print the configured non-secret PayPal recipient email}')]
 #[Description('Check PayPal checkout, webhook, and live-sale readiness.')]
 class PayPalDoctor extends Command
 {
@@ -33,6 +33,7 @@ class PayPalDoctor extends Command
         $this->check('Public PayPal client ID exists', filled(config('paypal.client_id')), required: $live);
         $this->check('PayPal client secret exists', filled(config('paypal.client_secret')), required: $live);
         $this->check('PayPal merchant ID exists', filled(config('paypal.merchant_id')), required: $live);
+        $this->check($this->recipientLabel(), $this->validRecipientEmail(), required: $live);
         $this->check('PayPal webhook ID exists', filled(config('paypal.webhook_id')), required: $live);
         $this->pass('REST API host: '.$readiness->apiUrl());
         $this->pass('JavaScript SDK v6 host: '.$readiness->sdkUrl());
@@ -196,5 +197,25 @@ class PayPalDoctor extends Command
     private function validCountry(mixed $country): bool
     {
         return is_string($country) && preg_match('/^[A-Z]{2}$/', $country) === 1;
+    }
+
+    private function validRecipientEmail(): bool
+    {
+        $email = config('paypal.payee_email');
+
+        return is_string($email) && filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+    }
+
+    private function recipientLabel(): string
+    {
+        if (! $this->validRecipientEmail()) {
+            return 'PayPal recipient email is configured and valid';
+        }
+
+        if ((bool) $this->option('show-recipient')) {
+            return 'PayPal recipient email: '.config('paypal.payee_email');
+        }
+
+        return 'PayPal recipient email: configured';
     }
 }

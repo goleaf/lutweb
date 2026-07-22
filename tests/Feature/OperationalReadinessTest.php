@@ -40,7 +40,6 @@ function operationalReadinessImageBytes(string $format = 'png'): string
     };
 
     $bytes = (string) ob_get_clean();
-    imagedestroy($image);
 
     return $bytes;
 }

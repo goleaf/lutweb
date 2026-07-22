@@ -23,6 +23,7 @@ class BuildSitemapIndex
         $urls = collect([
             $this->entry('/', now()),
             $this->entry('/shop', now()),
+            $this->entry('/faq', now()),
             $this->entry('/terms', now()),
             $this->entry('/privacy', now()),
             $this->entry('/terms-of-sale', now()),

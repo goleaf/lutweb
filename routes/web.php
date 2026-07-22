@@ -24,6 +24,7 @@ use App\Http\Controllers\Operations\HealthController;
 use App\Http\Controllers\Seo\RobotsController;
 use App\Http\Controllers\Seo\SitemapController;
 use App\Http\Controllers\Storefront\CategoryController;
+use App\Http\Controllers\Storefront\FaqController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\LutTesterController;
 use App\Http\Controllers\Storefront\LutTestImageController;
@@ -44,6 +45,7 @@ $authMiddleware = (string) config('fortify.auth_middleware', 'auth').':'.$guard;
 $verificationLimiter = (string) config('fortify.limiters.verification', '6,1');
 
 Route::get('/', HomeController::class)->name('home');
+Route::get('/faq', FaqController::class)->name('faq');
 Route::get('/robots.txt', RobotsController::class)->name('robots');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap.index');
 

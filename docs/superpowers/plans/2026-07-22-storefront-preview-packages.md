@@ -99,3 +99,12 @@
 - `storefront-media:doctor`, `paypal:doctor`, `custom-lut:doctor`, `custom-lut-commerce:doctor`, LUT doctor, wizard doctor и SEO doctor не нашли package/media ошибок. Ожидаемые production-предупреждения о SQLite, отсутствующих внешних credentials/legal approvals, log mailer и желательном Imagick не маскировались.
 - Все четыре systemd-сервиса `lutweb-default`, `lutweb-images`, `lutweb-payments`, `lutweb-scheduler` активны; приложение выведено из maintenance mode.
 - Playwright на 1440×1100 и 390×844 подтвердил отсутствие горизонтального overflow, видимые 17/33/65 CUBE, README и ZIP, успешную загрузку всех preview-изображений, нуль console errors/warnings и корректный guest redirect с `Try on Your Photo` на `/login`.
+
+Контроль после синхронизации с опубликованным `main`:
+
+- Перед повторным rollout создана backup-копия `/www/backup/lutweb/database/database-before-current-main-media-20260722_213620.sqlite`: 6 057 984 байт, integrity `ok`, SHA-256 `6eb7e08c17b436d52bd9a8c4170d27fb146a64c5cdf61e19313fba891b56d3a9`.
+- Четыре контролируемых чанка создали 300 актуальных cover/package/example наборов; два последовательных media seed дошли до 300/300 без изменений ID/path.
+- Удалены ровно 300 старых неприобретённых версий и 1500 их файлов через Eloquent model events. Финально: 300/300 fingerprints совпадают с текущим каталогом, 300 Ready/current versions, 1500 записей и 1500 физических файлов (4,4 ГБ), orphan package-файлов нет.
+- Независимо прочитаны все 1500 файлов: missing, size mismatch и SHA-256 mismatch равны нулю. Все 300 ZIP прошли `ZipArchive::CHECKCONS`, имеют ровно шесть entries и не содержат unsafe paths.
+- Финальный полный Pest в изолированной in-memory SQLite: 316 тестов, 314 passed, 2 skipped, 11 039 assertions. Larastan: 0 ошибок; LUT Transform: 61 кейс; type check, Prettier, scoped ESLint и production build прошли.
+- Повторный live Playwright после rollout подтвердил desktop/mobile overflow `false`, загрузку cover/Before/After/related previews, console 0 errors/0 warnings и guest redirect tester на `/login`.

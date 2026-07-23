@@ -19,6 +19,8 @@ return [
 
     'default' => env('DB_CONNECTION', 'sqlite'),
 
+    'production_sqlite_approved' => (bool) env('DB_PRODUCTION_SQLITE_APPROVED', false),
+
     /*
     |--------------------------------------------------------------------------
     | Database Connections

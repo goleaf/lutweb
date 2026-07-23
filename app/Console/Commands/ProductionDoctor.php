@@ -73,7 +73,11 @@ class ProductionDoctor extends Command
     {
         $this->section('DATABASE AND CACHE');
         $this->check('Database connection configured', config('database.default') !== null);
-        $this->check('Production does not use SQLite unintentionally', ! app()->isProduction() || config('database.default') !== 'sqlite', app()->isProduction());
+        $this->check(
+            'Production SQLite use is explicitly approved',
+            ! app()->isProduction() || config('database.default') !== 'sqlite' || (bool) config('database.production_sqlite_approved', false),
+            app()->isProduction() && config('database.default') === 'sqlite',
+        );
         $this->check('Cache store configured', config('cache.default') !== null);
         $this->check('Session store configured', config('session.driver') !== null);
         $this->check('Production does not use array cache/session', ! app()->isProduction() || ! in_array(config('cache.default'), ['array'], true), app()->isProduction());
